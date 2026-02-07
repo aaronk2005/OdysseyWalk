@@ -1,114 +1,108 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, MapPin, Timer } from "lucide-react";
-import { getTour } from "@/lib/data/TourRepository";
+import { ArrowLeft, Play, Timer } from "lucide-react";
+import { saveTour } from "@/lib/data/SessionStore";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
-import type { Tour, POI } from "@/lib/types";
+import type { SessionState, GeneratedTourResponse } from "@/lib/types";
 
-const NARRATION_DURATION_MS = 7000;
-const ANSWER_DURATION_MS = 7000;
+const DEMO_SESSION: GeneratedTourResponse = {
+  sessionId: "demo-90",
+  tourPlan: {
+    intro: "Welcome to this short demo. We'll visit two stops and try a question.",
+    outro: "Demo complete. Create your own tour from the home page.",
+    theme: "demo",
+    estimatedMinutes: 5,
+    routePoints: [
+      { lat: 37.7849, lng: -122.4094 },
+      { lat: 37.786, lng: -122.408 },
+      { lat: 37.787, lng: -122.407 },
+    ],
+  },
+  pois: [
+    {
+      poiId: "poi-1",
+      name: "Demo Stop 1",
+      lat: 37.786,
+      lng: -122.408,
+      radiusM: 35,
+      script: "This is the first demo stop. Imagine you're standing at a historic landmark. The narration would tell you about the place in ninety to one hundred forty words. For this demo we keep it short.",
+      facts: ["Demo fact one.", "Demo fact two.", "Demo fact three."],
+      orderIndex: 0,
+    },
+    {
+      poiId: "poi-2",
+      name: "Demo Stop 2",
+      lat: 37.787,
+      lng: -122.407,
+      radiusM: 35,
+      script: "This is the second demo stop. The tour would continue with more stories. Thanks for trying the demo.",
+      facts: ["Second stop fact."],
+      orderIndex: 1,
+    },
+  ],
+};
+
+const SCRIPT_MS = 6000;
 const SAMPLE_QUESTION = "When was it built?";
 
 export default function DemoPage() {
-  const [tour, setTour] = useState<Tour | null>(null);
-  const [pois, setPois] = useState<POI[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [scriptRunning, setScriptRunning] = useState(false);
-  const [ninetySecRunning, setNinetySecRunning] = useState(false);
-
-  useEffect(() => {
-    getTour("sample")
-      .then(({ tour: t, pois: p }) => {
-        setTour(t);
-        setPois(p);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const playPoi = async (poi: POI) => {
-    const text =
-      poi.scripts?.friendly || poi.scripts?.historian || poi.scripts?.funny || "";
-    if (text) {
-      await AudioSessionManager.playNarration(poi.poiId, text, {
-        voiceStyle: "friendly",
-        lang: "en",
-        scriptVersion: poi.scriptVersion ?? 1,
-      });
-    }
-  };
-
-  const runDemoScript = async () => {
-    if (!pois.length) return;
-    setScriptRunning(true);
-    setCurrentIndex(0);
-    await playPoi(pois[0]);
-    setCurrentIndex(1);
-    await new Promise((r) => setTimeout(r, 500));
-    for (let i = 1; i < pois.length; i++) {
-      await new Promise((r) => setTimeout(r, 8000));
-      setCurrentIndex(i);
-      await playPoi(pois[i]);
-    }
-    setScriptRunning(false);
-  };
+  const [running, setRunning] = useState(false);
+  const [step, setStep] = useState<string>("");
 
   const run90SecondDemo = async () => {
-    if (!pois.length) return;
-    setNinetySecRunning(true);
-    setCurrentIndex(0);
+    setRunning(true);
+    saveTour(DEMO_SESSION.sessionId, DEMO_SESSION);
+    const session: SessionState = {
+      sessionId: DEMO_SESSION.sessionId,
+      tourPlan: DEMO_SESSION.tourPlan,
+      pois: DEMO_SESSION.pois,
+      visitedPoiIds: [],
+      activePoiId: null,
+      mode: "demo",
+      startedAt: Date.now(),
+    };
+
     try {
-      await playPoi(pois[0]);
-      setCurrentIndex(0);
-      await new Promise((r) => setTimeout(r, NARRATION_DURATION_MS));
+      setStep("Playing stop 1…");
+      await AudioSessionManager.playPoiScript(DEMO_SESSION.pois[0]);
+      await new Promise((r) => setTimeout(r, SCRIPT_MS));
       AudioSessionManager.stop();
-      setCurrentIndex(0);
-      const poi = pois[0];
+
+      setStep("Sample Q&A…");
       const res = await fetch("/api/qa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tourId: tour?.tourId,
-          poiId: poi.poiId,
-          question: SAMPLE_QUESTION,
-          voiceStyle: "friendly",
-          lang: "en",
-          poiScript: poi.scripts?.friendly || poi.scripts?.historian,
-          poiFacts: poi.facts,
+          sessionId: session.sessionId,
+          poiId: DEMO_SESSION.pois[0].poiId,
+          questionText: SAMPLE_QUESTION,
+          context: {
+            currentPoiScript: DEMO_SESSION.pois[0].script,
+            tourIntro: DEMO_SESSION.tourPlan.intro,
+            theme: DEMO_SESSION.tourPlan.theme,
+          },
         }),
       });
-      const data = await res.json();
-      const answerText = data.answerText || (poi.facts?.[0] ?? "No answer.");
-      await AudioSessionManager.playAnswerStream(answerText);
-      await new Promise((r) => setTimeout(r, ANSWER_DURATION_MS));
+      const qaData = await res.json();
+      const answerText = qaData.answerText ?? "This is a demo. In a real tour you'd hear an answer here.";
+      await AudioSessionManager.playAnswer(answerText);
+      await new Promise((r) => setTimeout(r, 5000));
       AudioSessionManager.stop();
-      setCurrentIndex(1);
-      if (pois[1]) await playPoi(pois[1]);
-      await new Promise((r) => setTimeout(r, NARRATION_DURATION_MS));
+
+      setStep("Playing stop 2…");
+      await AudioSessionManager.playPoiScript(DEMO_SESSION.pois[1]);
+      await new Promise((r) => setTimeout(r, SCRIPT_MS));
+      AudioSessionManager.stop();
+
+      setStep("Done.");
     } finally {
-      setNinetySecRunning(false);
+      setRunning(false);
+      setStep("");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-2 border-accent-blue border-t-transparent animate-spin" />
-      </div>
-    );
-  }
-
-  if (!tour) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-        <p className="text-white/80">Could not load sample tour.</p>
-        <Link href="/tours" className="text-accent-blue">Back to tours</Link>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-navy-950">
@@ -117,71 +111,31 @@ export default function DemoPage() {
           <Link href="/" className="p-2 rounded-lg hover:bg-white/10 text-white" aria-label="Back">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="font-semibold text-xl text-white">Demo — Scripted Playback</h1>
+          <h1 className="font-semibold text-xl text-white">Demo</h1>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         <p className="text-white/70">
-          No permissions required. Teleport to a stop and play, or run the scripted demos below.
+          One-click scripted demo. No mic or location required. Runs: Stop 1 narration → sample Q&A → Stop 2 narration.
         </p>
 
-        <div className="flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={run90SecondDemo}
-            disabled={ninetySecRunning || scriptRunning}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-medium disabled:opacity-50"
-          >
-            <Timer className="w-5 h-5" />
-            {ninetySecRunning ? "Running 90s demo…" : "Run 90-second demo"}
-          </button>
-          <p className="text-xs text-white/50">
-            POI1 narration → sample question & answer → POI2 narration. No mic needed.
-          </p>
-          <button
-            type="button"
-            onClick={runDemoScript}
-            disabled={scriptRunning || ninetySecRunning}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium disabled:opacity-50"
-          >
-            <Play className="w-5 h-5" />
-            {scriptRunning ? "Playing…" : "Run full demo script"}
-          </button>
-          <Link
-            href={`/tour/${tour.tourId}`}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium hover:bg-white/15 text-center justify-center"
-          >
-            Open full tour
-          </Link>
-        </div>
+        <button
+          type="button"
+          onClick={run90SecondDemo}
+          disabled={running}
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold disabled:opacity-50"
+        >
+          <Timer className="w-5 h-5" />
+          {running ? step || "Running…" : "Run 90s Demo"}
+        </button>
 
-        <div className="space-y-2">
-          <h2 className="font-medium text-white">Stops — tap to play</h2>
-          {pois.map((poi, i) => (
-            <motion.button
-              key={poi.poiId}
-              type="button"
-              onClick={() => {
-                setCurrentIndex(i);
-                playPoi(poi);
-              }}
-              className={`w-full flex items-center gap-3 p-4 rounded-xl border text-left transition-colors ${
-                currentIndex === i
-                  ? "border-accent-blue/50 bg-accent-blue/10"
-                  : "border-white/10 bg-white/5 hover:bg-white/10"
-              }`}
-            >
-              <MapPin className="w-5 h-5 text-accent-blue shrink-0" />
-              <div>
-                <p className="font-medium text-white">{poi.name}</p>
-                <p className="text-sm text-white/60 line-clamp-1">
-                  {poi.scripts?.friendly?.slice(0, 60)}…
-                </p>
-              </div>
-            </motion.button>
-          ))}
-        </div>
+        <Link
+          href="/create"
+          className="block text-center py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium hover:bg-white/15"
+        >
+          Create your own tour
+        </Link>
       </main>
     </div>
   );
