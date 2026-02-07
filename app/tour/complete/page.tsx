@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { CompletionSummary } from "@/components/CompletionSummary";
-import { loadTour, updateSession, clearTour } from "@/lib/data/SessionStore";
+import { OdysseyLogo } from "@/components/OdysseyLogo";
+import { loadTour, updateSession } from "@/lib/data/SessionStore";
 
 export default function TourCompletePage() {
-  const [session, setSession] = useState(loadTour());
+  const [session, setSession] = useState<ReturnType<typeof loadTour>>(null);
 
   useEffect(() => {
     const s = loadTour();
@@ -34,13 +35,16 @@ export default function TourCompletePage() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-navy-950/90 backdrop-blur px-4 py-4">
+    <div className="min-h-screen bg-app-bg">
+      <header className="sticky top-0 z-20 border-b border-app-border bg-surface shadow-sm px-4 py-4 safe-bottom">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <Link href="/create" className="p-2 rounded-lg hover:bg-white/10 text-white" aria-label="Back">
+          <Link href="/create" className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary" aria-label="Back to create">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="font-semibold text-xl text-white">Tour Complete</h1>
+          <Link href="/" className="min-h-[44px] flex items-center shrink-0" aria-label="Odyssey Walk home">
+            <OdysseyLogo size="sm" />
+          </Link>
+          <h1 className="text-heading-sm flex-1">Tour Complete</h1>
         </div>
       </header>
 
@@ -48,7 +52,7 @@ export default function TourCompletePage() {
         <CompletionSummary
           session={session}
           onSaveTour={handleSaveTour}
-          onGenerateAnother={() => {}}
+          onGenerateAnother={undefined}
         />
       </main>
     </div>

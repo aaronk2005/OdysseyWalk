@@ -8,7 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-plus-jakarta)", "system-ui", "sans-serif"],
+      },
       colors: {
+        // Legacy (keep for map etc.)
         navy: {
           950: "#0a0e17",
           900: "#0f1629",
@@ -19,10 +23,31 @@ const config: Config = {
           blue: "#3b82f6",
           purple: "#8b5cf6",
         },
+        // New light theme tokens
+        surface: {
+          DEFAULT: "#ffffff",
+          elevated: "#ffffff",
+          muted: "#f8fafc",
+        },
+        app: {
+          bg: "#f1f5f9",
+          border: "#e2e8f0",
+        },
+        ink: {
+          primary: "#0f172a",
+          secondary: "#64748b",
+          tertiary: "#94a3b8",
+        },
+        brand: {
+          primary: "#0d9488",
+          primaryHover: "#0f766e",
+          secondary: "#f97316",
+          secondaryHover: "#ea580c",
+        },
       },
       backgroundImage: {
-        "gradient-glow": "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)",
-        "gradient-hero": "linear-gradient(180deg, rgba(15,22,41,0.95) 0%, rgba(10,14,23,1) 100%)",
+        "gradient-glow": "linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)",
+        "gradient-hero": "linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%)",
       },
       animation: {
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
@@ -39,12 +64,16 @@ const config: Config = {
           "50%": { transform: "scale(1.15)", opacity: "0.9" },
         },
         "ring-listening": {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.4)" },
-          "50%": { boxShadow: "0 0 0 12px rgba(59, 130, 246, 0)" },
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(13, 148, 136, 0.4)" },
+          "50%": { boxShadow: "0 0 0 12px rgba(13, 148, 136, 0)" },
         },
       },
       backdropBlur: {
         xs: "2px",
+      },
+      borderRadius: {
+        card: "1rem",
+        button: "0.75rem",
       },
     },
   },

@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Settings } from "lucide-react";
 import { MapView } from "@/components/MapView";
+import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { BottomSheetPlayer } from "@/components/BottomSheetPlayer";
 import { AskTextModal } from "@/components/AskTextModal";
 import { DemoModeBanner } from "@/components/DemoModeBanner";
@@ -105,8 +106,8 @@ export default function TourActivePage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-navy-950">
-        <div className="w-10 h-10 rounded-full border-2 border-accent-blue border-t-transparent animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="w-10 h-10 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -116,15 +117,18 @@ export default function TourActivePage() {
   const isPaused = audioState === AudioState.PAUSED;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-navy-950">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-navy-950/90 backdrop-blur z-20">
-        <Link href="/create" className="p-2 rounded-lg hover:bg-white/10 text-white" aria-label="Back">
+    <div className="fixed inset-0 flex flex-col bg-app-bg">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-app-border bg-surface shadow-sm z-20">
+        <Link href="/create" className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary" aria-label="Back to create">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="font-semibold text-white truncate flex-1 text-center mx-2">
+        <Link href="/" className="min-h-[44px] flex items-center shrink-0" aria-label="Odyssey Walk home">
+          <OdysseyLogo size="sm" />
+        </Link>
+        <h1 className="text-heading-sm truncate flex-1 text-center mx-2">
           {session.tourPlan.theme} Walk
         </h1>
-        <button type="button" onClick={() => setSettingsOpen(true)} className="p-2 rounded-lg hover:bg-white/10 text-white" aria-label="Settings">
+        <button type="button" onClick={() => setSettingsOpen(true)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary" aria-label="Settings">
           <Settings className="w-5 h-5" />
         </button>
       </header>
@@ -150,12 +154,12 @@ export default function TourActivePage() {
               const poi = session.pois.find((p) => p.poiId === id);
               if (poi) playPoi(poi);
             }}
-            followUser={session.mode === "demo"}
+            followUser={session.mode === "demo" || Boolean(userLocation)}
             className="absolute inset-0 rounded-none"
           />
         ) : (
-          <div className="absolute inset-0 overflow-auto p-4">
-            <p className="text-white/60 text-sm mb-4">Map unavailable. Use the player and list below.</p>
+          <div className="absolute inset-0 overflow-auto p-4 bg-app-bg">
+            <p className="text-caption text-ink-secondary mb-4">Map unavailable. Use the player and list below.</p>
             <div className="space-y-2">
               {session.pois.map((poi) => (
                 <button
@@ -163,15 +167,15 @@ export default function TourActivePage() {
                   type="button"
                   onClick={() => playPoi(poi)}
                   className={cn(
-                    "w-full text-left p-4 rounded-xl border transition-colors",
+                    "w-full text-left p-4 rounded-card border transition-colors",
                     session.visitedPoiIds.includes(poi.poiId)
-                      ? "border-white/10 bg-white/5 text-white/80"
-                      : "border-accent-blue/30 bg-accent-blue/10 text-white"
+                      ? "border-app-border bg-surface-muted text-ink-secondary"
+                      : "border-brand-primary/40 bg-brand-primary/10 text-ink-primary"
                   )}
                 >
                   <span className="font-medium">{poi.name}</span>
                   {session.visitedPoiIds.includes(poi.poiId) && (
-                    <span className="ml-2 text-xs text-emerald-400">Visited</span>
+                    <span className="ml-2 text-xs text-emerald-600 font-medium">Visited</span>
                   )}
                 </button>
               ))}
@@ -181,12 +185,14 @@ export default function TourActivePage() {
       </div>
 
       {!introPlayed ? (
-        <div className="border-t border-white/10 bg-navy-900/95 backdrop-blur p-6 safe-bottom">
-          <p className="text-white/80 mb-4">Your tour is ready. Start to hear the intro and begin navigation.</p>
+        <div className="border-t border-app-border bg-surface p-6 safe-bottom shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+          <p className="text-body text-ink-secondary mb-2">Your tour is ready. Start to hear the intro and begin navigation.</p>
+          <p className="text-caption text-ink-tertiary mb-4">You&apos;ll hear narration at each stop. Hold the mic button to ask questions.</p>
           <button
             type="button"
             onClick={startWalk}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold"
+            className="w-full py-3.5 rounded-button bg-brand-primary hover:bg-brand-primaryHover text-white font-semibold shadow-md min-h-[44px]"
+            aria-label="Start Walk"
           >
             Start Walk
           </button>

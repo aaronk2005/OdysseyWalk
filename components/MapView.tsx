@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import type { LatLng } from "@/lib/types";
 import type { POI } from "@/lib/types";
 import { decodePolyline } from "@/lib/maps/polyline";
@@ -46,27 +46,32 @@ export function MapView({
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<{ lat: number; lng: number }[]>([]);
   const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
-  const points = routePointsProp?.length
-    ? routePointsProp
-    : polylineEncoded
-      ? decodePolyline(polylineEncoded)
-      : [];
-  if (points.length >= 2) pathRef.current = points.map((p) => ({ lat: p.lat, lng: p.lng }));
+  const propsRef = useRef({ center, mapApiKey, onMapClick, userLocation });
+  propsRef.current = { center, mapApiKey, onMapClick, userLocation };
 
-  const initMap = useCallback(async () => {
-    if (!containerRef.current || !mapApiKey) return;
+  const initMapOnce = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const { center: c, mapApiKey: key, onMapClick: onClick, userLocation: loc } = propsRef.current;
+    if (!containerRef.current || !key) return;
+    setMapError(null);
     const { loadGoogleMapsOnce } = await import("@/lib/maps/MapLoader");
     try {
-      await loadGoogleMapsOnce(mapApiKey);
-    } catch {
+      await loadGoogleMapsOnce(key);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load map";
+      setMapError(msg);
       return;
     }
     const g = window.google;
     if (!g?.maps) return;
 
     const map = new g.maps.Map(containerRef.current, {
-      center: { lat: center.lat, lng: center.lng },
+      center: { lat: c.lat, lng: c.lng },
       zoom: 15,
       disableDefaultUI: false,
       zoomControl: true,
@@ -74,15 +79,95 @@ export function MapView({
       streetViewControl: false,
       fullscreenControl: true,
       styles: [
-        { elementType: "geometry", stylers: [{ color: "#0f1629" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#a3ccff" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#5c5c5c" }] },
+        { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#e8e6e1" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#d4d4d4" }] },
+        { featureType: "poi", elementType: "geometry", stylers: [{ color: "#eeeeee" }] },
+        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#d4e8d4" }] },
+        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#e8e6e1" }] },
+        { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#c9c9c9" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#2d2d2d" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 2 }] },
       ],
     });
     mapRef.current = map;
 
-    if (points.length >= 2) {
-      const path = points.map((p) => ({ lat: p.lat, lng: p.lng }));
-      pathRef.current = path;
+    if (loc) {
+      const um = new g.maps.Marker({
+        position: { lat: loc.lat, lng: loc.lng },
+        map,
+        icon: {
+          path: g.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#22c55e",
+          fillOpacity: 1,
+          strokeColor: "#fff",
+          strokeWeight: 2,
+        },
+      });
+      userMarkerRef.current = um;
+    }
+
+    if (onClick) {
+      mapClickListenerRef.current?.remove();
+      mapClickListenerRef.current = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+        const latLng = e.latLng;
+        if (latLng) onClick(latLng.lat(), latLng.lng());
+      });
+    }
+    setMapReady(true);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    setMapReady(false);
+    setMapError(null);
+    const t = setTimeout(() => {
+      initMapOnce();
+    }, 50);
+    return () => {
+      clearTimeout(t);
+      mapClickListenerRef.current?.remove();
+      mapClickListenerRef.current = null;
+      markersRef.current.forEach((m) => m.setMap(null));
+      markersRef.current.clear();
+      userMarkerRef.current?.setMap(null);
+      userMarkerRef.current = null;
+      polylineRef.current?.setMap(null);
+      polylineRef.current = null;
+      mapRef.current = null;
+      setMapReady(false);
+    };
+  }, [mounted, retryCount, initMapOnce]);
+
+  // Sync route polyline and POI markers when map is ready and route/pois change (e.g. after generate on /create)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !window.google?.maps) return;
+
+    const g = window.google;
+    const points = routePointsProp?.length
+      ? routePointsProp
+      : polylineEncoded
+        ? decodePolyline(polylineEncoded)
+        : [];
+    const path = points.length >= 2 ? points.map((p) => ({ lat: p.lat, lng: p.lng })) : [];
+
+    if (polylineRef.current) {
+      polylineRef.current.setMap(null);
+      polylineRef.current = null;
+    }
+    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.clear();
+    pathRef.current = path;
+
+    if (path.length >= 2) {
       const line = new g.maps.Polyline({
         path,
         geodesic: true,
@@ -116,46 +201,7 @@ export function MapView({
       marker.addListener("click", () => onPoiClick?.(poi.poiId));
       markersRef.current.set(poi.poiId, marker);
     });
-
-    if (userLocation) {
-      const um = new g.maps.Marker({
-        position: { lat: userLocation.lat, lng: userLocation.lng },
-        map,
-        icon: {
-          path: g.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: "#22c55e",
-          fillOpacity: 1,
-          strokeColor: "#fff",
-          strokeWeight: 2,
-        },
-      });
-      userMarkerRef.current = um;
-    }
-
-    if (onMapClick) {
-      mapClickListenerRef.current?.remove();
-      mapClickListenerRef.current = map.addListener("click", (e: google.maps.MapMouseEvent) => {
-        const latLng = e.latLng;
-        if (latLng) onMapClick(latLng.lat(), latLng.lng());
-      });
-    }
-  }, [mapApiKey, center.lat, center.lng, onMapClick]);
-
-  useEffect(() => {
-    initMap();
-    return () => {
-      mapClickListenerRef.current?.remove();
-      mapClickListenerRef.current = null;
-      markersRef.current.forEach((m) => m.setMap(null));
-      markersRef.current.clear();
-      userMarkerRef.current?.setMap(null);
-      userMarkerRef.current = null;
-      polylineRef.current?.setMap(null);
-      polylineRef.current = null;
-      mapRef.current = null;
-    };
-  }, [initMap]);
+  }, [mapReady, routePointsProp, polylineEncoded, pois, onPoiClick]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -177,12 +223,35 @@ export function MapView({
   }, [pois, visitedPoiIds, activePoiId]);
 
   useEffect(() => {
-    if (!userLocation || !userMarkerRef.current) return;
-    userMarkerRef.current.setPosition({ lat: userLocation.lat, lng: userLocation.lng });
-    if (followUser && mapRef.current) {
-      mapRef.current.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+    if (mapRef.current && mapReady) {
+      mapRef.current.panTo({ lat: center.lat, lng: center.lng });
     }
-  }, [userLocation?.lat, userLocation?.lng, followUser]);
+  }, [center.lat, center.lng, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !window.google?.maps) return;
+    if (!userLocation) return;
+    const g = window.google;
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setPosition({ lat: userLocation.lat, lng: userLocation.lng });
+    } else {
+      const um = new g.maps.Marker({
+        position: { lat: userLocation.lat, lng: userLocation.lng },
+        map,
+        icon: {
+          path: g.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#22c55e",
+          fillOpacity: 1,
+          strokeColor: "#fff",
+          strokeWeight: 2,
+        },
+      });
+      userMarkerRef.current = um;
+    }
+    if (followUser) map.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+  }, [userLocation?.lat, userLocation?.lng, followUser, mapReady]);
 
   useEffect(() => {
     if (fitBoundsTrigger == null || fitBoundsTrigger === 0) return;
@@ -194,11 +263,38 @@ export function MapView({
     map.fitBounds(bounds, 48);
   }, [fitBoundsTrigger]);
 
+  if (mapError) {
+    return (
+      <div
+        className={cn(
+          "w-full min-h-[200px] rounded-card bg-surface-muted flex flex-col items-center justify-center gap-3 p-6 text-center",
+          className
+        )}
+        role="alert"
+        aria-label="Map failed to load"
+      >
+        <p className="text-body text-ink-secondary">{mapError}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setMapError(null);
+            setRetryCount((c) => c + 1);
+          }}
+          className="px-4 py-2.5 rounded-button bg-brand-primary text-white font-medium hover:bg-brand-primaryHover min-h-[44px]"
+          aria-label="Retry loading map"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
-      className={cn("w-full h-full min-h-[200px] bg-navy-900 rounded-2xl", className)}
+      className={cn("w-full h-full min-h-[200px] bg-surface-muted rounded-card", className)}
       aria-label="Map"
+      aria-busy={!mapReady}
     />
   );
 }

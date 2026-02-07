@@ -21,12 +21,12 @@ export function TourCard({ tour, index = 0 }: TourCardProps) {
       <Link href={`/tour/${tour.tourId}`}>
         <div
           className={cn(
-            "group relative overflow-hidden rounded-2xl border border-white/10",
-            "bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-accent-blue/30",
-            "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent-blue/5"
+            "group relative overflow-hidden rounded-card border border-app-border",
+            "bg-surface hover:border-brand-primary/40 hover:shadow-md",
+            "transition-all duration-300 hover:-translate-y-0.5"
           )}
         >
-          <div className="aspect-[16/10] relative bg-navy-800">
+          <div className="aspect-[16/10] relative bg-surface-muted">
             <img
               src={tour.thumbnailUrl}
               alt=""
@@ -35,8 +35,8 @@ export function TourCard({ tour, index = 0 }: TourCardProps) {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 to-transparent" />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 text-sm text-white/90">
+            <div className="absolute inset-0 bg-gradient-to-t from-ink-primary/80 to-transparent" />
+            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 text-sm text-white">
               <MapPin className="w-4 h-4 shrink-0" />
               <span>{tour.city}</span>
               <Clock className="w-4 h-4 shrink-0 ml-2" />
@@ -44,10 +44,10 @@ export function TourCard({ tour, index = 0 }: TourCardProps) {
             </div>
           </div>
           <div className="p-4">
-            <h3 className="font-semibold text-lg text-white group-hover:text-accent-blue transition-colors">
+            <h3 className="text-heading-sm group-hover:text-brand-primary transition-colors">
               {tour.name}
             </h3>
-            <p className="text-sm text-white/60 mt-1">
+            <p className="text-caption text-ink-secondary mt-1">
               {tour.poiCount} stops
               {tour.tags.length ? ` · ${tour.tags.slice(0, 2).join(", ")}` : ""}
             </p>

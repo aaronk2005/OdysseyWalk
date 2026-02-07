@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Odyssey Walk — Voice-First Audio Tours",
@@ -13,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-navy-950 text-white antialiased">
+    <html lang="en" className={plusJakarta.variable}>
+      <body className="min-h-screen bg-app-bg font-sans text-ink-primary antialiased">
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

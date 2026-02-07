@@ -1,8 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
 import type { Theme, Lang, VoiceStyle } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -50,17 +47,12 @@ export function TourGenerationPanel({
   const { theme, durationMin, lang, voiceStyle } = preferences;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 space-y-6"
-    >
-      <h2 className="font-medium text-white flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-accent-purple" />
+    <div className="rounded-card border border-app-border bg-surface p-6 shadow-sm space-y-6">
+      <h2 className="text-heading-sm">
         Preferences
       </h2>
       <div>
-        <p className="text-sm text-white/70 mb-2">Theme</p>
+        <p className="text-caption font-medium text-ink-secondary mb-2">Theme</p>
         <div className="flex flex-wrap gap-2">
           {THEMES.map((t) => (
             <button
@@ -68,10 +60,10 @@ export function TourGenerationPanel({
               type="button"
               onClick={() => onPreferencesChange({ ...preferences, theme: t.value })}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-sm transition-colors",
+                "px-3 py-2 rounded-button text-sm font-medium transition-all min-h-[44px] flex items-center",
                 theme === t.value
-                  ? "bg-accent-purple/30 text-white border border-accent-purple/50"
-                  : "bg-white/10 text-white/80 hover:bg-white/15"
+                  ? "bg-brand-primary text-white border border-brand-primary"
+                  : "bg-surface-muted text-ink-secondary border border-app-border hover:bg-app-bg"
               )}
             >
               {t.label}
@@ -80,21 +72,21 @@ export function TourGenerationPanel({
         </div>
       </div>
       <div>
-        <p className="text-sm text-white/70 mb-2">Duration: {durationMin} min</p>
+        <p className="text-caption font-medium text-ink-secondary mb-2">Duration: {durationMin} min</p>
         <input
           type="range"
           min={15}
-          max={60}
+          max={90}
           step={5}
           value={durationMin}
           onChange={(e) =>
             onPreferencesChange({ ...preferences, durationMin: Number(e.target.value) })
           }
-          className="w-full h-2 rounded-full bg-white/10 accent-accent-blue"
+          className="w-full h-2.5 rounded-full bg-app-border accent-brand-primary focus:outline-none"
         />
       </div>
       <div>
-        <p className="text-sm text-white/70 mb-2">Language</p>
+        <p className="text-caption font-medium text-ink-secondary mb-2">Language</p>
         <div className="flex flex-wrap gap-2">
           {LANGS.map((l) => (
             <button
@@ -102,8 +94,8 @@ export function TourGenerationPanel({
               type="button"
               onClick={() => onPreferencesChange({ ...preferences, lang: l.value })}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-sm",
-                lang === l.value ? "bg-accent-blue/30 text-white" : "bg-white/10 text-white/80"
+                "px-3 py-2 rounded-button text-sm font-medium min-h-[44px] flex items-center transition-all",
+                lang === l.value ? "bg-brand-primary text-white border border-brand-primary" : "bg-surface-muted text-ink-secondary border border-app-border hover:bg-app-bg"
               )}
             >
               {l.label}
@@ -112,7 +104,7 @@ export function TourGenerationPanel({
         </div>
       </div>
       <div>
-        <p className="text-sm text-white/70 mb-2">Voice style</p>
+        <p className="text-caption font-medium text-ink-secondary mb-2">Voice style</p>
         <div className="flex flex-wrap gap-2">
           {VOICES.map((v) => (
             <button
@@ -120,8 +112,8 @@ export function TourGenerationPanel({
               type="button"
               onClick={() => onPreferencesChange({ ...preferences, voiceStyle: v.value })}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-sm",
-                voiceStyle === v.value ? "bg-accent-blue/30 text-white" : "bg-white/10 text-white/80"
+                "px-3 py-2 rounded-button text-sm font-medium min-h-[44px] flex items-center transition-all",
+                voiceStyle === v.value ? "bg-brand-primary text-white border border-brand-primary" : "bg-surface-muted text-ink-secondary border border-app-border hover:bg-app-bg"
               )}
             >
               {v.label}
@@ -134,20 +126,21 @@ export function TourGenerationPanel({
         onClick={onGenerate}
         disabled={disabled || generating}
         className={cn(
-          "w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium",
-          "bg-gradient-to-r from-accent-blue to-accent-purple text-white",
-          "disabled:opacity-50 disabled:cursor-not-allowed"
+          "w-full flex items-center justify-center gap-2 py-3.5 rounded-button font-semibold min-h-[48px]",
+          "bg-brand-primary text-white shadow-md hover:bg-brand-primaryHover",
+          "active:scale-[0.99] transition-transform",
+          "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         )}
       >
         {generating ? (
           <>
-            <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+            <span className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             Generating…
           </>
         ) : (
           "Generate My Tour"
         )}
       </button>
-    </motion.div>
+    </div>
   );
 }

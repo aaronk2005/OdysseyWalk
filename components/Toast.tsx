@@ -35,10 +35,10 @@ export function Toast({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           className={cn(
-            "fixed left-4 right-4 bottom-24 z-50 mx-auto max-w-md rounded-xl px-4 py-3 shadow-lg backdrop-blur",
-            type === "success" && "bg-emerald-500/20 border border-emerald-400/30 text-emerald-200",
-            type === "error" && "bg-red-500/20 border border-red-400/30 text-red-200",
-            type === "info" && "bg-white/10 border border-white/20 text-white"
+            "fixed left-4 right-4 bottom-24 z-50 mx-auto max-w-md rounded-card px-4 py-3 shadow-lg border",
+            type === "success" && "bg-emerald-50 border-emerald-200 text-emerald-800",
+            type === "error" && "bg-red-50 border-red-200 text-red-800",
+            type === "info" && "bg-surface border-app-border text-ink-primary"
           )}
         >
           {message}

@@ -19,8 +19,14 @@ export function CompletionSummary({
 }: CompletionSummaryProps) {
   if (!session) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-white/60">
-        No tour data. Start a tour from Create.
+      <div className="rounded-card border border-app-border bg-surface p-8 text-center space-y-4">
+        <p className="text-body text-ink-secondary">No tour data. Start a new tour to see your summary here.</p>
+        <Link
+          href="/create"
+          className="inline-flex items-center justify-center gap-2 py-3 px-6 rounded-button bg-brand-primary text-white font-medium hover:bg-brand-primaryHover min-h-[44px]"
+        >
+          Start a new tour
+        </Link>
       </div>
     );
   }
@@ -34,43 +40,43 @@ export function CompletionSummary({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 md:p-8"
+      className="rounded-card border border-app-border bg-surface p-6 md:p-8 shadow-sm"
     >
       <div className="flex items-center gap-3 mb-6">
-        <CheckCircle2 className="w-10 h-10 text-emerald-400 shrink-0" />
+        <CheckCircle2 className="w-10 h-10 text-emerald-500 shrink-0" />
         <div>
-          <h1 className="text-xl font-semibold text-white">Tour completed</h1>
-          <p className="text-white/60 text-sm">
+          <h1 className="text-heading-sm">Tour completed</h1>
+          <p className="text-caption text-ink-secondary">
             {tourPlan.theme} walk · {visited.length} of {pois.length} stops
           </p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl bg-white/5 p-4">
-          <p className="text-xs text-white/50 uppercase tracking-wider">Stops visited</p>
-          <p className="text-2xl font-semibold text-white">{visited.length}</p>
+        <div className="rounded-card bg-surface-muted p-4 border border-app-border">
+          <p className="text-hint text-ink-tertiary uppercase tracking-wider">Stops visited</p>
+          <p className="text-2xl font-semibold text-ink-primary">{visited.length}</p>
         </div>
-        <div className="rounded-xl bg-white/5 p-4">
-          <p className="text-xs text-white/50 uppercase tracking-wider">Approx. time</p>
-          <p className="text-2xl font-semibold text-white">
+        <div className="rounded-card bg-surface-muted p-4 border border-app-border">
+          <p className="text-hint text-ink-tertiary uppercase tracking-wider">Approx. time</p>
+          <p className="text-2xl font-semibold text-ink-primary">
             {durationMin > 0 ? `${durationMin} min` : "—"}
           </p>
         </div>
         {tourPlan.distanceMeters != null && tourPlan.distanceMeters > 0 && (
-          <div className="rounded-xl bg-white/5 p-4 col-span-2">
-            <p className="text-xs text-white/50 uppercase tracking-wider">Distance</p>
-            <p className="text-xl font-semibold text-white">
+          <div className="rounded-card bg-surface-muted p-4 col-span-2 border border-app-border">
+            <p className="text-hint text-ink-tertiary uppercase tracking-wider">Distance</p>
+            <p className="text-xl font-semibold text-ink-primary">
               {(tourPlan.distanceMeters / 1000).toFixed(1)} km
             </p>
           </div>
         )}
       </div>
       <div className="mb-6">
-        <p className="text-sm font-medium text-white/80 mb-2">Visited stops</p>
+        <p className="text-caption font-medium text-ink-secondary mb-2">Visited stops</p>
         <ul className="space-y-1.5">
           {visited.map((poi) => (
-            <li key={poi.poiId} className="flex items-center gap-2 text-sm text-white/80">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <li key={poi.poiId} className="flex items-center gap-2 text-body text-ink-secondary">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               {poi.name}
             </li>
           ))}
@@ -81,7 +87,7 @@ export function CompletionSummary({
           <button
             type="button"
             onClick={onSaveTour}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium hover:bg-white/15"
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-button bg-surface border border-app-border text-ink-primary font-medium hover:bg-surface-muted"
           >
             <Save className="w-4 h-4" />
             Save Tour
@@ -91,8 +97,7 @@ export function CompletionSummary({
           <Link
             href="/create"
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium",
-              "bg-gradient-to-r from-accent-blue to-accent-purple text-white"
+              "flex-1 flex items-center justify-center gap-2 py-3 rounded-button font-medium bg-brand-primary text-white hover:bg-brand-primaryHover"
             )}
           >
             <Sparkles className="w-4 h-4" />
@@ -102,7 +107,7 @@ export function CompletionSummary({
         {!onGenerateAnother && (
           <Link
             href="/create"
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-medium"
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-button bg-brand-primary text-white font-medium hover:bg-brand-primaryHover"
           >
             Generate Another
           </Link>

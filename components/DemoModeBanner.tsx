@@ -21,18 +21,18 @@ export function DemoModeBanner({
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex flex-wrap items-center gap-2 px-3 py-2 rounded-xl bg-accent-purple/15 border border-accent-purple/30",
+        "flex flex-wrap items-center gap-2 px-3 py-2 rounded-card bg-brand-secondary/10 border border-brand-secondary/30",
         className
       )}
     >
-      <span className="text-xs font-medium text-white/90">
+      <span className="text-xs font-medium text-ink-primary">
         Demo mode: simulated movement
       </span>
       {onJumpNext && (
         <button
           type="button"
           onClick={onJumpNext}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-button bg-surface border border-app-border text-ink-primary text-xs font-medium hover:bg-surface-muted"
         >
           <Play className="w-3 h-3" />
           Next stop
@@ -41,7 +41,7 @@ export function DemoModeBanner({
       {onRunScriptedDemo && (
         <Link
           href="/demo"
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-button bg-surface border border-app-border text-ink-primary text-xs font-medium hover:bg-surface-muted"
         >
           <MapPin className="w-3 h-3" />
           Run 90s Demo

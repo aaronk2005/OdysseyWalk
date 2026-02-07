@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { TourCard } from "@/components/TourCard";
+import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { listTours } from "@/lib/data/TourRepository";
 import type { TourSummary } from "@/lib/types";
 
@@ -21,17 +22,20 @@ export default function ToursPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-navy-950">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-navy-950/90 backdrop-blur px-4 py-4">
+    <div className="min-h-screen bg-app-bg">
+      <header className="sticky top-0 z-20 border-b border-app-border bg-surface shadow-sm px-4 py-4 safe-bottom">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Link
             href="/"
-            className="p-2 rounded-lg hover:bg-white/10 text-white"
-            aria-label="Back"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary"
+            aria-label="Back to home"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="font-semibold text-xl text-white">Tours</h1>
+          <Link href="/" className="min-h-[44px] flex items-center shrink-0" aria-label="Odyssey Walk home">
+            <OdysseyLogo size="sm" />
+          </Link>
+          <h1 className="text-heading-sm flex-1">Tours</h1>
         </div>
       </header>
 
@@ -41,21 +45,33 @@ export default function ToursPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-48 rounded-2xl bg-white/5 animate-pulse"
+                className="h-48 rounded-card bg-surface-muted animate-pulse border border-app-border"
               />
             ))}
           </div>
         )}
         {error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
+          <div className="rounded-card border border-red-200 bg-red-50 p-4 text-red-800">
             <p>{error}</p>
-            <Link href="/demo" className="text-sm underline mt-2 inline-block">
+            <Link href="/demo" className="text-sm text-brand-primary font-medium mt-2 inline-block hover:underline">
               Try Demo instead
             </Link>
           </div>
         )}
         {!loading && !error && tours.length === 0 && (
-          <p className="text-white/60">No tours yet. Try the sample tour or create one.</p>
+          <div className="rounded-card border border-app-border bg-surface p-8 text-center space-y-4">
+            <p className="text-body text-ink-secondary">No saved tours yet. Create a tour and save it from the completion screen to see it here.</p>
+            <Link
+              href="/create"
+              className="inline-flex items-center justify-center gap-2 py-3 px-6 rounded-button bg-brand-primary text-white font-medium hover:bg-brand-primaryHover min-h-[44px]"
+            >
+              <Sparkles className="w-5 h-5" />
+              Create your first tour
+            </Link>
+            <p className="text-caption text-ink-tertiary">
+              Or <Link href="/demo" className="text-brand-primary font-medium hover:underline">try the demo</Link> first.
+            </p>
+          </div>
         )}
         {!loading && !error && tours.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2">

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Timer } from "lucide-react";
+import { ArrowLeft, Timer } from "lucide-react";
+import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { saveTour } from "@/lib/data/SessionStore";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
 import type { SessionState, GeneratedTourResponse } from "@/lib/types";
@@ -105,26 +106,30 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-navy-950/90 backdrop-blur px-4 py-4">
+    <div className="min-h-screen bg-app-bg">
+      <header className="sticky top-0 z-20 border-b border-app-border bg-surface shadow-sm px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <Link href="/" className="p-2 rounded-lg hover:bg-white/10 text-white" aria-label="Back">
+          <Link href="/" className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary" aria-label="Back to home">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="font-semibold text-xl text-white">Demo</h1>
+          <Link href="/" className="min-h-[44px] flex items-center shrink-0" aria-label="Odyssey Walk home">
+            <OdysseyLogo size="sm" />
+          </Link>
+          <h1 className="text-heading-sm flex-1">Demo</h1>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
-        <p className="text-white/70">
-          One-click scripted demo. No mic or location required. Runs: Stop 1 narration → sample Q&A → Stop 2 narration.
+        <p className="text-body text-ink-secondary">
+          This runs a short scripted tour so you can see how narration and Q&A work. No mic or location required. One click: Stop 1 → sample question → Stop 2.
         </p>
 
         <button
           type="button"
           onClick={run90SecondDemo}
           disabled={running}
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-button bg-brand-primary hover:bg-brand-primaryHover text-white font-semibold shadow-md disabled:opacity-50 min-h-[44px]"
+          aria-label={running ? "Running demo" : "Run 90 second demo"}
         >
           <Timer className="w-5 h-5" />
           {running ? step || "Running…" : "Run 90s Demo"}
@@ -132,7 +137,7 @@ export default function DemoPage() {
 
         <Link
           href="/create"
-          className="block text-center py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium hover:bg-white/15"
+          className="block text-center py-3 rounded-button bg-surface border border-app-border text-ink-primary font-medium hover:bg-surface-muted"
         >
           Create your own tour
         </Link>

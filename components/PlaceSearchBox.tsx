@@ -68,7 +68,7 @@ export function PlaceSearchBox({
 
   return (
     <div className={cn("relative", className)}>
-      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
+      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary pointer-events-none" />
       <input
         ref={inputRef}
         type="text"
@@ -76,8 +76,10 @@ export function PlaceSearchBox({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          "w-full pl-10 pr-4 py-3 rounded-xl bg-navy-800/80 border border-white/10",
-          "text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
+          "w-full pl-10 pr-4 py-3 rounded-button bg-surface border border-app-border",
+          "text-ink-primary placeholder-ink-tertiary",
+          "focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:border-brand-primary",
+          "transition-shadow"
         )}
       />
     </div>
