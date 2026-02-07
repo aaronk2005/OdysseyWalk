@@ -15,6 +15,8 @@ export interface MapViewProps {
   visitedPoiIds: string[];
   activePoiId: string | null;
   onPoiClick?: (poiId: string) => void;
+  /** Optional: when user clicks the map (e.g. create page to set start) */
+  onMapClick?: (lat: number, lng: number) => void;
   followUser?: boolean;
   className?: string;
   mapApiKey: string;
@@ -31,6 +33,7 @@ export function MapView({
   visitedPoiIds,
   activePoiId,
   onPoiClick,
+  onMapClick,
   followUser = true,
   className,
   mapApiKey,
@@ -42,6 +45,7 @@ export function MapView({
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<{ lat: number; lng: number }[]>([]);
+  const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
 
   const points = routePointsProp?.length
     ? routePointsProp
@@ -128,11 +132,21 @@ export function MapView({
       });
       userMarkerRef.current = um;
     }
-  }, [mapApiKey, center.lat, center.lng]);
+
+    if (onMapClick) {
+      mapClickListenerRef.current?.remove();
+      mapClickListenerRef.current = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+        const latLng = e.latLng;
+        if (latLng) onMapClick(latLng.lat(), latLng.lng());
+      });
+    }
+  }, [mapApiKey, center.lat, center.lng, onMapClick]);
 
   useEffect(() => {
     initMap();
     return () => {
+      mapClickListenerRef.current?.remove();
+      mapClickListenerRef.current = null;
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current.clear();
       userMarkerRef.current?.setMap(null);

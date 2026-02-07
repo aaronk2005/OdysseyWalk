@@ -51,7 +51,11 @@ export function BottomSheetPlayer({
   onFitBounds,
 }: BottomSheetPlayerProps) {
   const [expanded, setExpanded] = useState(false);
-  const isPlaying = audioState === AudioState.NARRATING || audioState === AudioState.ANSWERING;
+  const isPlaying =
+    audioState === AudioState.NARRATING ||
+    audioState === AudioState.ANSWERING ||
+    audioState === AudioState.PLAYING_INTRO ||
+    audioState === AudioState.PLAYING_OUTRO;
   const isPaused = audioState === AudioState.PAUSED;
   const showTextFallback = Boolean(narrationTextFallback);
 
@@ -208,10 +212,11 @@ export function BottomSheetPlayer({
                 <div className="px-4 pb-6 text-sm text-white/80">
                   <p className="font-medium text-white mb-1">{currentPoi.name}</p>
                   <p>
-                    {currentPoi.scripts?.friendly ||
-                      currentPoi.scripts?.historian ||
-                      currentPoi.scripts?.funny ||
-                      "No script for this stop."}
+                    {"script" in currentPoi && typeof currentPoi.script === "string"
+                      ? currentPoi.script
+                      : (currentPoi as { scripts?: Record<string, string> }).scripts?.friendly ||
+                        (currentPoi as { scripts?: Record<string, string> }).scripts?.historian ||
+                        "No script for this stop."}
                   </p>
                 </div>
               )}

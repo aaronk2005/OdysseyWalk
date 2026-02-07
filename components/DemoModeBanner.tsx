@@ -44,7 +44,7 @@ export function DemoModeBanner({
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium"
         >
           <MapPin className="w-3 h-3" />
-          Run scripted demo
+          Run 90s Demo
         </Link>
       )}
     </motion.div>

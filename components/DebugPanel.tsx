@@ -6,6 +6,12 @@ import { Bug, MapPin } from "lucide-react";
 import type { POI } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 
+export interface ApiStatus {
+  mapsKeyPresent: boolean;
+  openRouterConfigured: boolean;
+  gradiumConfigured: boolean;
+}
+
 interface DebugPanelProps {
   pois: POI[];
   visitedPoiIds: string[];
@@ -16,6 +22,8 @@ interface DebugPanelProps {
   userLng?: number;
   audioState?: string;
   audioStateLog?: string[];
+  apiStatus?: ApiStatus | null;
+  lastError?: string | null;
 }
 
 export function DebugPanel({
@@ -28,6 +36,8 @@ export function DebugPanel({
   userLng,
   audioState,
   audioStateLog,
+  apiStatus,
+  lastError,
 }: DebugPanelProps) {
   const [open, setOpen] = useState(false);
 
@@ -47,9 +57,19 @@ export function DebugPanel({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="absolute bottom-full left-0 mb-2 w-64 rounded-xl border border-white/10 bg-navy-900/95 backdrop-blur p-3 shadow-xl"
+            className="absolute bottom-full left-0 mb-2 w-72 max-h-[80vh] overflow-auto rounded-xl border border-white/10 bg-navy-900/95 backdrop-blur p-3 shadow-xl"
           >
             <p className="text-xs font-medium text-white/70 mb-2">Debug</p>
+            {apiStatus != null && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.mapsKeyPresent ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300")}>Maps</span>
+                <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.openRouterConfigured ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300")}>OpenRouter</span>
+                <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.gradiumConfigured ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300")}>Gradium</span>
+              </div>
+            )}
+            {lastError && (
+              <p className="text-xs text-red-300/90 mb-2 truncate max-w-full" title={lastError}>{lastError}</p>
+            )}
             {userLat != null && userLng != null && (
               <p className="text-xs text-white/50 mb-2">
                 You: {userLat.toFixed(5)}, {userLng.toFixed(5)}
