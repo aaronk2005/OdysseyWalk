@@ -17,6 +17,7 @@ import { DebugPanel, type ApiStatus } from "@/components/DebugPanel";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { useToast } from "@/components/ToastProvider";
 import { useActiveTour } from "@/hooks/useActiveTour";
+import { useVoiceNext } from "@/hooks/useVoiceNext";
 import { getClientConfig } from "@/lib/config";
 import { startRecording, stopRecording, runVoiceQaLoop } from "@/lib/voice/VoiceController";
 import { loadTour, updateSession } from "@/lib/data/SessionStore";
@@ -53,6 +54,14 @@ export default function TourActivePage() {
     currentPoi,
     nextPoi,
   } = useActiveTour();
+
+  // Voice next feature for hands-free navigation
+  const {
+    startVoiceNext,
+    stopVoiceNext,
+    isVoiceNextRecording,
+    voiceNextError,
+  } = useVoiceNext(jumpNext);
 
   // Trigger map fit to route when pre-walk screen is shown (map zooms to route)
   useEffect(() => {
