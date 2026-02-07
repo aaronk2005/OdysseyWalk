@@ -5,6 +5,7 @@ import type { LatLng } from "@/lib/types";
 import type { POI } from "@/lib/types";
 import { decodePolyline } from "@/lib/maps/polyline";
 import { cn } from "@/lib/utils/cn";
+import { MapSkeleton } from "./MapSkeleton";
 
 export interface MapViewProps {
   center: LatLng;
@@ -22,6 +23,10 @@ export interface MapViewProps {
   mapApiKey: string;
   /** When this value changes, map will fit bounds to route. */
   fitBoundsTrigger?: number;
+  /** Navigation mode: thick high-contrast route, glowing active stop, faded visited. */
+  navigationMode?: boolean;
+  /** Show skeleton loader before map is ready */
+  showSkeleton?: boolean;
 }
 
 export function MapView({
@@ -38,6 +43,8 @@ export function MapView({
   className,
   mapApiKey,
   fitBoundsTrigger,
+  navigationMode = false,
+  showSkeleton = false,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -171,9 +178,9 @@ export function MapView({
       const line = new g.maps.Polyline({
         path,
         geodesic: true,
-        strokeColor: "#3b82f6",
-        strokeOpacity: 0.8,
-        strokeWeight: 4,
+        strokeColor: navigationMode ? "#0d9488" : "#3b82f6",
+        strokeOpacity: navigationMode ? 0.95 : 0.8,
+        strokeWeight: navigationMode ? 6 : 4,
       });
       line.setMap(map);
       polylineRef.current = line;
@@ -191,17 +198,27 @@ export function MapView({
         title: poi.name,
         icon: {
           path: g.maps.SymbolPath.CIRCLE,
-          scale: isActive ? 14 : 10,
-          fillColor: isActive ? "#8b5cf6" : isVisited ? "#64748b" : "#3b82f6",
-          fillOpacity: 1,
+          scale: navigationMode ? (isActive ? 16 : isVisited ? 8 : 12) : isActive ? 14 : 10,
+          fillColor: navigationMode
+            ? isActive
+              ? "#0d9488"
+              : isVisited
+                ? "#94a3b8"
+                : "#0d9488"
+            : isActive
+              ? "#8b5cf6"
+              : isVisited
+                ? "#64748b"
+                : "#3b82f6",
+          fillOpacity: navigationMode && isVisited && !isActive ? 0.6 : 1,
           strokeColor: "#fff",
-          strokeWeight: 2,
+          strokeWeight: navigationMode && isActive ? 3 : 2,
         },
       });
       marker.addListener("click", () => onPoiClick?.(poi.poiId));
       markersRef.current.set(poi.poiId, marker);
     });
-  }, [mapReady, routePointsProp, polylineEncoded, pois, onPoiClick]);
+  }, [mapReady, routePointsProp, polylineEncoded, pois, onPoiClick, navigationMode]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -213,14 +230,24 @@ export function MapView({
       const isActive = activePoiId === poi.poiId;
       m.setIcon({
         path: window.google.maps.SymbolPath.CIRCLE,
-        scale: isActive ? 14 : 10,
-        fillColor: isActive ? "#8b5cf6" : isVisited ? "#64748b" : "#3b82f6",
-        fillOpacity: 1,
+        scale: navigationMode ? (isActive ? 16 : isVisited ? 8 : 12) : isActive ? 14 : 10,
+        fillColor: navigationMode
+          ? isActive
+            ? "#0d9488"
+            : isVisited
+              ? "#94a3b8"
+              : "#0d9488"
+          : isActive
+            ? "#8b5cf6"
+            : isVisited
+              ? "#64748b"
+              : "#3b82f6",
+        fillOpacity: navigationMode && isVisited && !isActive ? 0.6 : 1,
         strokeColor: "#fff",
-        strokeWeight: 2,
+        strokeWeight: navigationMode && isActive ? 3 : 2,
       });
     });
-  }, [pois, visitedPoiIds, activePoiId]);
+  }, [pois, visitedPoiIds, activePoiId, navigationMode]);
 
   useEffect(() => {
     if (mapRef.current && mapReady) {

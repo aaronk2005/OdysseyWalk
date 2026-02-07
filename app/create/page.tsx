@@ -10,6 +10,7 @@ import { TourGenerationPanel, type TourPreferences } from "@/components/TourGene
 import { MapView } from "@/components/MapView";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
+import { GeneratingSteps } from "@/components/GeneratingSteps";
 import { useToast } from "@/components/ToastProvider";
 import { saveTour } from "@/lib/data/SessionStore";
 import type { GeneratedTourResponse, Theme } from "@/lib/types";
@@ -293,6 +294,19 @@ export default function CreateTourPage() {
             disabled={generating}
           />
         </div>
+
+        <AnimatePresence>
+          {generating && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="rounded-card border border-app-border bg-surface p-6"
+            >
+              <GeneratingSteps />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {error && (

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, Play, Pause, SkipForward, RotateCcw, Mic } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Mic, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { POI } from "@/lib/types";
 import { AudioState } from "@/lib/types";
@@ -65,53 +65,40 @@ export function BottomSheetPlayer({
       initial={false}
       animate={{ y: 0 }}
     >
-      <div
-        className={cn(
-          "rounded-t-3xl border-t border-app-border shadow-2xl",
-          "bg-surface"
-        )}
-      >
+      <div className="rounded-t-2xl border-t border-app-border bg-surface shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+        {/* Drag handle */}
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
-          className="w-full py-3 min-h-[44px] flex justify-center items-center touch-manipulation"
+          className="w-full py-2.5 flex flex-col justify-center items-center gap-1 touch-manipulation"
           aria-label={expanded ? "Collapse" : "Expand"}
         >
-          <ChevronUp
-            className={cn("w-6 h-6 text-ink-tertiary transition-transform", expanded && "rotate-180")}
-          />
+          <span className="w-10 h-1 rounded-full bg-ink-tertiary/40" />
+          <ChevronDown className={cn("w-4 h-4 text-ink-tertiary transition-transform", expanded && "rotate-180")} />
         </button>
 
-        <div className="px-4 pb-6 safe-bottom">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-heading-sm truncate">{tourName}</h2>
+        <div className="px-4 pb-4 pt-0 safe-bottom max-w-lg mx-auto">
+          {/* Tour name + demo */}
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-sm font-semibold text-ink-primary truncate flex-1">{tourName}</h2>
             {isDemoMode && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-brand-secondary/15 text-brand-secondary font-medium">
+              <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-ink-tertiary/15 text-ink-tertiary font-medium shrink-0">
                 Demo
               </span>
             )}
           </div>
-          <p className="text-body text-ink-secondary">
-            {currentPoi ? currentPoi.name : "Select a stop or walk to start"}
+
+          {/* Current stop + next/progress */}
+          <p className="text-base font-medium text-ink-primary truncate">
+            {currentPoi ? currentPoi.name : "Select a stop or tap Play to start"}
           </p>
-          {nextPoiName && (
-            <p className="text-hint text-ink-tertiary mt-1">Next: {nextPoiName}</p>
-          )}
-          {showTextFallback && narrationTextFallback && (
-            <div className="mt-2 p-3 rounded-card bg-surface-muted border border-app-border">
-              <p className="text-caption text-ink-secondary line-clamp-2">{narrationTextFallback}</p>
-              {onTryAudioAgain && (
-                <button
-                  type="button"
-                  onClick={onTryAudioAgain}
-                  className="mt-1.5 text-xs text-brand-primary font-medium hover:underline"
-                >
-                  Try audio again
-                </button>
-              )}
-            </div>
-          )}
-          <div className="h-1.5 rounded-full bg-app-border mt-2 overflow-hidden">
+          <p className="text-xs text-ink-tertiary mt-0.5">
+            {nextPoiName ? <>Next: {nextPoiName} · </> : null}
+            {visitedCount}/{totalCount} stops
+          </p>
+
+          {/* Progress bar */}
+          <div className="h-1 rounded-full bg-app-border mt-2 overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-brand-primary"
               initial={false}
@@ -119,39 +106,45 @@ export function BottomSheetPlayer({
               transition={{ duration: 0.3 }}
             />
           </div>
-          <p className="text-hint text-ink-tertiary mt-1">
-            {visitedCount} / {totalCount} stops
-          </p>
 
-          <div className="flex items-center gap-3 mt-4">
+          {showTextFallback && narrationTextFallback && (
+            <div className="mt-2 p-3 rounded-xl bg-surface-muted border border-app-border">
+              <p className="text-caption text-ink-secondary line-clamp-2">{narrationTextFallback}</p>
+              {onTryAudioAgain && (
+                <button type="button" onClick={onTryAudioAgain} className="mt-1.5 text-xs text-brand-primary font-medium hover:underline">
+                  Try audio again
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Single control row: Play + Replay + Skip + Mic — centered as a group */}
+          <div className="flex items-center justify-center gap-2 mt-4">
             <button
               type="button"
               onClick={isPaused ? onResume : isPlaying ? onPause : onPlay}
-              className="flex-1 flex items-center justify-center gap-2 py-3 min-h-[44px] rounded-button bg-brand-primary hover:bg-brand-primaryHover text-white font-medium border border-brand-primary transition-colors"
+              className="flex-1 min-w-0 flex items-center justify-center gap-2 py-3 min-h-[44px] rounded-xl bg-brand-primary hover:bg-brand-primaryHover text-white font-semibold text-sm transition-colors active:scale-[0.98]"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              <span>{isPlaying ? "Pause" : "Play"}</span>
-            </button>
-            <button
-              type="button"
-              onClick={onSkipNext}
-              className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button bg-surface-muted hover:bg-app-bg text-ink-primary border border-app-border transition-colors"
-              aria-label="Skip to next stop"
-            >
-              <SkipForward className="w-5 h-5" />
+              {isPlaying ? <Pause className="w-5 h-5 shrink-0" /> : <Play className="w-5 h-5 shrink-0" />}
+              <span className="truncate">{isPlaying ? "Pause" : "Play"}</span>
             </button>
             <button
               type="button"
               onClick={onReplay}
-              className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button bg-surface-muted hover:bg-app-bg text-ink-primary border border-app-border transition-colors"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-surface-muted hover:bg-app-bg text-ink-secondary transition-colors shrink-0"
               aria-label="Replay current stop"
             >
               <RotateCcw className="w-5 h-5" />
             </button>
-          </div>
-
-          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={onSkipNext}
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-surface-muted hover:bg-app-bg text-ink-secondary transition-colors shrink-0"
+              aria-label="Skip to next stop"
+            >
+              <SkipForward className="w-5 h-5" />
+            </button>
             <button
               type="button"
               onMouseDown={onAskStart}
@@ -161,31 +154,34 @@ export function BottomSheetPlayer({
               onTouchEnd={onAskStop}
               onTouchCancel={onAskStop}
               className={cn(
-                "relative w-14 h-14 min-w-[56px] min-h-[56px] rounded-full flex items-center justify-center transition-all",
-                askState === "listening" && "animate-ring-listening bg-brand-primary/30",
-                askState === "thinking" && "bg-amber-200",
-                askState === "speaking" && "bg-emerald-200",
+                "p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all shrink-0",
+                askState === "listening" && "animate-ring-listening bg-brand-primary/30 text-white",
+                askState === "thinking" && "bg-amber-100 text-amber-800",
+                askState === "speaking" && "bg-emerald-100 text-emerald-800",
                 (askState === "idle" || !isAsking) && "bg-brand-primary hover:bg-brand-primaryHover text-white"
               )}
               aria-label="Hold to ask"
             >
-              <Mic className="w-6 h-6" />
+              <Mic className="w-5 h-5" />
             </button>
           </div>
-          <AnimatePresence>
-            {isAsking && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center text-caption text-ink-secondary mt-2"
-              >
-                {askState === "listening" && "Listening…"}
-                {askState === "thinking" && "Thinking…"}
-                {askState === "speaking" && "Speaking…"}
-              </motion.p>
-            )}
-          </AnimatePresence>
+
+          {/* Single hint line — centered under the control row */}
+          <p className="text-center text-[11px] text-ink-tertiary mt-2 min-h-[14px]">
+            <AnimatePresence mode="wait">
+              {isAsking ? (
+                <motion.span key="state" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {askState === "listening" && "Listening…"}
+                  {askState === "thinking" && "Thinking…"}
+                  {askState === "speaking" && "Speaking…"}
+                </motion.span>
+              ) : (
+                <motion.span key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  Hold mic to ask
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </p>
         </div>
 
         <AnimatePresence>
@@ -195,31 +191,31 @@ export function BottomSheetPlayer({
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="overflow-hidden border-t border-app-border pt-4"
+              className="overflow-hidden border-t border-app-border"
             >
-              {onFitBounds && (
-                <div className="px-4 pb-2">
+              <div className="px-4 pt-3 pb-5 max-w-lg mx-auto">
+                {onFitBounds && (
                   <button
                     type="button"
                     onClick={onFitBounds}
-                    className="text-xs text-brand-primary font-medium hover:underline"
+                    className="text-xs text-brand-primary font-medium hover:underline mb-3"
                   >
-                    Fit route bounds
+                    Fit route on map
                   </button>
-                </div>
-              )}
-              {currentPoi && (
-                <div className="px-4 pb-6 text-body text-ink-secondary">
-                  <p className="font-semibold text-ink-primary mb-1">{currentPoi.name}</p>
-                  <p>
-                    {"script" in currentPoi && typeof currentPoi.script === "string"
-                      ? currentPoi.script
-                      : (currentPoi as { scripts?: Record<string, string> }).scripts?.friendly ||
-                        (currentPoi as { scripts?: Record<string, string> }).scripts?.historian ||
-                        "No script for this stop."}
-                  </p>
-                </div>
-              )}
+                )}
+                {currentPoi && (
+                  <div className="text-body text-ink-secondary">
+                    <p className="font-semibold text-ink-primary mb-1">{currentPoi.name}</p>
+                    <p className="text-sm leading-relaxed">
+                      {"script" in currentPoi && typeof currentPoi.script === "string"
+                        ? currentPoi.script
+                        : (currentPoi as { scripts?: Record<string, string> }).scripts?.friendly ||
+                          (currentPoi as { scripts?: Record<string, string> }).scripts?.historian ||
+                          "No script for this stop."}
+                    </p>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

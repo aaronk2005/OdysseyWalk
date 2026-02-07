@@ -2,10 +2,14 @@
 
 import { useCallback, useState, useEffect } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Settings } from "lucide-react";
 import { MapView } from "@/components/MapView";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
-import { BottomSheetPlayer } from "@/components/BottomSheetPlayer";
+import { PreWalkBriefingSheet } from "@/components/PreWalkBriefingSheet";
+import { ActiveWalkAudioPanel } from "@/components/ActiveWalkAudioPanel";
+import { VoiceBar } from "@/components/VoiceBar";
+import { FirstTimeHint } from "@/components/FirstTimeHint";
 import { AskTextModal } from "@/components/AskTextModal";
 import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
@@ -18,7 +22,7 @@ import { startRecording, stopRecording, runVoiceQaLoop } from "@/lib/voice/Voice
 import { loadTour, updateSession } from "@/lib/data/SessionStore";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
 import { AudioState } from "@/lib/types";
-import { cn } from "@/lib/utils/cn";
+import { distanceMeters } from "@/lib/maps/haversine";
 
 export default function TourActivePage() {
   const clientConfig = getClientConfig();
@@ -27,6 +31,8 @@ export default function TourActivePage() {
   const [showAskModal, setShowAskModal] = useState(false);
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
+  const [prevAudioState, setPrevAudioState] = useState<AudioState>(AudioState.IDLE);
   const toast = useToast();
 
   const {
@@ -47,6 +53,18 @@ export default function TourActivePage() {
     currentPoi,
     nextPoi,
   } = useActiveTour();
+
+  // Trigger map fit to route when pre-walk screen is shown (map zooms to route)
+  useEffect(() => {
+    if (session && !introPlayed && session.tourPlan.routePoints?.length) {
+      setFitBoundsTrigger((k) => k + 1);
+    }
+  }, [session?.sessionId, introPlayed]);
+
+  // Track previous audio state to show "Resume" hint after answer
+  useEffect(() => {
+    setPrevAudioState(audioState);
+  }, [audioState]);
 
   useEffect(() => {
     fetch("/api/health")
@@ -113,116 +131,211 @@ export default function TourActivePage() {
   }
 
   const center = userLocation ?? (session.pois[0] ? { lat: session.pois[0].lat, lng: session.pois[0].lng } : { lat: 37.78, lng: -122.41 });
-  const isPlaying = audioState === AudioState.NARRATING || audioState === AudioState.PLAYING_INTRO || audioState === AudioState.PLAYING_OUTRO || audioState === AudioState.ANSWERING;
-  const isPaused = audioState === AudioState.PAUSED;
+  const themeName = session.tourPlan?.theme ?? "Tour";
+  const tourLabel = themeName.charAt(0).toUpperCase() + themeName.slice(1) + " Walk";
+  const distanceKm = session.tourPlan.distanceMeters != null ? session.tourPlan.distanceMeters / 1000 : undefined;
+  const durationMin = session.tourPlan.estimatedMinutes ?? 0;
+
+  // Next stop badge: distance from user to next POI
+  const nextStopDistanceM =
+    userLocation && nextPoi ? Math.round(distanceMeters(userLocation, { lat: nextPoi.lat, lng: nextPoi.lng })) : null;
+  const nextStopBadgeText =
+    nextPoi && nextStopDistanceM != null
+      ? `${nextPoi.name} · ${nextStopDistanceM < 1000 ? `${nextStopDistanceM}m` : `${(nextStopDistanceM / 1000).toFixed(1)} km`}`
+      : nextPoi
+        ? `Next: ${nextPoi.name}`
+        : null;
+
+  // State-based overlay: dim map when narration/answer/listening so audio is the focus
+  const isNarrating =
+    audioState === AudioState.NARRATING ||
+    audioState === AudioState.PLAYING_INTRO ||
+    audioState === AudioState.PLAYING_OUTRO;
+  const isAnswering = audioState === AudioState.ANSWERING;
+  const isAsking = askState !== "idle";
+  const showDimOverlay = isAsking || isAnswering;
+  const showSoftDim = isNarrating && !showDimOverlay;
+  
+  // Show "Resume" hint if previous state was ANSWERING and now we're IDLE/NAVIGATING
+  const showResumeHint = prevAudioState === AudioState.ANSWERING && !isAnswering && !isNarrating;
 
   return (
     <div className="fixed inset-0 flex flex-col bg-app-bg">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-app-border bg-surface shadow-sm z-20">
-        <Link href="/create" className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary" aria-label="Back to create">
+      {/* Minimal header: only show when walking (after intro) so pre-walk is immersive */}
+      <header
+        className={
+          introPlayed
+            ? "grid grid-cols-3 items-center px-3 py-2.5 border-b border-app-border bg-surface/95 backdrop-blur-sm z-20 safe-top shrink-0"
+            : "absolute top-0 left-0 right-0 grid grid-cols-3 items-center px-3 py-2.5 z-20 safe-top"
+        }
+      >
+        <Link
+          href="/create"
+          className="p-2.5 min-w-[44px] min-h-[44px] w-12 flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary transition-colors justify-self-start"
+          aria-label="Back to create"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <Link href="/" className="min-h-[44px] flex items-center shrink-0" aria-label="Odyssey Walk home">
+        <Link href="/" className="min-h-[44px] flex items-center justify-center justify-self-center" aria-label="Odyssey Walk home">
           <OdysseyLogo size="sm" />
         </Link>
-        <h1 className="text-heading-sm truncate flex-1 text-center mx-2">
-          {session.tourPlan.theme} Walk
-        </h1>
-        <button type="button" onClick={() => setSettingsOpen(true)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-button hover:bg-app-bg text-ink-primary" aria-label="Settings">
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="p-2.5 min-w-[44px] min-h-[44px] w-12 flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary transition-colors justify-self-end"
+          aria-label="Settings"
+        >
           <Settings className="w-5 h-5" />
         </button>
       </header>
 
-      {!clientConfig.mapsKeyPresent && <div className="px-4 pt-2 z-20"><MapsKeyBanner /></div>}
-      {session.mode === "demo" && (
+      {!clientConfig.mapsKeyPresent && (
         <div className="px-4 pt-2 z-20">
+          <MapsKeyBanner />
+        </div>
+      )}
+      {introPlayed && session.mode === "demo" && (
+        <div className="px-4 pt-2 z-20 shrink-0">
           <DemoModeBanner onJumpNext={jumpNext} onRunScriptedDemo={() => {}} />
         </div>
       )}
 
-      <div className="flex-1 min-h-0 relative">
-        {mapKey ? (
-          <MapView
-            mapApiKey={mapKey}
-            center={center}
-            routePoints={session.tourPlan.routePoints}
-            pois={session.pois}
-            userLocation={userLocation}
-            visitedPoiIds={session.visitedPoiIds}
-            activePoiId={session.activePoiId}
-            onPoiClick={(id) => {
-              const poi = session.pois.find((p) => p.poiId === id);
-              if (poi) playPoi(poi);
-            }}
-            followUser={session.mode === "demo" || Boolean(userLocation)}
-            className="absolute inset-0 rounded-none"
-          />
-        ) : (
-          <div className="absolute inset-0 overflow-auto p-4 bg-app-bg">
-            <p className="text-caption text-ink-secondary mb-4">Map unavailable. Use the player and list below.</p>
-            <div className="space-y-2">
-              {session.pois.map((poi) => (
-                <button
-                  key={poi.poiId}
-                  type="button"
-                  onClick={() => playPoi(poi)}
-                  className={cn(
-                    "w-full text-left p-4 rounded-card border transition-colors",
-                    session.visitedPoiIds.includes(poi.poiId)
-                      ? "border-app-border bg-surface-muted text-ink-secondary"
-                      : "border-brand-primary/40 bg-brand-primary/10 text-ink-primary"
-                  )}
-                >
-                  <span className="font-medium">{poi.name}</span>
-                  {session.visitedPoiIds.includes(poi.poiId) && (
-                    <span className="ml-2 text-xs text-emerald-600 font-medium">Visited</span>
-                  )}
-                </button>
-              ))}
+      {/* ─── PRE-WALK BRIEFING: Top 60% map, bottom 40% anchored sheet ─── */}
+      {!introPlayed && (
+        <>
+          <div className="absolute inset-0 flex flex-col" style={{ paddingTop: "max(env(safe-area-inset-top), 56px)" }}>
+            <div className="h-[60vh] min-h-[240px] relative overflow-hidden shrink-0">
+              {mapKey ? (
+                <MapView
+                  mapApiKey={mapKey}
+                  center={center}
+                  routePoints={session.tourPlan.routePoints}
+                  pois={session.pois}
+                  userLocation={null}
+                  visitedPoiIds={[]}
+                  activePoiId={session.pois[0]?.poiId ?? null}
+                  onPoiClick={(id) => {
+                    const poi = session.pois.find((p) => p.poiId === id);
+                    if (poi) playPoi(poi);
+                  }}
+                  followUser={false}
+                  fitBoundsTrigger={fitBoundsTrigger}
+                  className="absolute inset-0 rounded-none"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center p-4 bg-surface-muted">
+                  <p className="text-caption text-ink-secondary text-center">Map unavailable</p>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
 
-      {!introPlayed ? (
-        <div className="border-t border-app-border bg-surface p-6 safe-bottom shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
-          <p className="text-body text-ink-secondary mb-2">Your tour is ready. Start to hear the intro and begin navigation.</p>
-          <p className="text-caption text-ink-tertiary mb-4">You&apos;ll hear narration at each stop. Hold the mic button to ask questions.</p>
-          <button
-            type="button"
-            onClick={startWalk}
-            className="w-full py-3.5 rounded-button bg-brand-primary hover:bg-brand-primaryHover text-white font-semibold shadow-md min-h-[44px]"
-            aria-label="Start Walk"
-          >
-            Start Walk
-          </button>
-        </div>
-      ) : (
-        <BottomSheetPlayer
-          tourName={`${session.tourPlan.theme} Walk`}
-          currentPoi={currentPoi}
-          nextPoiName={nextPoi?.name ?? null}
-          visitedCount={session.visitedPoiIds.length}
-          totalCount={session.pois.length}
-          audioState={audioState}
-          isDemoMode={session.mode === "demo"}
-          onPlay={resume}
-          onPause={pause}
-          onResume={resume}
-          onSkipNext={jumpNext}
-          onReplay={replay}
-          onAskStart={handleAskStart}
-          onAskStop={handleAskStop}
-          isAsking={askState !== "idle"}
-          askState={askState}
-        />
+          <PreWalkBriefingSheet
+            tourTitle={tourLabel}
+            durationMin={durationMin}
+            stopCount={session.pois.length}
+            distanceKm={distanceKm}
+            introLine="You're about to start an audio-guided walk. Tap Start to hear the intro and begin."
+            onStartWalk={startWalk}
+          />
+        </>
       )}
 
-      <AskTextModal
-        open={showAskModal}
-        onClose={() => setShowAskModal(false)}
-        onSubmit={handleTypedQuestion}
-      />
+      {/* ─── ACTIVE WALK: 3 zones (Map ~45% | Audio Panel | Voice Bar) ─── */}
+      {introPlayed && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex flex-col flex-1"
+        >
+          {/* Zone 1: Navigation map (~45%) */}
+          <div className="relative shrink-0 h-[45vh] min-h-[200px] overflow-hidden">
+            {mapKey ? (
+              <MapView
+                mapApiKey={mapKey}
+                center={center}
+                routePoints={session.tourPlan.routePoints}
+                pois={session.pois}
+                userLocation={userLocation}
+                visitedPoiIds={session.visitedPoiIds}
+                activePoiId={session.activePoiId}
+                onPoiClick={(id) => {
+                  const poi = session.pois.find((p) => p.poiId === id);
+                  if (poi) playPoi(poi);
+                }}
+                followUser={session.mode === "demo" || Boolean(userLocation)}
+                navigationMode
+                className="absolute inset-0 rounded-none"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center p-4 bg-surface-muted">
+                <p className="text-caption text-ink-secondary text-center">Map unavailable</p>
+              </div>
+            )}
+
+            {/* State overlay: dim when asking or answer playing */}
+            <AnimatePresence>
+              {showDimOverlay && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/40 pointer-events-none z-10"
+                  aria-hidden
+                />
+              )}
+              {showSoftDim && !showDimOverlay && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/15 pointer-events-none z-10"
+                  aria-hidden
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Floating badge: Next stop · distance (with backdrop blur + shadow polish) */}
+            {nextStopBadgeText && (
+              <div className="absolute bottom-3 left-4 right-4 z-10">
+                <div className="inline-flex px-3 py-2 rounded-xl bg-surface/95 shadow-lg border border-app-border/60 backdrop-blur-md">
+                  <span className="text-xs font-semibold text-ink-primary truncate">Next: {nextStopBadgeText}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Zone 2: Audio panel (Spotify-like) */}
+          <div className="shrink-0 pt-3">
+            <ActiveWalkAudioPanel
+              currentStopName={currentPoi?.name ?? "Intro"}
+              stopIndex={session.visitedPoiIds.length}
+              totalStops={session.pois.length}
+              audioState={audioState}
+              isAnswerPlaying={isAnswering}
+              onPlayPause={() => (audioState === AudioState.NARRATING || audioState === AudioState.PLAYING_INTRO || audioState === AudioState.PLAYING_OUTRO || audioState === AudioState.ANSWERING ? pause() : resume())}
+              onSkip={jumpNext}
+              onReplay={replay}
+              isDemoMode={session.mode === "demo"}
+              showResumeHint={showResumeHint}
+            />
+          </div>
+
+          {/* Zone 3: Voice bar — mic is the hero */}
+          <div className="flex-1 min-h-0 flex flex-col justify-end relative">
+            <VoiceBar askState={askState} onAskStart={handleAskStart} onAskStop={handleAskStop} />
+            {/* First-time hint: shows once */}
+            <FirstTimeHint
+              storageKey="odyssey-hint-mic"
+              message="Hold the mic to ask questions about this place"
+              position="bottom"
+            />
+          </div>
+        </motion.div>
+      )}
+
+      <AskTextModal open={showAskModal} onClose={() => setShowAskModal(false)} onSubmit={handleTypedQuestion} />
 
       <SettingsDrawer
         open={settingsOpen}

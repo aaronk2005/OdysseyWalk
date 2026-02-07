@@ -27,6 +27,11 @@ body {
 }
 
 /* Safe area for notched devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
 @supports (padding: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
@@ -44,6 +49,13 @@ body {
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.025em;
+  color: var(--ink-primary);
+}
+/* Bolder for key moments */
+.text-heading-bold {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--ink-primary);
 }
 .text-body {
