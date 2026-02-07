@@ -60,6 +60,8 @@ export interface TourPlan {
   estimatedMinutes: number;
   distanceMeters?: number;
   routePoints: LatLng[];
+  /** Date of the tour (e.g. generation date) */
+  tourDate?: string;
 }
 
 export interface POI {
@@ -77,6 +79,16 @@ export interface POI {
   placeId?: string;
   scriptVersion?: number;
   tourId?: string;
+  /** Short description (1–2 sentences) */
+  description?: string;
+  /** Minutes to walk from previous stop or start */
+  timeToGetThereMin?: number;
+  /** Minutes spent at this stop */
+  timeSpentMin?: number;
+  /** Price if applicable (e.g. "Free", "$5") */
+  price?: string | null;
+  /** Theme of this stop (from tour) */
+  theme?: string;
 }
 
 export interface GeneratedTourResponse {

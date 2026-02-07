@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,6 +38,7 @@ export default function CreateTourPage() {
   const [generated, setGenerated] = useState<GeneratedTourResponse | null>(null);
   const [locating, setLocating] = useState(false);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
+  const generatingRef = useRef(false);
 
   const handleUseMyLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -101,17 +102,25 @@ export default function CreateTourPage() {
   }, []);
 
   const handleGenerate = useCallback(async () => {
+    if (generatingRef.current) return;
+    generatingRef.current = true;
     const start = startPlace ?? { label: searchLabel || "Current location", lat: 37.7849, lng: -122.4094 };
     setGenerating(true);
     setError(null);
     try {
+      // Ensure tour/generate receives numeric lat/lng and a non-empty label (required by API)
+      const startPayload = {
+        lat: Number(start.lat),
+        lng: Number(start.lng),
+        label: String(start.label || "Location").trim() || "Location",
+      };
       const res = await fetchWithTimeout(
         "/api/tour/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            start: { lat: start.lat, lng: start.lng, label: start.label },
+            start: startPayload,
             theme: preferences.theme as Theme,
             durationMin: preferences.durationMin,
             lang: preferences.lang,
@@ -131,6 +140,7 @@ export default function CreateTourPage() {
       setError(msg);
       showToast(msg, "error");
     } finally {
+      generatingRef.current = false;
       setGenerating(false);
     }
   }, [startPlace, searchLabel, preferences, showToast]);

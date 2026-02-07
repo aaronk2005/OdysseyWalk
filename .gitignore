@@ -28,6 +28,9 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Generated tours (API output)
+generated-tours/
+
 # Vercel
 .vercel
 
