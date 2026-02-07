@@ -1,71 +1,90 @@
 # Odyssey Walk
 
-Premium, **mobile-first, voice-first** audio tour guide. See a tour route and POIs on a map; when you reach a stop, narration plays automatically. Press and hold to ask questions by voice—answered by an LLM and spoken back via TTS.
+Voice-first walking tour app: pick a start location, generate a route and POIs with an LLM, then walk and hear narration at each stop. Press and hold the mic to ask questions—answered by AI and spoken back.
 
 ## Features
 
-- **Tour selection & map** — List tours, open one to see full-screen Google Map with route polyline and POI markers.
-- **Geofence triggers** — When you enter a POI’s radius, narration auto-plays (Gradium TTS).
-- **Voice Q&A** — Press-and-hold mic → STT (Gradium) → OpenRouter LLM → TTS (Gradium) for answers.
-- **Demo mode** — Simulated location along the route + manual “Play next” so the app demos reliably without GPS.
-- **LLM-assisted tour creation** — Pick start location, theme, duration; backend generates a tour with POIs and scripts (OpenRouter).
+- **Create Tour** (`/create`): Set start location (search or map click), choose theme, duration, language, and voice. Generate a tour via OpenRouter (intro, outro, 5–8 POIs with scripts).
+- **Start Walk** (`/tour/active`): Play intro, then GPS or demo movement. At each POI, narration plays automatically. Press-and-hold mic for Q&A (STT → OpenRouter → TTS).
+- **Completion** (`/tour/complete`): After the last stop, outro plays and you see a summary with “Save Tour” and “Generate Another.”
+- **Demo** (`/demo`): Run a 90-second scripted demo without mic or location: Stop 1 → sample Q&A → Stop 2.
 
-## How to run locally
+## Setup
 
-1. Clone and install:
-
+1. **Clone and install**
    ```bash
-   cd hsn
+   cd OdysseyWalk
    npm install
    ```
 
-2. Copy env and set keys (see below):
+2. **Environment**
+   Copy `.env.example` to `.env.local` and set:
 
-   ```bash
-   cp .env.example .env.local
-   ```
+   | Variable | Where | Purpose |
+   |----------|--------|---------|
+   | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Client | Map + Places search |
+   | `OPENROUTER_API_KEY` | Server only | Tour generation + Q&A |
+   | `GRADIUM_API_KEY` | Server only | TTS + STT |
+   | `GRADIUM_TTS_URL` | Server only | Gradium TTS endpoint |
+   | `GRADIUM_STT_URL` | Server only | Gradium STT endpoint |
 
-3. Start dev server:
-
+3. **Run**
    ```bash
    npm run dev
    ```
+   Open [http://localhost:3000](http://localhost:3000).
 
-4. Open [http://localhost:3000](http://localhost:3000). Use **Explore Tours** or **Try Demo**, or go to `/tour/sample` for the main tour experience.
+## Env vars (reference)
 
-## Required env vars
-
-| Variable | Where | Purpose |
-|----------|--------|---------|
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Client | Map + (optional) Places |
-| `OPENROUTER_API_KEY` | Server | Q&A and tour generation |
-| `GRADIUM_API_KEY` | Server | TTS and STT |
-| `GRADIUM_TTS_URL` | Server | Gradium TTS endpoint |
-| `GRADIUM_STT_URL` | Server | Gradium STT endpoint |
-
-Only the Maps key is public; the rest must stay server-side.
+- **Client (only maps):** `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- **Server only (never expose):** `OPENROUTER_API_KEY`, `GRADIUM_API_KEY`, `GRADIUM_TTS_URL`, `GRADIUM_STT_URL`
 
 ## Demo mode
 
-- Default on the tour page so the app works without GPS.
-- Location is simulated along the route; use **Play next** in the bottom sheet or the **Debug** panel to jump/trigger POIs.
-- **Demo page** (`/demo`): scripted playback and per-stop “teleport & play” for judging.
+- If **location is denied** or you use “demo” flow, the app uses simulated movement along the route.
+- On **active tour**, demo mode shows “Next stop” and “Run 90s Demo” (link to `/demo`).
+- **Run 90s Demo** on `/demo`: no mic or GPS; plays two stops and a sample Q&A.
 
-## Known limitations
+## Troubleshooting
 
-- Tours are JSON in `public/tours` (and in-memory/localStorage for generated tours).
-- Gradium TTS/STT request/response shape may need adjustment to match your Gradium API.
-- No streaming TTS playback in the first version (full response then play).
-- Placeholder audio: add `/public/audio/placeholder.mp3` for TTS fallback, or the UI will still work without it.
+- **Map blank:** Set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and ensure the key has Maps JavaScript API and (for search) Places enabled.
+- **“OpenRouter not configured”:** Set `OPENROUTER_API_KEY` for generate and Q&A.
+- **“TTS not configured” / “STT not configured”:** Set Gradium env vars. Without them, TTS falls back to a placeholder (or no audio if `public/audio/placeholder.mp3` is missing) and STT to a typed-question modal.
+- **Rate limits:** `/api/tour/generate`, `/api/qa`, `/api/tts`, `/api/stt` are rate-limited per IP. 429 responses include `Retry-After`.
+- **Health:** `GET /api/health` returns `{ ok, mapsKeyPresent, openRouterConfigured, gradiumConfigured }`.
 
-## Architecture (short)
+## Stack
 
-- **App Router** (Next.js 14), TypeScript, Tailwind, Framer Motion.
-- **Domain types** in `lib/types.ts`; **TourRepository** calls `GET /api/tours` and `GET /api/tours/[tourId]`.
-- **Map:** `MapLoader` loads Google Maps once; `MapView` draws route, POIs, user marker.
-- **Geo:** `GeoProvider` (real GPS), `GeoSimProvider` (demo), `GeoTriggerEngine` (geofence logic).
-- **Audio:** `AudioSessionManager` (state, narration, answers); **STTRecorder** sends audio to `POST /api/stt`.
-- **Controller:** `useTourController(tourId)` ties data, location, triggers, audio, and voice Q&A together.
-- **APIs:** tours (list/detail), `/api/qa`, `/api/tts`, `/api/stt`, `/api/tour/generate`.
+- Next.js 14 (App Router), TypeScript, TailwindCSS, Framer Motion
+- Google Maps JavaScript API (map + Places autocomplete)
+- OpenRouter (tour generation + Q&A)
+- Gradium (STT + TTS) via server-only endpoints
 
-See `docs/architecture.md` for Mermaid diagrams and sequence flows.
+## File tree (main)
+
+```
+app/
+  page.tsx                 # Landing
+  create/page.tsx          # Map, search, preferences, Generate, Start Walk
+  tour/active/page.tsx    # Active walk (map + player)
+  tour/complete/page.tsx  # Completion summary
+  demo/page.tsx           # 90s scripted demo
+  api/
+    tour/generate/route.ts  # POST: generate tour (OpenRouter)
+    qa/route.ts             # POST: Q&A (OpenRouter)
+    tts/route.ts            # POST: TTS (Gradium)
+    stt/route.ts            # POST: STT (Gradium)
+    health/route.ts         # GET: config status
+lib/
+  types.ts                 # LatLng, GeneratedTour*, TourPlan, POI, SessionState, AudioState
+  data/SessionStore.ts     # saveTour, loadTour, updateSession, clearTour
+  maps/MapLoader.ts, polyline.ts, haversine.ts
+  geo/ GeoProvider, GeoSimProvider, GeoTriggerEngine, ILocationProvider
+  audio/AudioSessionManager.ts  # playIntro, playPoiScript, playAnswer, playOutro
+  voice/STTRecorder.ts, VoiceController.ts
+components/
+  MapView, BottomSheetPlayer, PlaceSearchBox, TourGenerationPanel,
+  CompletionSummary, AskTextModal, DemoModeBanner, MapsKeyBanner, Toast, SettingsDrawer, DebugPanel
+hooks/
+  useActiveTour.ts         # Active walk state and triggers
+```
