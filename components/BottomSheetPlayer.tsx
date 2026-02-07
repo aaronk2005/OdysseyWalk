@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, Play, Pause, SkipForward, RotateCcw, Mic } from "lucide-react";
+import { ChevronUp, Play, Pause, SkipForward, RotateCcw, Mic, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { POI } from "@/lib/types";
 import { AudioState } from "@/lib/types";
@@ -24,6 +24,11 @@ interface BottomSheetPlayerProps {
   onAskStop: () => void;
   isAsking: boolean;
   askState: "idle" | "listening" | "thinking" | "speaking";
+  /** Hold to record; say "next" or "continue" to advance to next stop */
+  onVoiceNextStart?: () => void;
+  onVoiceNextStop?: () => void;
+  isVoiceNextRecording?: boolean;
+  voiceNextError?: string | null;
   narrationTextFallback?: string | null;
   onTryAudioAgain?: () => void;
   onFitBounds?: () => void;
@@ -46,6 +51,10 @@ export function BottomSheetPlayer({
   onAskStop,
   isAsking,
   askState,
+  onVoiceNextStart,
+  onVoiceNextStop,
+  isVoiceNextRecording = false,
+  voiceNextError,
   narrationTextFallback,
   onTryAudioAgain,
   onFitBounds,
@@ -150,6 +159,35 @@ export function BottomSheetPlayer({
               <RotateCcw className="w-5 h-5" />
             </button>
           </div>
+
+          {onVoiceNextStart && onVoiceNextStop && (
+            <div className="mt-3 flex flex-col items-center gap-1">
+              <button
+                type="button"
+                onMouseDown={onVoiceNextStart}
+                onMouseLeave={onVoiceNextStop}
+                onMouseUp={onVoiceNextStop}
+                onTouchStart={onVoiceNextStart}
+                onTouchEnd={onVoiceNextStop}
+                onTouchCancel={onVoiceNextStop}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2.5 px-4 min-h-[44px] rounded-button border transition-all touch-manipulation",
+                  isVoiceNextRecording
+                    ? "bg-brand-primary/20 border-brand-primary text-brand-primary animate-pulse"
+                    : "bg-surface-muted hover:bg-app-bg text-ink-primary border-app-border"
+                )}
+                aria-label="Hold and say next or continue to go to next stop"
+              >
+                <ArrowRight className="w-4 h-4 shrink-0" />
+                <span className="text-body font-medium">
+                  {isVoiceNextRecording ? "Listening…" : "Say next to continue"}
+                </span>
+              </button>
+              {voiceNextError && (
+                <p className="text-caption text-red-600">{voiceNextError}</p>
+              )}
+            </div>
+          )}
 
           <div className="mt-4 flex justify-center">
             <button
