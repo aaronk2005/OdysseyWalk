@@ -106,13 +106,14 @@ export function useActiveTour() {
         updateSession({ visitedPoiIds: nextVisited, activePoiId: ev.poiId });
         setSession(loadTour());
         setLastTriggeredPoi(poi);
-        AudioSessionManager.playPoiScript(poi);
         const isLast = nextVisited.length >= s.pois.length;
         if (isLast) {
           updateSession({ endedAt: Date.now() });
-          AudioSessionManager.playOutro(s.tourPlan.outro).then(() => {
-            router.push("/tour/complete");
-          });
+          AudioSessionManager.playPoiScript(poi).then(() =>
+            AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"))
+          );
+        } else {
+          AudioSessionManager.playPoiScript(poi);
         }
       }
     });
@@ -129,11 +130,15 @@ export function useActiveTour() {
       });
       setSession(loadTour());
     }
-    AudioSessionManager.playPoiScript(poi);
     const nextVisited = [...s.visitedPoiIds, poi.poiId];
-    if (nextVisited.length >= s.pois.length) {
+    const isLast = nextVisited.length >= s.pois.length;
+    if (isLast) {
       updateSession({ endedAt: Date.now() });
-      AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"));
+      AudioSessionManager.playPoiScript(poi).then(() =>
+        AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"))
+      );
+    } else {
+      AudioSessionManager.playPoiScript(poi);
     }
   }, [router]);
 

@@ -13,9 +13,9 @@ export async function GET() {
   const gradiumKey = process.env.GRADIUM_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
 
-  // Check if Gradium key has wrong format (looks like OpenRouter key)
+  // Gradium keys are gd_ or gsk_ (from gradium.ai). OpenRouter keys are sk-or-v1-
   if (gradiumKey && gradiumKey.startsWith("sk-or-v1-")) {
-    warnings.push("GRADIUM_API_KEY appears to be an OpenRouter key (starts with sk-or-v1-). Gradium keys should start with gd_. Browser TTS/STT fallbacks will be used.");
+    warnings.push("GRADIUM_API_KEY appears to be an OpenRouter key (sk-or-v1-). Use a Gradium key from gradium.ai (gd_ or gsk_...).");
   }
 
   // Check if OpenRouter key looks valid
@@ -23,10 +23,11 @@ export async function GET() {
     warnings.push("OPENROUTER_API_KEY format looks unusual (should start with sk-or-v1-)");
   }
 
-  // Check if Gradium TTS URL is set when key is present
-  // Note: STT is WebSocket-only, so GRADIUM_STT_URL is not required
-  if (gradiumKey && !process.env.GRADIUM_TTS_URL) {
-    warnings.push("GRADIUM_API_KEY is set but GRADIUM_TTS_URL is missing");
+  if (gradiumKey && !process.env.GRADIUM_TTS_URL && !process.env.GRADIUM_TTS_WS_URL) {
+    warnings.push("GRADIUM_API_KEY is set but neither GRADIUM_TTS_WS_URL nor GRADIUM_TTS_URL is set. Add GRADIUM_TTS_WS_URL=wss://eu.api.gradium.ai/api/speech/tts for Gradium voices.");
+  }
+  if (gradiumKey && process.env.GRADIUM_TTS_URL && !process.env.GRADIUM_TTS_WS_URL) {
+    warnings.push("Using TTS via POST. For WebSocket (recommended), add GRADIUM_TTS_WS_URL=wss://eu.api.gradium.ai/api/speech/tts to .env.local and restart.");
   }
 
   return NextResponse.json({
@@ -34,10 +35,12 @@ export async function GET() {
     mapsKeyPresent: config.mapsKeyPresent,
     openRouterConfigured: config.openRouterConfigured,
     gradiumConfigured: config.gradiumConfigured,
+    gradiumTtsMethod: config.gradiumTtsMethod,
+    gradiumSttConfigured: config.gradiumSttConfigured,
     warnings: warnings.length > 0 ? warnings : undefined,
     fallbacks: {
-      tts: "Browser SpeechSynthesis API",
-      stt: "Browser SpeechRecognition API (Chrome, Edge, Safari)",
+      tts: config.gradiumConfigured ? "Gradium" : "Browser SpeechSynthesis API",
+      stt: config.gradiumSttConfigured ? "Gradium" : "Browser SpeechRecognition API (Chrome, Edge, Safari)",
     },
   });
 }

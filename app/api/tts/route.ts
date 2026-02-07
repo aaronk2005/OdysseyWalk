@@ -4,6 +4,7 @@ import { getServerConfig } from "@/lib/config";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/api/getClientIp";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
+import { gradiumTtsOverWebSocket } from "@/lib/tts/gradiumTtsWs";
 
 /** Gradium voice_id by (lang, voiceStyle). From https://gradium.ai/api_docs.html */
 const GRADIUM_VOICE_IDS: Record<Lang, Partial<Record<VoiceStyle, string>>> = {
@@ -18,14 +19,14 @@ const GRADIUM_VOICE_IDS: Record<Lang, Partial<Record<VoiceStyle, string>>> = {
     funny: "axlOaUiFyOZhy4nv", // Leo
   },
   es: {
-    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback (Spanish voices may vary)
-    historian: "KWJiFWu2O9nMPYcR",
-    funny: "LFZvm12tW_z0xfGo",
+    friendly: "B36pbz5_UoWn4BDl", // Valentina (es-mx)
+    historian: "xu7iJ_fn2ElcWp2s", // Sergio (es)
+    funny: "B36pbz5_UoWn4BDl",
   },
   de: {
-    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
-    historian: "KWJiFWu2O9nMPYcR",
-    funny: "LFZvm12tW_z0xfGo",
+    friendly: "-uP9MuGtBqAvEyxI", // Mia (de)
+    historian: "0y1VZjPabOBU3rWy", // Maximilian (de)
+    funny: "-uP9MuGtBqAvEyxI",
   },
   it: {
     friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
@@ -38,9 +39,9 @@ const GRADIUM_VOICE_IDS: Record<Lang, Partial<Record<VoiceStyle, string>>> = {
     funny: "LFZvm12tW_z0xfGo",
   },
   pt: {
-    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
-    historian: "KWJiFWu2O9nMPYcR",
-    funny: "LFZvm12tW_z0xfGo",
+    friendly: "pYcGZz9VOo4n2ynh", // Alice (pt-br)
+    historian: "M-FvVo9c-jGR4PgP", // Davi (pt-br)
+    funny: "pYcGZz9VOo4n2ynh",
   },
   zh: {
     friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
@@ -68,8 +69,13 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
     );
   }
-  const apiKey = process.env.GRADIUM_API_KEY!;
-  const ttsUrl = process.env.GRADIUM_TTS_URL!;
+  const apiKey = process.env.GRADIUM_API_KEY?.trim();
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "GRADIUM_API_KEY is not set. Add it to .env.local and restart the dev server." },
+      { status: 503, headers: getRateLimitHeaders(ip, "/api/tts") }
+    );
+  }
   try {
     let body;
     try {
@@ -94,12 +100,63 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing text" }, { status: 400 });
     }
 
-    const langKey = lang === "fr" ? "fr" : "en";
+    // Map request lang to a Gradium voice (we have en, fr, es, de, it, ja, pt, zh)
+    const langKey: Lang = GRADIUM_VOICE_IDS[lang as Lang] ? (lang as Lang) : "en";
     const voiceId = getGradiumVoiceId(langKey, voiceStyle);
-    // Gradium API POST format per https://gradium.ai/api_docs.html:
-    // - Use x-api-key header (not Bearer token)
-    // - Request body: { text, voice_id, output_format, only_audio?, json_config? }
-    // - When only_audio=true, returns raw audio bytes (not JSON)
+
+    // Prefer WebSocket TTS when GRADIUM_TTS_WS_URL is set (wss://eu.api.gradium.ai/api/speech/tts)
+    const ttsWsUrl = process.env.GRADIUM_TTS_WS_URL?.trim();
+    if (ttsWsUrl) {
+      try {
+        const bytes = await gradiumTtsOverWebSocket(ttsWsUrl, apiKey, voiceId, text.slice(0, 5000), {
+          timeoutMs: 15000,
+          jsonConfig: langKey !== "en" ? { rewrite_rules: langKey } : undefined,
+        });
+        if (bytes.length === 0) {
+          return NextResponse.json(
+            { error: "TTS WebSocket returned no audio" },
+            { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
+          );
+        }
+        if (returnBase64) {
+          const base64 = Buffer.from(bytes).toString("base64");
+          return NextResponse.json(
+            { audioBase64: base64, mimeType: "audio/wav" },
+            { headers: { "X-TTS-Method": "websocket", ...getRateLimitHeaders(ip, "/api/tts") } }
+          );
+        }
+        return new NextResponse(Buffer.from(bytes), {
+          headers: {
+            "Content-Type": "audio/wav",
+            "Cache-Control": "public, max-age=86400",
+            "X-TTS-Method": "websocket",
+            ...getRateLimitHeaders(ip, "/api/tts"),
+          },
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "TTS WebSocket failed";
+        console.error("[TTS] WebSocket failed:", msg, e instanceof Error ? e.stack : "");
+        return NextResponse.json(
+          { error: msg },
+          { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
+        );
+      }
+    }
+
+    // Gradium API POST (only when GRADIUM_TTS_URL is set). Per docs: https://eu.api.gradium.ai/api/post/speech/tts
+    const ttsUrl = process.env.GRADIUM_TTS_URL?.trim();
+    if (!ttsUrl) {
+      return NextResponse.json(
+        {
+          error:
+            "TTS WebSocket URL not set. Add GRADIUM_TTS_WS_URL=wss://eu.api.gradium.ai/api/speech/tts to .env.local (or set GRADIUM_TTS_URL for POST). Restart the dev server after changing env.",
+        },
+        { status: 503, headers: getRateLimitHeaders(ip, "/api/tts") }
+      );
+    }
+
+    // Gradium API POST per https://gradium.ai/api_docs.html — auth: x-api-key only
+    // Request body: { text, voice_id, output_format, only_audio?, json_config? }
     const gradiumBody: {
       text: string;
       voice_id: string;
@@ -121,7 +178,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey, // Gradium uses x-api-key header, not Bearer token
+          "x-api-key": apiKey, // Gradium docs: "Include your API key in the request header: x-api-key"
         },
         body: JSON.stringify(gradiumBody),
       },
@@ -132,7 +189,7 @@ export async function POST(req: Request) {
       const errText = await gradiumRes.text();
       let hint = "";
       if (gradiumRes.status === 401) {
-        hint = " Check GRADIUM_API_KEY: use a key from https://gradium.ai (format gd_...).";
+        hint = " Check GRADIUM_API_KEY: use a key from https://gradium.ai (gd_ or gsk_...).";
       } else if (gradiumRes.status === 404) {
         hint = " Endpoint not found. Check GRADIUM_TTS_URL - competition keys may use different endpoints. See docs/GRADIUM_COMPETITION_SETUP.md";
       }
@@ -213,7 +270,7 @@ export async function POST(req: Request) {
       const base64 = Buffer.from(bytes).toString("base64");
       return NextResponse.json(
         { audioBase64: base64, mimeType: "audio/wav" },
-        { headers: getRateLimitHeaders(ip, "/api/tts") }
+        { headers: { "X-TTS-Method": "post", ...getRateLimitHeaders(ip, "/api/tts") } }
       );
     }
 
@@ -221,6 +278,7 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "audio/wav",
         "Cache-Control": "public, max-age=86400",
+        "X-TTS-Method": "post",
         ...getRateLimitHeaders(ip, "/api/tts"),
       },
     });

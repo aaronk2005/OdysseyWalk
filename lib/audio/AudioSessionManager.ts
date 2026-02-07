@@ -166,7 +166,16 @@ class AudioSessionManagerImpl {
           returnBase64: false,
         }),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const errBody = await res.text();
+        try {
+          const err = JSON.parse(errBody) as { error?: string };
+          console.warn("[TTS] Server returned", res.status, err?.error ?? errBody.slice(0, 200));
+        } catch {
+          console.warn("[TTS] Server returned", res.status, errBody.slice(0, 200));
+        }
+        return;
+      }
       const blob = await res.blob();
       this.cache.set(key, URL.createObjectURL(blob));
     } catch {

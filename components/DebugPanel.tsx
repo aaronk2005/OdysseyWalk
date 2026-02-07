@@ -10,6 +10,8 @@ export interface ApiStatus {
   mapsKeyPresent: boolean;
   openRouterConfigured: boolean;
   gradiumConfigured: boolean;
+  /** "websocket" | "post" when Gradium TTS is configured */
+  gradiumTtsMethod?: "websocket" | "post" | null;
   warnings?: string[];
   fallbacks?: {
     tts: string;
@@ -70,7 +72,9 @@ export function DebugPanel({
                 <div className="flex flex-wrap gap-2 mb-2">
                   <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.mapsKeyPresent ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>Maps</span>
                   <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.openRouterConfigured ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>OpenRouter</span>
-                  <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.gradiumConfigured ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800")}>Gradium</span>
+                  <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.gradiumConfigured ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800")} title={apiStatus.gradiumTtsMethod ?? undefined}>
+                    Gradium{apiStatus.gradiumTtsMethod ? ` (${apiStatus.gradiumTtsMethod})` : ""}
+                  </span>
                 </div>
                 {apiStatus.warnings && apiStatus.warnings.length > 0 && (
                   <div className="mb-2 p-2 bg-blue-50 rounded text-[10px] text-blue-800">

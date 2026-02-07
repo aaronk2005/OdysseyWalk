@@ -82,7 +82,7 @@ export default function TourActivePage() {
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
-      .then((d) => setApiStatus({ mapsKeyPresent: d.mapsKeyPresent, openRouterConfigured: d.openRouterConfigured, gradiumConfigured: d.gradiumConfigured }))
+      .then((d) => setApiStatus({ mapsKeyPresent: d.mapsKeyPresent, openRouterConfigured: d.openRouterConfigured, gradiumConfigured: d.gradiumConfigured, gradiumTtsMethod: d.gradiumTtsMethod, warnings: d.warnings, fallbacks: d.fallbacks }))
       .catch(() => setApiStatus(null));
   }, []);
 
