@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-navy: #0a0e17;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --glass-bg: rgba(15, 22, 41, 0.85);
+  --glass-border: rgba(59, 130, 246, 0.2);
+}
+
+body {
+  @apply bg-navy-950 text-white antialiased;
+  background-color: var(--bg-navy);
+}
+
+/* Prevent pull-to-refresh / overscroll on mobile */
+html, body {
+  overscroll-behavior-y: none;
+}
+
+/* Safe area for notched devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

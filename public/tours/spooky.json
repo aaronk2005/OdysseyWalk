@@ -1,0 +1,52 @@
+{
+  "tour": {
+    "tourId": "spooky",
+    "name": "Haunted San Francisco",
+    "city": "San Francisco",
+    "routePoints": [
+      { "lat": 37.7872, "lng": -122.4048 },
+      { "lat": 37.7865, "lng": -122.4060 },
+      { "lat": 37.7858, "lng": -122.4072 }
+    ],
+    "poiIds": ["spooky-1", "spooky-2", "spooky-3"],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en",
+    "estimatedMinutes": 20,
+    "tags": ["spooky", "history"]
+  },
+  "pois": [
+    {
+      "poiId": "spooky-1",
+      "tourId": "spooky",
+      "name": "Queen Anne Hotel",
+      "lat": 37.7870,
+      "lng": -122.4245,
+      "radiusM": 35,
+      "scripts": { "friendly": "The Queen Anne Hotel is said to be haunted by a schoolteacher named Mary Lake. Guests report items moving and a comforting presence. The building was a girls' school in the late 1800s." },
+      "facts": ["Reportedly haunted by Mary Lake", "Was a girls' school in 1800s", "Victorian building"],
+      "scriptVersion": 1
+    },
+    {
+      "poiId": "spooky-2",
+      "tourId": "spooky",
+      "name": "Alcatraz",
+      "lat": 37.8270,
+      "lng": -122.4230,
+      "radiusM": 50,
+      "scripts": { "friendly": "Alcatraz Island held some of America's most notorious prisoners. Many claim the island is haunted by former inmates and guards. Night tours emphasize its eerie history." },
+      "facts": ["Federal prison until 1963", "Famous escape attempts", "Native occupation 1969-71"],
+      "scriptVersion": 1
+    },
+    {
+      "poiId": "spooky-3",
+      "tourId": "spooky",
+      "name": "Presidio Pet Cemetery",
+      "lat": 37.7985,
+      "lng": -122.4660,
+      "radiusM": 35,
+      "scripts": { "friendly": "A small cemetery where military families buried their pets. It's quiet and a bit melancholy—hundreds of tiny graves with names and dates. A unique and touching spot." },
+      "facts": ["Military pet cemetery", "Hundreds of pet graves", "Within Presidio"],
+      "scriptVersion": 1
+    }
+  ]
+}
