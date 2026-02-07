@@ -1,106 +1,149 @@
 import { NextResponse } from "next/server";
-import type { Tour, POI, LatLng, VoiceStyle, Lang } from "@/lib/types";
+import type { GeneratedTourResponse, TourPlan, POI, LatLng, Theme, VoiceStyle, Lang } from "@/lib/types";
+import { getServerConfig } from "@/lib/config";
+import { rateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/api/getClientIp";
+import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
+function parseJson(raw: string): Record<string, unknown> {
+  let s = raw.trim().replace(/^```json?\s*|\s*```$/g, "").trim();
+  return JSON.parse(s) as Record<string, unknown>;
+}
+
 export async function POST(req: Request) {
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) {
+  const config = getServerConfig();
+  if (!config.openRouterConfigured) {
     return NextResponse.json({ error: "OpenRouter not configured" }, { status: 503 });
+  }
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip, "/api/tour/generate");
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+    );
   }
   try {
     const body = await req.json();
     const {
-      startPlace,
-      theme,
-      durationMin,
-      pace = "normal",
+      start,
+      theme = "history",
+      durationMin = 30,
       lang = "en",
       voiceStyle = "friendly",
     } = body as {
-      startPlace: { name: string; lat: number; lng: number };
-      theme: string;
-      durationMin: number;
-      pace?: string;
+      start: { lat: number; lng: number; label: string };
+      theme?: Theme;
+      durationMin?: number;
       lang?: Lang;
       voiceStyle?: VoiceStyle;
     };
 
-    if (!startPlace?.lat || !startPlace?.lng) {
-      return NextResponse.json({ error: "startPlace with lat/lng required" }, { status: 400 });
+    if (!start?.lat || !start?.lng) {
+      return NextResponse.json({ error: "start with lat, lng, label required" }, { status: 400 });
     }
 
-    const systemPrompt = `You are a tour plan generator. Given a starting location and theme, output a JSON object only (no markdown, no code block wrapper) with this exact structure:
+    const systemPrompt = `You are a tour plan generator. Output ONLY valid JSON (no markdown, no code fence). Structure:
 {
+  "intro": "30-60 word welcome script in ${lang === "fr" ? "French" : "English"}, ${voiceStyle} tone",
+  "outro": "20-40 word closing script",
   "pois": [
     {
       "name": "Place name",
-      "lat": number (small offset from start, e.g. ±0.002),
-      "lng": number (small offset from start),
-      "script": "90-140 word narration in ${lang === "fr" ? "French" : "English"}, ${voiceStyle} tone",
-      "facts": ["fact1", "fact2", "fact3"]
+      "lat": number (offset from start ~0.001-0.003),
+      "lng": number,
+      "script": "90-140 word narration",
+      "facts": ["fact1", "fact2", "fact3", "fact4", "fact5"]
     }
   ]
 }
-Generate exactly 5-7 POIs. Keep lat/lng within walking distance (each step ~0.001-0.003 degrees). Do not browse the internet. Generate plausible, safe content. No dangerous or inappropriate instructions.`;
+Generate exactly 5-8 POIs in a walking loop from start. Safe, plausible content only.`;
 
-    const userPrompt = `Start: ${startPlace.name} at ${startPlace.lat}, ${startPlace.lng}. Theme: ${theme}. Duration: ${durationMin} min. Pace: ${pace}. Generate the tour JSON.`;
+    const userPrompt = `Start: ${start.label || "Location"} at ${start.lat}, ${start.lng}. Theme: ${theme}. Duration: ${durationMin} min. Language: ${lang}. Generate the JSON.`;
 
-    const res = await fetch(OPENROUTER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-        "HTTP-Referer": process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      return NextResponse.json({ error: "LLM error: " + err }, { status: 502 });
+    const key = process.env.OPENROUTER_API_KEY!;
+    let raw = "{}";
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await fetchWithTimeout(
+        OPENROUTER_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+            "HTTP-Referer": process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt + (attempt === 1 ? " ONLY OUTPUT JSON." : "") },
+              { role: "user", content: userPrompt },
+            ],
+            max_tokens: 2500,
+          }),
+        },
+        { timeoutMs: 20000, retries: 1 }
+      );
+      if (!res.ok) {
+        const err = await res.text();
+        return NextResponse.json({ error: "LLM error: " + err }, { status: 502 });
+      }
+      const data = await res.json();
+      raw = data.choices?.[0]?.message?.content?.trim() || "{}";
+      try {
+        parseJson(raw);
+        break;
+      } catch {
+        if (attempt === 1) return NextResponse.json({ error: "Invalid JSON from model" }, { status: 502 });
+      }
     }
 
-    const data = await res.json();
-    let raw = data.choices?.[0]?.message?.content?.trim() || "{}";
-    raw = raw.replace(/^```json?\s*|\s*```$/g, "").trim();
-    const parsed = JSON.parse(raw);
+    const parsed = parseJson(raw) as {
+      intro?: string;
+      outro?: string;
+      pois?: Array<{ name?: string; lat?: number; lng?: number; script?: string; facts?: string[] }>;
+    };
     const items = Array.isArray(parsed.pois) ? parsed.pois : [];
+    const sessionId = "session-" + Date.now();
+    const isOffset = (v: number) => Math.abs(v) < 0.1 && Math.abs(v) > 0;
+    const pois: POI[] = items.slice(0, 8).map((p, i) => {
+      const rawLat = Number(p.lat);
+      const rawLng = Number(p.lng);
+      const lat = Number.isFinite(rawLat)
+        ? (isOffset(rawLat) ? start.lat + rawLat : rawLat)
+        : start.lat + (i + 1) * 0.002;
+      const lng = Number.isFinite(rawLng)
+        ? (isOffset(rawLng) ? start.lng + rawLng : rawLng)
+        : start.lng + (i + 1) * 0.002;
+      return {
+        poiId: `poi-${i + 1}`,
+        name: String(p.name || `Stop ${i + 1}`),
+        lat,
+        lng,
+        radiusM: 35,
+        script: String(p.script || ""),
+        facts: Array.isArray(p.facts) ? p.facts.map(String) : [],
+        orderIndex: i,
+      };
+    });
 
-    const tourId = "gen-" + Date.now();
-    const pois: POI[] = items.slice(0, 7).map((p: Record<string, unknown>, i: number) => ({
-      poiId: `poi-${i + 1}`,
-      tourId,
-      name: String(p.name || `Stop ${i + 1}`),
-      lat: Number(p.lat) || startPlace.lat + (i * 0.001),
-      lng: Number(p.lng) || startPlace.lng + (i * 0.001),
-      radiusM: 35,
-      scripts: { [voiceStyle]: String(p.script || "") },
-      facts: Array.isArray(p.facts) ? p.facts.map(String) : [],
-      scriptVersion: 1,
-    }));
-
-    const routePoints: LatLng[] = [{ lat: startPlace.lat, lng: startPlace.lng }, ...pois.map((p) => ({ lat: p.lat, lng: p.lng }))];
-    const tour: Tour = {
-      tourId,
-      name: `${theme} Walk`,
-      city: startPlace.name,
-      routePoints,
-      poiIds: pois.map((p) => p.poiId),
-      defaultVoiceStyle: voiceStyle,
-      defaultLang: lang,
+    const routePoints: LatLng[] = [
+      { lat: start.lat, lng: start.lng },
+      ...pois.map((p) => ({ lat: p.lat, lng: p.lng })),
+      { lat: start.lat, lng: start.lng },
+    ];
+    const tourPlan: TourPlan = {
+      intro: String(parsed.intro || "Welcome to your tour."),
+      outro: String(parsed.outro || "Thanks for walking with us."),
+      theme: String(theme),
       estimatedMinutes: durationMin,
-      tags: [theme],
+      routePoints,
     };
 
-    return NextResponse.json({ tour, pois });
+    const response: GeneratedTourResponse = { sessionId, tourPlan, pois };
+    return NextResponse.json(response);
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Generate failed" },
