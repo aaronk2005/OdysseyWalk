@@ -13,6 +13,7 @@ import { FirstTimeHint } from "@/components/FirstTimeHint";
 import { AskTextModal } from "@/components/AskTextModal";
 import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
+import { VoiceFallbackBanner } from "@/components/VoiceFallbackBanner";
 import { DebugPanel, type ApiStatus } from "@/components/DebugPanel";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { useToast } from "@/components/ToastProvider";
@@ -203,6 +204,11 @@ export default function TourActivePage() {
           <MapsKeyBanner />
         </div>
       )}
+      {!introPlayed && (
+        <div className="px-4 pt-2 z-20">
+          <VoiceFallbackBanner />
+        </div>
+      )}
       {introPlayed && session.mode === "demo" && (
         <div className="px-4 pt-2 z-20 shrink-0">
           <DemoModeBanner onJumpNext={jumpNext} onRunScriptedDemo={() => {}} />
@@ -331,9 +337,17 @@ export default function TourActivePage() {
             />
           </div>
 
-          {/* Zone 3: Voice bar — mic is the hero */}
+          {/* Zone 3: Voice bar — mic is the hero + voice next */}
           <div className="flex-1 min-h-0 flex flex-col justify-end relative">
-            <VoiceBar askState={askState} onAskStart={handleAskStart} onAskStop={handleAskStop} />
+            <VoiceBar
+              askState={askState}
+              onAskStart={handleAskStart}
+              onAskStop={handleAskStop}
+              onVoiceNextStart={startVoiceNext}
+              onVoiceNextStop={stopVoiceNext}
+              isVoiceNextRecording={isVoiceNextRecording}
+              voiceNextError={voiceNextError}
+            />
             {/* First-time hint: shows once */}
             <FirstTimeHint
               storageKey="odyssey-hint-mic"

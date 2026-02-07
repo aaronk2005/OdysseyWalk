@@ -11,8 +11,47 @@ function simpleHash(s: string): string {
   return "a" + Math.abs(h).toString(36);
 }
 
+/**
+ * Browser-native TTS fallback using SpeechSynthesis API.
+ * Used when the server TTS endpoint is unavailable.
+ */
+function browserTtsAvailable(): boolean {
+  return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
+function speakWithBrowserTts(text: string, lang: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!browserTtsAvailable()) {
+      reject(new Error("Browser TTS not available"));
+      return;
+    }
+    // Cancel any in-progress speech
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === "fr" ? "fr-FR" : "en-US";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.onend = () => resolve();
+    utterance.onerror = (e) => {
+      if (e.error === "canceled" || e.error === "interrupted") {
+        resolve(); // Not an error — we stopped it
+      } else {
+        reject(new Error("Browser TTS error: " + e.error));
+      }
+    };
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
+function cancelBrowserTts(): void {
+  if (browserTtsAvailable()) {
+    window.speechSynthesis.cancel();
+  }
+}
+
 class AudioSessionManagerImpl {
   private state: AudioState = AudioState.IDLE;
+  private stateBeforePause: AudioState = AudioState.IDLE;
   private listeners = new Set<AudioStateListener>();
   private currentAudio: HTMLAudioElement | null = null;
   private cache = new Map<string, string>();
@@ -124,7 +163,10 @@ class AudioSessionManagerImpl {
     }
   }
 
+  private usingBrowserTts = false;
+
   private async playTts(text: string, purpose: string): Promise<{ played: boolean }> {
+    this.usingBrowserTts = false;
     const key = this.cacheKey(text, purpose);
     const cached = this.cache.get(key);
     if (cached) {
@@ -143,13 +185,25 @@ class AudioSessionManagerImpl {
         return { played: true };
       }
     } catch {
-      // fall through to placeholder
+      // fall through to browser TTS
+    }
+    // Fallback: use browser's built-in SpeechSynthesis API
+    if (browserTtsAvailable()) {
+      try {
+        this.usingBrowserTts = true;
+        await speakWithBrowserTts(text, this.lang);
+        this.usingBrowserTts = false;
+        return { played: true };
+      } catch {
+        this.usingBrowserTts = false;
+        // fall through to placeholder
+      }
     }
     try {
       await this.playUrl(PLACEHOLDER_AUDIO);
       return { played: true };
     } catch {
-      // no audio
+      // no audio at all
     }
     if (
       this.state === AudioState.PLAYING_INTRO ||
@@ -179,6 +233,7 @@ class AudioSessionManagerImpl {
   }
 
   pauseForMic(): void {
+    cancelBrowserTts();
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio = null;
@@ -187,19 +242,31 @@ class AudioSessionManagerImpl {
   }
 
   pause(): void {
+    cancelBrowserTts();
     if (this.currentAudio) this.currentAudio.pause();
+    // Remember what we were doing so resume() can restore the correct state
+    if (this.state !== AudioState.PAUSED && this.state !== AudioState.IDLE) {
+      this.stateBeforePause = this.state;
+    }
     this.setState(AudioState.PAUSED);
   }
 
   resume(): void {
     if (this.currentAudio) {
-      this.currentAudio.play();
-      const was = this.state;
-      if (was === AudioState.PAUSED) this.setState(AudioState.NAVIGATING);
+      this.currentAudio.play().catch(() => {});
+      // Restore the state we were in before pause (NARRATING, ANSWERING, etc.)
+      const restoreTo = this.stateBeforePause !== AudioState.IDLE && this.stateBeforePause !== AudioState.PAUSED
+        ? this.stateBeforePause
+        : AudioState.NAVIGATING;
+      this.setState(restoreTo);
+    } else {
+      // No audio to resume — just go to NAVIGATING
+      this.setState(AudioState.NAVIGATING);
     }
   }
 
   stop(): void {
+    cancelBrowserTts();
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;

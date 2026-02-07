@@ -9,6 +9,7 @@ import { PlaceSearchBox, type PlaceResult } from "@/components/PlaceSearchBox";
 import { TourGenerationPanel, type TourPreferences } from "@/components/TourGenerationPanel";
 import { MapView } from "@/components/MapView";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
+import { ApiStatusBanner } from "@/components/ApiStatusBanner";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { GeneratingSteps } from "@/components/GeneratingSteps";
 import { useToast } from "@/components/ToastProvider";
@@ -24,7 +25,7 @@ const DEFAULT_PREFERENCES: TourPreferences = {
   voiceStyle: "friendly",
 };
 
-const GENERATE_TIMEOUT_MS = 15000;
+const GENERATE_TIMEOUT_MS = 30000;
 
 export default function CreateTourPage() {
   const router = useRouter();
@@ -136,6 +137,7 @@ export default function CreateTourPage() {
       setGenerated(typed);
       saveTour(typed.sessionId, typed);
       if (typed.tourPlan?.routePoints?.length >= 2) setFitBoundsTrigger((t) => t + 1);
+      showToast(`Tour generated! ${typed.pois.length} stops ready.`, "success");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Generation failed";
       setError(msg);
@@ -216,6 +218,7 @@ export default function CreateTourPage() {
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-6">
         {!mapKey && <MapsKeyBanner className="mb-2" />}
+        <ApiStatusBanner className="mb-2" />
         <div className="space-y-2">
           <p className="text-hint text-ink-tertiary">Step 1: Set your start</p>
           <p className="text-caption text-ink-secondary">

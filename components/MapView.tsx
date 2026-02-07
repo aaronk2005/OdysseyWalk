@@ -53,6 +53,7 @@ export function MapView({
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<{ lat: number; lng: number }[]>([]);
   const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -85,6 +86,7 @@ export function MapView({
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
+      gestureHandling: "greedy", // Better mobile UX: pan with one finger
       styles: [
         { featureType: "water", elementType: "geometry", stylers: [{ color: "#a3ccff" }] },
         { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#5c5c5c" }] },
@@ -105,14 +107,16 @@ export function MapView({
       const um = new g.maps.Marker({
         position: { lat: loc.lat, lng: loc.lng },
         map,
+        title: "Your location",
         icon: {
           path: g.maps.SymbolPath.CIRCLE,
-          scale: 8,
+          scale: 10,
           fillColor: "#22c55e",
           fillOpacity: 1,
           strokeColor: "#fff",
-          strokeWeight: 2,
+          strokeWeight: 3,
         },
+        zIndex: 1000, // Always on top
       });
       userMarkerRef.current = um;
     }
@@ -214,8 +218,20 @@ export function MapView({
           strokeColor: "#fff",
           strokeWeight: navigationMode && isActive ? 3 : 2,
         },
+        animation: isActive ? g.maps.Animation.BOUNCE : undefined,
+        optimized: false, // Better rendering for custom icons
       });
-      marker.addListener("click", () => onPoiClick?.(poi.poiId));
+      marker.addListener("click", () => {
+        // Show info window on click
+        if (!infoWindowRef.current) {
+          infoWindowRef.current = new g.maps.InfoWindow();
+        }
+        const statusText = isVisited ? "✓ Visited" : isActive ? "📍 Current stop" : "Upcoming";
+        const content = `<div style="padding:8px;font-family:system-ui;"><strong style="display:block;margin-bottom:4px;">${poi.name}</strong><span style="font-size:12px;color:#64748b;">${statusText}</span></div>`;
+        infoWindowRef.current.setContent(content);
+        infoWindowRef.current.open(map, marker);
+        onPoiClick?.(poi.poiId);
+      });
       markersRef.current.set(poi.poiId, marker);
     });
   }, [mapReady, routePointsProp, polylineEncoded, pois, onPoiClick, navigationMode]);
@@ -266,14 +282,16 @@ export function MapView({
       const um = new g.maps.Marker({
         position: { lat: userLocation.lat, lng: userLocation.lng },
         map,
+        title: "Your location",
         icon: {
           path: g.maps.SymbolPath.CIRCLE,
-          scale: 8,
+          scale: 10,
           fillColor: "#22c55e",
           fillOpacity: 1,
           strokeColor: "#fff",
-          strokeWeight: 2,
+          strokeWeight: 3,
         },
+        zIndex: 1000, // Always on top
       });
       userMarkerRef.current = um;
     }

@@ -49,7 +49,12 @@ export async function POST(req: Request) {
     );
   }
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+    }
     const {
       start,
       theme = "history",
@@ -68,8 +73,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "start with lat, lng, label required" }, { status: 400 });
     }
 
-    const numStops = numStopsFromDuration(durationMin);
-    const startLabel = String(start.label || "Location");
+    // Validate coordinate ranges
+    const lat = Number(start.lat);
+    const lng = Number(start.lng);
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+      return NextResponse.json({ error: "Invalid latitude: must be between -90 and 90" }, { status: 400 });
+    }
+    if (!Number.isFinite(lng) || lng < -180 || lng > 180) {
+      return NextResponse.json({ error: "Invalid longitude: must be between -180 and 180" }, { status: 400 });
+    }
+
+    // Validate duration
+    const validatedDuration = Number(durationMin);
+    if (!Number.isFinite(validatedDuration) || validatedDuration < 15 || validatedDuration > 90) {
+      return NextResponse.json({ error: "Invalid duration: must be between 15 and 90 minutes" }, { status: 400 });
+    }
+
+    // Use validated coordinates
+    const validatedStart = { lat, lng, label: String(start.label) };
+
+    const numStops = numStopsFromDuration(validatedDuration);
+    const startLabel = validatedStart.label || "Location";
 
     const systemPrompt = `You are a tour plan generator. Output ONLY valid JSON (no markdown, no code fence).
 
@@ -93,7 +117,7 @@ Structure:
   ]
 }`;
 
-    const userPrompt = `Start: ${startLabel} at ${start.lat}, ${start.lng}. Theme: ${theme}. Duration: ${durationMin} min. Target stops: ${numStops}. Language: ${lang}. Voice style: ${voiceStyle}. Generate exactly ${numStops} real, popular tourist POIs in this area. Output the JSON.`;
+    const userPrompt = `Start: ${startLabel} at ${lat}, ${lng}. Theme: ${theme}. Duration: ${validatedDuration} min. Target stops: ${numStops}. Language: ${lang}. Voice style: ${voiceStyle}. Generate exactly ${numStops} real, popular tourist POIs in this area. Output the JSON.`;
 
     const key = process.env.OPENROUTER_API_KEY!;
     let raw = "{}";
@@ -158,21 +182,21 @@ Structure:
     const pois: POI[] = cappedItems.map((p, i) => {
       const rawLat = Number(p.lat);
       const rawLng = Number(p.lng);
-      const lat = Number.isFinite(rawLat)
+      const poiLat = Number.isFinite(rawLat)
         ? isOffset(rawLat)
-          ? start.lat + rawLat
+          ? validatedStart.lat + rawLat
           : rawLat
-        : start.lat + (i + 1) * 0.002;
-      const lng = Number.isFinite(rawLng)
+        : validatedStart.lat + (i + 1) * 0.002;
+      const poiLng = Number.isFinite(rawLng)
         ? isOffset(rawLng)
-          ? start.lng + rawLng
+          ? validatedStart.lng + rawLng
           : rawLng
-        : start.lng + (i + 1) * 0.002;
+        : validatedStart.lng + (i + 1) * 0.002;
       return {
         poiId: `poi-${i + 1}`,
         name: String(p.name || `Stop ${i + 1}`),
-        lat,
-        lng,
+        lat: poiLat,
+        lng: poiLng,
         radiusM: 35,
         script: String(p.script || ""),
         facts: Array.isArray(p.facts) ? p.facts.map(String) : [],
@@ -185,7 +209,7 @@ Structure:
     });
 
     // Compute time to get there (walking from previous stop or start)
-    const prevPoints: LatLng[] = [{ lat: start.lat, lng: start.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
+    const prevPoints: LatLng[] = [{ lat: validatedStart.lat, lng: validatedStart.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
     pois.forEach((poi, i) => {
       const from = prevPoints[i];
       const to = { lat: poi.lat, lng: poi.lng };
@@ -194,16 +218,23 @@ Structure:
     });
 
     const routePoints: LatLng[] = [
-      { lat: start.lat, lng: start.lng },
+      { lat: validatedStart.lat, lng: validatedStart.lng },
       ...pois.map((p) => ({ lat: p.lat, lng: p.lng })),
-      { lat: start.lat, lng: start.lng },
+      { lat: validatedStart.lat, lng: validatedStart.lng },
     ];
+
+    // Calculate total route distance in meters
+    let totalDistanceMeters = 0;
+    for (let i = 1; i < routePoints.length; i++) {
+      totalDistanceMeters += distanceMeters(routePoints[i - 1], routePoints[i]);
+    }
 
     const tourPlan: TourPlan = {
       intro: String(parsed.intro || "Welcome to your tour."),
       outro: String(parsed.outro || "Thanks for walking with us."),
       theme: String(theme),
-      estimatedMinutes: durationMin,
+      estimatedMinutes: validatedDuration,
+      distanceMeters: Math.round(totalDistanceMeters),
       routePoints,
       tourDate,
     };
@@ -222,9 +253,9 @@ Structure:
         "==============================",
         "",
         `Theme: ${theme}`,
-        `Duration: ~${durationMin} min`,
+        `Duration: ~${validatedDuration} min`,
         `Date: ${tourDate}`,
-        `Start: ${startLabel} (${start.lat}, ${start.lng})`,
+        `Start: ${startLabel} (${lat}, ${lng})`,
         "",
         "--- INTRO ---",
         tourPlan.intro,

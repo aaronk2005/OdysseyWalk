@@ -1,7 +1,7 @@
 declare global {
   interface Window {
     __googleMapsLoaded?: Promise<void>;
-    google?: unknown;
+    google?: typeof google;
     initGoogleMaps?: () => void;
   }
 }

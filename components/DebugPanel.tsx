@@ -10,6 +10,11 @@ export interface ApiStatus {
   mapsKeyPresent: boolean;
   openRouterConfigured: boolean;
   gradiumConfigured: boolean;
+  warnings?: string[];
+  fallbacks?: {
+    tts: string;
+    stt: string;
+  };
 }
 
 interface DebugPanelProps {
@@ -61,11 +66,25 @@ export function DebugPanel({
           >
             <p className="text-hint font-medium text-ink-secondary mb-2">Debug</p>
             {apiStatus != null && (
-              <div className="flex flex-wrap gap-2 mb-2">
-                <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.mapsKeyPresent ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>Maps</span>
-                <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.openRouterConfigured ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>OpenRouter</span>
-                <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.gradiumConfigured ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>Gradium</span>
-              </div>
+              <>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.mapsKeyPresent ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>Maps</span>
+                  <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.openRouterConfigured ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")}>OpenRouter</span>
+                  <span className={cn("text-xs px-1.5 py-0.5 rounded", apiStatus.gradiumConfigured ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800")}>Gradium</span>
+                </div>
+                {apiStatus.warnings && apiStatus.warnings.length > 0 && (
+                  <div className="mb-2 p-2 bg-blue-50 rounded text-[10px] text-blue-800">
+                    {apiStatus.warnings.map((w, i) => (
+                      <div key={i}>⚠️ {w}</div>
+                    ))}
+                  </div>
+                )}
+                {apiStatus.fallbacks && (
+                  <div className="mb-2 p-2 bg-emerald-50 rounded text-[10px] text-emerald-800">
+                    <div>✓ Fallback TTS/STT active</div>
+                  </div>
+                )}
+              </>
             )}
             {lastError && (
               <p className="text-xs text-red-600 mb-2 truncate max-w-full" title={lastError}>{lastError}</p>

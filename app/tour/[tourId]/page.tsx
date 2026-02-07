@@ -13,8 +13,8 @@ export default function TourIdPage() {
     else router.replace("/create");
   }, [router]);
   return (
-    <div className="min-h-screen flex items-center justify-center bg-navy-950">
-      <div className="w-10 h-10 rounded-full border-2 border-accent-blue border-t-transparent animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-app-bg">
+      <div className="w-10 h-10 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
     </div>
   );
 }

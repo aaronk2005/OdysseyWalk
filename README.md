@@ -20,19 +20,25 @@ Voice-first walking tour app: pick a start location, generate a route and POIs w
 2. **Environment**
    Copy `.env.example` to `.env.local` and set:
 
-   | Variable | Where | Purpose |
-   |----------|--------|---------|
-   | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Client | Map + Places search |
-   | `OPENROUTER_API_KEY` | Server only | Tour generation + Q&A |
-   | `GRADIUM_API_KEY` | Server only | TTS + STT |
-   | `GRADIUM_TTS_URL` | Server only | Gradium TTS endpoint |
-   | `GRADIUM_STT_URL` | Server only | Gradium STT endpoint |
+   | Variable | Where | Purpose | Required? |
+   |----------|--------|---------|-----------|
+   | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Client | Map + Places search | ⚠️ Recommended (or map won't show) |
+   | `OPENROUTER_API_KEY` | Server only | Tour generation + Q&A | ✅ Required (starts with `sk-or-v1-`) |
+
+   **Getting API Keys:**
+   - **Google Maps**: Get from [Google Cloud Console](https://console.cloud.google.com/) → Enable Maps JavaScript API & Places API
+   - **OpenRouter**: Get from [openrouter.ai](https://openrouter.ai/keys) (format: `sk-or-v1-...`)
+
+   **Voice Features:** The app uses browser-native `SpeechSynthesis` (TTS) and `SpeechRecognition` (STT). These work excellently in Chrome, Edge, and Safari - no additional API keys needed!
 
 3. **Run**
    ```bash
    npm run dev
    ```
    Open [http://localhost:3000](http://localhost:3000).
+
+4. **Health Check**
+   Visit `/api/health` to verify all API keys are configured correctly. Warnings will show if keys are misconfigured.
 
 ## Env vars (reference)
 

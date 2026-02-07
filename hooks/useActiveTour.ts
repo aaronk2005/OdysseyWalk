@@ -72,7 +72,12 @@ export function useActiveTour() {
     updateSession({ startedAt: Date.now(), mode: s.mode });
     setSession(loadTour());
     AudioSessionManager.setOptions({ lang: "en", voiceStyle: "friendly" });
-    await AudioSessionManager.playIntro(s.tourPlan.intro);
+    try {
+      await AudioSessionManager.playIntro(s.tourPlan.intro);
+    } catch (e) {
+      console.warn("[useActiveTour] Intro playback issue:", e);
+      // Continue anyway — browser TTS fallback or silent mode
+    }
     setIntroPlayed(true);
     updateSession({});
     setSession(loadTour());

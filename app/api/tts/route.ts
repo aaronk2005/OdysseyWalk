@@ -41,7 +41,12 @@ export async function POST(req: Request) {
   const apiKey = process.env.GRADIUM_API_KEY!;
   const ttsUrl = process.env.GRADIUM_TTS_URL!;
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+    }
     const {
       text,
       lang = "en",
@@ -61,15 +66,22 @@ export async function POST(req: Request) {
 
     const langKey = lang === "fr" ? "fr" : "en";
     const voiceId = getGradiumVoiceId(langKey, voiceStyle);
-    // Gradium API: setup.model_name, setup.voice_id, setup.output_format; text. Supports wav/pcm/opus (no mp3).
-    const gradiumBody = {
-      setup: {
-        model_name: "default",
-        voice_id: voiceId,
-        output_format: "wav",
-        ...(langKey ? { json_config: { rewrite_rules: langKey } } : {}),
-      },
+    // Gradium API POST format per https://gradium.ai/api_docs.html:
+    // - Use x-api-key header (not Bearer token)
+    // - Request body: { text, voice_id, output_format, only_audio?, json_config? }
+    // - When only_audio=true, returns raw audio bytes (not JSON)
+    const gradiumBody: {
+      text: string;
+      voice_id: string;
+      output_format: string;
+      only_audio: boolean;
+      json_config?: string;
+    } = {
       text: text.slice(0, 5000),
+      voice_id: voiceId,
+      output_format: "wav",
+      only_audio: !returnBase64, // When only_audio=true, get raw bytes; when false, get JSON stream
+      ...(langKey ? { json_config: JSON.stringify({ rewrite_rules: langKey }) } : {}),
     };
 
     const gradiumRes = await fetchWithTimeout(
@@ -78,7 +90,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          "x-api-key": apiKey, // Gradium uses x-api-key header, not Bearer token
         },
         body: JSON.stringify(gradiumBody),
       },
@@ -87,10 +99,12 @@ export async function POST(req: Request) {
 
     if (!gradiumRes.ok) {
       const errText = await gradiumRes.text();
-      const hint =
-        gradiumRes.status === 401
-          ? " Check GRADIUM_API_KEY: use a key from https://gradium.ai (format gd_...)."
-          : "";
+      let hint = "";
+      if (gradiumRes.status === 401) {
+        hint = " Check GRADIUM_API_KEY: use a key from https://gradium.ai (format gd_...).";
+      } else if (gradiumRes.status === 404) {
+        hint = " Endpoint not found. Check GRADIUM_TTS_URL - competition keys may use different endpoints. See docs/GRADIUM_COMPETITION_SETUP.md";
+      }
       return NextResponse.json(
         { error: "TTS provider error: " + errText + hint },
         { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
@@ -100,27 +114,59 @@ export async function POST(req: Request) {
     const contentType = gradiumRes.headers.get("content-type") ?? "";
     let bytes: Uint8Array;
 
+    // Gradium API: when only_audio=true, returns raw audio bytes (audio/wav)
+    // When only_audio=false, returns JSON stream (application/json)
     if (contentType.includes("application/json")) {
-      const data = (await gradiumRes.json()) as {
-        raw_data?: string;
-        audio?: string;
-        error?: string;
-      };
-      if (data.error) {
-        return NextResponse.json(
-          { error: "TTS provider error: " + data.error },
-          { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
-        );
+      // JSON stream format (when only_audio=false)
+      // This is a streaming response with multiple JSON messages
+      // For simplicity, we'll read the entire stream and extract audio
+      const text = await gradiumRes.text();
+      // Try to parse as JSON - might be a single message or stream
+      try {
+        const lines = text.trim().split("\n").filter((l) => l.trim());
+        let audioData = "";
+        for (const line of lines) {
+          const msg = JSON.parse(line);
+          if (msg.type === "audio" && msg.audio) {
+            audioData += msg.audio; // Base64 audio chunks
+          } else if (msg.type === "error") {
+            return NextResponse.json(
+              { error: "TTS provider error: " + (msg.message || JSON.stringify(msg)) },
+              { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
+            );
+          }
+        }
+        if (!audioData) {
+          return NextResponse.json(
+            { error: "TTS provider returned no audio in JSON stream" },
+            { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
+          );
+        }
+        bytes = new Uint8Array(Buffer.from(audioData, "base64"));
+      } catch (e) {
+        // Fallback: try parsing as single JSON object
+        const data = JSON.parse(text) as {
+          raw_data?: string;
+          audio?: string;
+          error?: string;
+        };
+        if (data.error) {
+          return NextResponse.json(
+            { error: "TTS provider error: " + data.error },
+            { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
+          );
+        }
+        const b64 = data.raw_data ?? data.audio ?? "";
+        if (!b64 || typeof b64 !== "string") {
+          return NextResponse.json(
+            { error: "TTS provider returned no audio" },
+            { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
+          );
+        }
+        bytes = new Uint8Array(Buffer.from(b64, "base64"));
       }
-      const b64 = data.raw_data ?? data.audio ?? "";
-      if (!b64 || typeof b64 !== "string") {
-        return NextResponse.json(
-          { error: "TTS provider returned no audio" },
-          { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
-        );
-      }
-      bytes = new Uint8Array(Buffer.from(b64, "base64"));
     } else {
+      // Raw audio bytes (when only_audio=true)
       const arrayBuffer = await gradiumRes.arrayBuffer();
       bytes = new Uint8Array(arrayBuffer);
     }
@@ -140,7 +186,7 @@ export async function POST(req: Request) {
       );
     }
 
-    return new NextResponse(bytes, {
+    return new NextResponse(Buffer.from(bytes), {
       headers: {
         "Content-Type": "audio/wav",
         "Cache-Control": "public, max-age=86400",

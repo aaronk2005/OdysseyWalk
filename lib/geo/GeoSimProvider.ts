@@ -123,10 +123,12 @@ export class GeoSimProvider implements ILocationProvider {
 
   private emitFromRoute(): void {
     const p = this.routePoints[this.currentIdx];
-    if (p) this.emit({ lat: p.lat, lng: p.lng, timestamp: Date.now() });
+    if (p) this.emit({ lat: p.lat, lng: p.lng, accuracy: 0, timestamp: Date.now() });
   }
 
   private emit(update: LocationUpdate): void {
+    // Ensure accuracy is always set for simulated positions
+    if (update.accuracy == null) update.accuracy = 0;
     this.callbacks.forEach((cb) => cb(update));
   }
 }

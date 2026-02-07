@@ -30,9 +30,8 @@ export function getServerConfig(): ServerConfig {
   const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   return {
     openRouterConfigured: Boolean(openRouter && openRouter.trim()),
-    gradiumConfigured: Boolean(
-      gradiumKey?.trim() && gradiumTts?.trim() && gradiumStt?.trim()
-    ),
+    // Gradium STT is WebSocket-only, so we only need TTS URL configured
+    gradiumConfigured: Boolean(gradiumKey?.trim() && gradiumTts?.trim()),
     mapsKeyPresent: Boolean(mapsKey && mapsKey.trim()),
   };
 }
