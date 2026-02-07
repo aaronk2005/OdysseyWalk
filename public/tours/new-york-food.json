@@ -1,0 +1,35 @@
+{
+  "tour": {
+    "tourId": "new-york-food",
+    "name": "NYC Food Tour",
+    "city": "New York, USA",
+    "estimatedMinutes": 60,
+    "thumbnailUrl": "/tours/thumb-nyc.jpg",
+    "tags": ["food", "culture", "dining"],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Little Italy",
+      "lat": 40.7191,
+      "lng": -73.9973,
+      "orderIndex": 0
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Chinatown",
+      "lat": 40.7158,
+      "lng": -73.9970,
+      "orderIndex": 1
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Greenwich Village",
+      "lat": 40.7336,
+      "lng": -74.0027,
+      "orderIndex": 2
+    }
+  ]
+}

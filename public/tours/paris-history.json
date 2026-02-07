@@ -1,0 +1,35 @@
+{
+  "tour": {
+    "tourId": "paris-history",
+    "name": "Historic Paris Walk",
+    "city": "Paris, France",
+    "estimatedMinutes": 45,
+    "thumbnailUrl": "/tours/thumb-paris.jpg",
+    "tags": ["history", "architecture", "landmarks"],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Notre-Dame Cathedral",
+      "lat": 48.8530,
+      "lng": 2.3499,
+      "orderIndex": 0
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Louvre Museum",
+      "lat": 48.8606,
+      "lng": 2.3376,
+      "orderIndex": 1
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Arc de Triomphe",
+      "lat": 48.8738,
+      "lng": 2.2950,
+      "orderIndex": 2
+    }
+  ]
+}

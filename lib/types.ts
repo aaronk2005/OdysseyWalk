@@ -16,8 +16,8 @@ export interface LocationUpdate {
 }
 
 export type VoiceStyle = "friendly" | "historian" | "funny";
-export type Lang = "en" | "fr";
-export type Theme = "history" | "food" | "campus" | "spooky" | "art";
+export type Lang = "en" | "fr" | "es" | "de" | "it" | "ja" | "pt" | "zh";
+export type Theme = "history" | "food" | "campus" | "spooky" | "art" | "nature" | "architecture" | "culture";
 
 /** Legacy: for static tour list API if used */
 export interface TourSummary {
@@ -62,6 +62,9 @@ export interface TourPlan {
   routePoints: LatLng[];
   /** Date of the tour (e.g. generation date) */
   tourDate?: string;
+  /** Voice settings for consistent TTS throughout tour */
+  voiceLang?: Lang;
+  voiceStyle?: VoiceStyle;
 }
 
 export interface POI {

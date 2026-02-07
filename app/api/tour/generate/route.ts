@@ -7,6 +7,7 @@ import { rateLimit } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/api/getClientIp";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { distanceMeters } from "@/lib/maps/haversine";
+import { getWalkingDirections } from "@/lib/maps/directions";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -95,13 +96,25 @@ export async function POST(req: Request) {
     const numStops = numStopsFromDuration(validatedDuration);
     const startLabel = validatedStart.label || "Location";
 
+    const langNames: Record<Lang, string> = {
+      en: "English",
+      fr: "French",
+      es: "Spanish",
+      de: "German",
+      it: "Italian",
+      ja: "Japanese",
+      pt: "Portuguese",
+      zh: "Chinese",
+    };
+    const langName = langNames[lang] ?? "English";
+
     const systemPrompt = `You are a tour plan generator. Output ONLY valid JSON (no markdown, no code fence).
 
-You receive the start (lat, lng, label) in the request—do NOT create or invent the start location; use it as the center for the tour. Use the start and theme to pick popular tourist-appropriate POIs (real landmarks, attractions, notable spots) within a reasonable walking radius (1–2 km). Generate exactly ${numStops} POIs. Walking loop from start, back to start. Safe, plausible content only. Scripts in the requested language and voice style.
+You receive the start (lat, lng, label) in the request—do NOT create or invent the start location; use it as the center for the tour. Use the start and theme to pick popular tourist-appropriate POIs (real landmarks, attractions, notable spots) within a reasonable walking radius (1–2 km). Generate exactly ${numStops} POIs. Walking loop from start, back to start. Safe, plausible content only. Scripts in ${langName} (${lang}) and ${voiceStyle} voice style.
 
 Structure:
 {
-  "intro": "30-60 word welcome script in ${lang === "fr" ? "French" : "English"}, ${voiceStyle} tone",
+  "intro": "30-60 word welcome script in ${langName}, ${voiceStyle} tone",
   "outro": "20-40 word closing script",
   "pois": [
     {
@@ -208,25 +221,58 @@ Structure:
       };
     });
 
-    // Compute time to get there (walking from previous stop or start)
-    const prevPoints: LatLng[] = [{ lat: validatedStart.lat, lng: validatedStart.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
-    pois.forEach((poi, i) => {
-      const from = prevPoints[i];
-      const to = { lat: poi.lat, lng: poi.lng };
-      const distM = distanceMeters(from, to);
-      poi.timeToGetThereMin = Math.max(1, Math.round(distM / WALKING_M_PER_MIN));
-    });
-
-    const routePoints: LatLng[] = [
+    // Build waypoints for walking directions (start -> POIs -> back to start)
+    const waypoints: LatLng[] = [
       { lat: validatedStart.lat, lng: validatedStart.lng },
       ...pois.map((p) => ({ lat: p.lat, lng: p.lng })),
       { lat: validatedStart.lat, lng: validatedStart.lng },
     ];
 
-    // Calculate total route distance in meters
+    // Get actual walking route from Google Maps Directions API
+    const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    let routePoints: LatLng[] = waypoints;
     let totalDistanceMeters = 0;
-    for (let i = 1; i < routePoints.length; i++) {
-      totalDistanceMeters += distanceMeters(routePoints[i - 1], routePoints[i]);
+    let totalDurationSeconds = 0;
+
+    if (mapsApiKey) {
+      const directions = await getWalkingDirections(waypoints, mapsApiKey);
+      if (directions) {
+        routePoints = directions.routePoints;
+        totalDistanceMeters = directions.distanceMeters;
+        totalDurationSeconds = directions.durationSeconds;
+
+        // Update POI time-to-get-there using actual route segments
+        // For simplicity, distribute time proportionally
+        const totalWalkingTimeMin = Math.round(totalDurationSeconds / 60);
+        const avgTimePerSegment = pois.length > 0 ? totalWalkingTimeMin / (pois.length + 1) : 0;
+        pois.forEach((poi, i) => {
+          poi.timeToGetThereMin = Math.max(1, Math.round(avgTimePerSegment));
+        });
+      } else {
+        // Fallback to Haversine if Directions API fails
+        const prevPoints: LatLng[] = [{ lat: validatedStart.lat, lng: validatedStart.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
+        pois.forEach((poi, i) => {
+          const from = prevPoints[i];
+          const to = { lat: poi.lat, lng: poi.lng };
+          const distM = distanceMeters(from, to);
+          poi.timeToGetThereMin = Math.max(1, Math.round(distM / WALKING_M_PER_MIN));
+        });
+        for (let i = 1; i < waypoints.length; i++) {
+          totalDistanceMeters += distanceMeters(waypoints[i - 1], waypoints[i]);
+        }
+      }
+    } else {
+      // No API key, use Haversine fallback
+      const prevPoints: LatLng[] = [{ lat: validatedStart.lat, lng: validatedStart.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
+      pois.forEach((poi, i) => {
+        const from = prevPoints[i];
+        const to = { lat: poi.lat, lng: poi.lng };
+        const distM = distanceMeters(from, to);
+        poi.timeToGetThereMin = Math.max(1, Math.round(distM / WALKING_M_PER_MIN));
+      });
+      for (let i = 1; i < waypoints.length; i++) {
+        totalDistanceMeters += distanceMeters(waypoints[i - 1], waypoints[i]);
+      }
     }
 
     const tourPlan: TourPlan = {
@@ -237,6 +283,8 @@ Structure:
       distanceMeters: Math.round(totalDistanceMeters),
       routePoints,
       tourDate,
+      voiceLang: lang,
+      voiceStyle: voiceStyle,
     };
 
     const response: GeneratedTourResponse = { sessionId, tourPlan, pois };

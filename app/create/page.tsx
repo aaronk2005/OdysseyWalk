@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,8 +12,11 @@ import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { ApiStatusBanner } from "@/components/ApiStatusBanner";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { GeneratingSteps } from "@/components/GeneratingSteps";
+import { ResumeWalkBanner } from "@/components/ResumeWalkBanner";
 import { useToast } from "@/components/ToastProvider";
-import { saveTour } from "@/lib/data/SessionStore";
+import { loadTour, saveTour } from "@/lib/data/SessionStore";
+import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
+import type { SessionState } from "@/lib/types";
 import type { GeneratedTourResponse, Theme } from "@/lib/types";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { cn } from "@/lib/utils/cn";
@@ -40,7 +43,15 @@ export default function CreateTourPage() {
   const [generated, setGenerated] = useState<GeneratedTourResponse | null>(null);
   const [locating, setLocating] = useState(false);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
+  const [resumableSession, setResumableSession] = useState<SessionState | null>(null);
+  const [introPreviewPlaying, setIntroPreviewPlaying] = useState(false);
   const generatingRef = useRef(false);
+
+  useEffect(() => {
+    const s = loadTour();
+    if (s && s.startedAt > 0 && !s.endedAt) setResumableSession(s);
+    else setResumableSession(null);
+  }, []);
 
   const handleUseMyLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -196,6 +207,22 @@ export default function CreateTourPage() {
     if (generated) router.push("/tour/active");
   }, [generated, router]);
 
+  const handlePlayIntroPreview = useCallback(async () => {
+    if (!generated || introPreviewPlaying) return;
+    setIntroPreviewPlaying(true);
+    AudioSessionManager.setOptions({
+      lang: generated.tourPlan.voiceLang ?? "en",
+      voiceStyle: generated.tourPlan.voiceStyle ?? "friendly",
+    });
+    try {
+      await AudioSessionManager.playIntro(generated.tourPlan.intro);
+    } catch {
+      showToast("Could not play intro preview", "error");
+    } finally {
+      setIntroPreviewPlaying(false);
+    }
+  }, [generated, introPreviewPlaying, showToast]);
+
   const center = startPlace
     ? { lat: startPlace.lat, lng: startPlace.lng }
     : { lat: 37.7849, lng: -122.4094 };
@@ -217,6 +244,9 @@ export default function CreateTourPage() {
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-6">
+        {resumableSession && (
+          <ResumeWalkBanner session={resumableSession} className="mb-2" />
+        )}
         {!mapKey && <MapsKeyBanner className="mb-2" />}
         <ApiStatusBanner className="mb-2" />
         <div className="space-y-2">
@@ -350,6 +380,17 @@ export default function CreateTourPage() {
             <p className="text-caption text-ink-secondary">
               Route with {generated.pois.length} stops. Review the map and start when ready.
             </p>
+            <button
+              type="button"
+              onClick={handlePlayIntroPreview}
+              disabled={introPreviewPlaying}
+              className={cn(
+                "w-full py-2.5 rounded-button border border-app-border text-ink-secondary font-medium hover:bg-surface-muted hover:text-ink-primary transition-colors min-h-[44px]",
+                introPreviewPlaying && "opacity-70 cursor-not-allowed"
+              )}
+            >
+              {introPreviewPlaying ? "Playing intro…" : "Listen to intro preview"}
+            </button>
             <button
               type="button"
               onClick={handleStartWalk}

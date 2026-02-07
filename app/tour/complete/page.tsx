@@ -158,7 +158,7 @@ export default function TourCompletePage() {
                 Nice walk.
               </h2>
               <p className="text-body text-ink-secondary">
-                You&apos;ve completed the {tourLabel}.
+                You walked, you listened, you asked. The {tourLabel} is complete.
               </p>
             </div>
           </div>

@@ -1,0 +1,35 @@
+{
+  "tour": {
+    "tourId": "london-art",
+    "name": "London Art Walk",
+    "city": "London, UK",
+    "estimatedMinutes": 50,
+    "thumbnailUrl": "/tours/thumb-london.jpg",
+    "tags": ["art", "museums", "culture"],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Tate Modern",
+      "lat": 51.5076,
+      "lng": -0.0994,
+      "orderIndex": 0
+    },
+    {
+      "poiId": "poi-2",
+      "name": "National Gallery",
+      "lat": 51.5089,
+      "lng": -0.1283,
+      "orderIndex": 1
+    },
+    {
+      "poiId": "poi-3",
+      "name": "British Museum",
+      "lat": 51.5194,
+      "lng": -0.1270,
+      "orderIndex": 2
+    }
+  ]
+}

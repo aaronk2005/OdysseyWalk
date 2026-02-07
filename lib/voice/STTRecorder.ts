@@ -106,17 +106,29 @@ export class STTRecorder {
     this.useBrowserFallback = true;
     const recognition = new SpeechRec();
     this.browserRecognition = recognition;
-    recognition.lang = "en-US";
+    // Set language based on browser preference or default to English
+    recognition.lang = navigator.language || "en-US";
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0]?.[0]?.transcript ?? "";
-      this.callbacks.onTranscript?.(transcript);
+      if (transcript.trim()) {
+        this.callbacks.onTranscript?.(transcript);
+      } else {
+        // Empty transcript - trigger fallback
+        this.callbacks.onError?.("No speech detected");
+      }
     };
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      this.callbacks.onError?.("Speech recognition: " + event.error);
+      // Don't treat "no-speech" as a fatal error - let user try again
+      if (event.error === "no-speech") {
+        this.callbacks.onStop?.();
+        this.callbacks.onError?.("No speech detected. Please try again.");
+      } else {
+        this.callbacks.onError?.("Speech recognition: " + event.error);
+      }
     };
     recognition.onend = () => {
       this.callbacks.onStop?.();

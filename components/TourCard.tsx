@@ -49,7 +49,7 @@ export function TourCard({ tour, index = 0 }: TourCardProps) {
             </h3>
             <p className="text-caption text-ink-secondary mt-1">
               {tour.poiCount} stops
-              {tour.tags.length ? ` · ${tour.tags.slice(0, 2).join(", ")}` : ""}
+              {Array.isArray(tour.tags) && tour.tags.length ? ` · ${tour.tags.slice(0, 2).join(", ")}` : ""}
             </p>
           </div>
         </div>

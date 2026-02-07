@@ -1,0 +1,35 @@
+{
+  "tour": {
+    "tourId": "rome-history",
+    "name": "Ancient Rome Walk",
+    "city": "Rome, Italy",
+    "estimatedMinutes": 50,
+    "thumbnailUrl": "/tours/thumb-rome.jpg",
+    "tags": ["history", "ancient", "architecture"],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Colosseum",
+      "lat": 41.8902,
+      "lng": 12.4922,
+      "orderIndex": 0
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Roman Forum",
+      "lat": 41.8925,
+      "lng": 12.4853,
+      "orderIndex": 1
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Pantheon",
+      "lat": 41.8986,
+      "lng": 12.4769,
+      "orderIndex": 2
+    }
+  ]
+}

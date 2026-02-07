@@ -5,8 +5,8 @@ import { Mic, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 /**
- * Zone 3: Voice Bar with Q&A mic + optional "say next" button.
- * Large circular mic = hero. Hold to ask; states: Listening… / Thinking… / Speaking…
+ * Voice Bar: mic is the hero. One large centered Ask button; Voice Next is secondary.
+ * Hold to ask; states: Idle / Listening / Thinking / Speaking.
  */
 export type VoiceBarAskState = "idle" | "listening" | "thinking" | "speaking";
 
@@ -43,31 +43,15 @@ export function VoiceBar({
   return (
     <div className="px-4 py-4 safe-bottom">
       <div className="flex flex-col items-center gap-3 max-w-lg mx-auto">
-        {/* Primary: Q&A mic button */}
-        <div className="flex items-center gap-4">
-          {/* Voice Next: say "next" to skip */}
-          {onVoiceNextStart && onVoiceNextStop && (
-            <motion.button
-              type="button"
-              onMouseDown={onVoiceNextStart}
-              onMouseLeave={onVoiceNextStop}
-              onMouseUp={onVoiceNextStop}
-              onTouchStart={(e) => { e.preventDefault(); onVoiceNextStart(); }}
-              onTouchEnd={(e) => { e.preventDefault(); onVoiceNextStop(); }}
-              onTouchCancel={onVoiceNextStop}
-              whileTap={{ scale: 0.92 }}
-              className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 select-none touch-manipulation border-2",
-                isVoiceNextRecording
-                  ? "bg-brand-primary/20 border-brand-primary text-brand-primary animate-pulse"
-                  : "bg-surface border-app-border text-ink-secondary hover:border-brand-primary/50 hover:text-ink-primary"
-              )}
-              aria-label='Hold and say "next" to skip'
-            >
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
+        {/* Primary: single large centered mic (80px) + optional progress ring when listening */}
+        <div className="flex flex-col items-center gap-3 relative">
+          {/* Progress ring: visible when listening */}
+          {askState === "listening" && (
+            <span
+              className="absolute inset-0 w-20 h-20 min-w-[80px] min-h-[80px] rounded-full border-2 border-brand-primary/60 pointer-events-none animate-ring-pulse-outer"
+              aria-hidden
+            />
           )}
-
           <motion.button
             type="button"
             onMouseDown={onAskStart}
@@ -82,18 +66,18 @@ export function VoiceBar({
               onAskStop();
             }}
             onTouchCancel={onAskStop}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.96 }}
             className={cn(
-              "relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 select-none touch-manipulation overflow-hidden",
-              "text-white shadow-lg",
-              askState === "idle" && "bg-gradient-to-br from-brand-primary to-brand-primaryHover hover:shadow-xl",
+              "relative w-20 h-20 min-w-[80px] min-h-[80px] rounded-full flex items-center justify-center transition-all duration-200 select-none touch-manipulation overflow-hidden shadow-xl",
+              "text-white",
+              askState === "idle" &&
+                "bg-gradient-to-br from-brand-primary to-brand-primaryHover hover:shadow-2xl hover:scale-[1.02]",
               askState === "listening" && "animate-ring-listening bg-brand-primary/90 scale-105",
               askState === "thinking" && "bg-amber-500",
               askState === "speaking" && "bg-emerald-500"
             )}
             aria-label="Hold to ask"
           >
-            {/* Ripple effect on press */}
             {askState === "listening" && (
               <motion.div
                 className="absolute inset-0 bg-white/30 rounded-full"
@@ -102,8 +86,40 @@ export function VoiceBar({
                 transition={{ duration: 0.6, ease: "easeOut" }}
               />
             )}
-            <Mic className="w-8 h-8 relative z-10" strokeWidth={2.5} />
+            <Mic className="w-10 h-10 relative z-10" strokeWidth={2.5} />
           </motion.button>
+
+          {/* Voice Next: secondary — small text link or compact control */}
+          {onVoiceNextStart && onVoiceNextStop && (
+            <div className="flex items-center gap-2">
+              <motion.button
+                type="button"
+                onMouseDown={onVoiceNextStart}
+                onMouseLeave={onVoiceNextStop}
+                onMouseUp={onVoiceNextStop}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  onVoiceNextStart();
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  onVoiceNextStop();
+                }}
+                onTouchCancel={onVoiceNextStop}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-colors select-none touch-manipulation",
+                  isVoiceNextRecording
+                    ? "bg-brand-primary/20 text-brand-primary"
+                    : "text-ink-secondary hover:text-ink-primary hover:bg-surface-muted"
+                )}
+                aria-label='Hold and say "next" to skip'
+              >
+                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Say &quot;next&quot;</span>
+              </motion.button>
+            </div>
+          )}
         </div>
 
         {/* Status label */}

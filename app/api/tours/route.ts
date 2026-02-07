@@ -14,15 +14,16 @@ function getSummaries(): TourSummary[] {
       const raw = fs.readFileSync(path.join(TOURS_DIR, file), "utf-8");
       const data = JSON.parse(raw);
       const tour = data.tour;
-      const pois = data.pois || [];
+      if (!tour || typeof tour !== "object") continue;
+      const pois = Array.isArray(data.pois) ? data.pois : [];
       summaries.push({
-        tourId: tour.tourId,
-        name: tour.name,
-        city: tour.city,
-        estimatedMinutes: tour.estimatedMinutes ?? 30,
+        tourId: String(tour.tourId ?? file.replace(/\.json$/, "")),
+        name: String(tour.name ?? "Unnamed Tour"),
+        city: String(tour.city ?? ""),
+        estimatedMinutes: Number(tour.estimatedMinutes) || 30,
         poiCount: pois.length,
-        thumbnailUrl: tour.thumbnailUrl || "/tours/thumb-default.jpg",
-        tags: tour.tags || [],
+        thumbnailUrl: String(tour.thumbnailUrl || "/tours/thumb-default.jpg"),
+        tags: Array.isArray(tour.tags) ? tour.tags.map(String) : [],
       });
     } catch {
       // skip invalid files

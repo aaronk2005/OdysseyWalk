@@ -9,11 +9,20 @@ const THEMES: { value: Theme; label: string }[] = [
   { value: "campus", label: "Campus" },
   { value: "spooky", label: "Spooky" },
   { value: "art", label: "Art" },
+  { value: "nature", label: "Nature" },
+  { value: "architecture", label: "Architecture" },
+  { value: "culture", label: "Culture" },
 ];
 
 const LANGS: { value: Lang; label: string }[] = [
   { value: "en", label: "English" },
   { value: "fr", label: "Français" },
+  { value: "es", label: "Español" },
+  { value: "de", label: "Deutsch" },
+  { value: "it", label: "Italiano" },
+  { value: "ja", label: "日本語" },
+  { value: "pt", label: "Português" },
+  { value: "zh", label: "中文" },
 ];
 
 const VOICES: { value: VoiceStyle; label: string }[] = [
@@ -73,6 +82,23 @@ export function TourGenerationPanel({
       </div>
       <div>
         <p className="text-caption font-medium text-ink-secondary mb-2">Duration: {durationMin} min</p>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {[15, 30, 45, 60, 90].map((mins) => (
+            <button
+              key={mins}
+              type="button"
+              onClick={() => onPreferencesChange({ ...preferences, durationMin: mins })}
+              className={cn(
+                "px-3 py-1.5 rounded-button text-sm font-medium min-h-[36px] flex items-center transition-all",
+                durationMin === mins
+                  ? "bg-brand-primary text-white border border-brand-primary"
+                  : "bg-surface-muted text-ink-secondary border border-app-border hover:bg-app-bg"
+              )}
+            >
+              {mins} min
+            </button>
+          ))}
+        </div>
         <input
           type="range"
           min={15}

@@ -83,12 +83,12 @@ export function ActiveWalkAudioPanel({
           />
         </div>
 
-        {/* Controls: large Play/Pause center, Replay + Skip secondary */}
-        <div className="flex items-center justify-center gap-3 mt-4">
+        {/* Controls: one primary Play/Pause (56px), Replay + Skip secondary */}
+        <div className="flex items-center justify-center gap-4 mt-4">
           <button
             type="button"
             onClick={onReplay}
-            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-secondary hover:bg-app-bg hover:text-ink-primary transition-colors shrink-0"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink-tertiary hover:text-ink-primary hover:bg-app-bg transition-colors shrink-0"
             aria-label="Replay current stop"
           >
             <RotateCcw className="w-5 h-5" />
@@ -98,24 +98,23 @@ export function ActiveWalkAudioPanel({
             type="button"
             onClick={onPlayPause}
             className={cn(
-              "flex items-center justify-center gap-2 min-h-[52px] px-8 rounded-2xl font-semibold text-base transition-all shrink-0",
-              "bg-brand-primary hover:bg-brand-primaryHover text-white shadow-md shadow-brand-primary/20",
-              "active:scale-[0.98]"
+              "flex items-center justify-center gap-2 min-w-[56px] min-h-[56px] w-14 h-14 rounded-full font-semibold transition-all shrink-0",
+              "bg-brand-primary hover:bg-brand-primaryHover text-white shadow-lg shadow-brand-primary/25",
+              "active:scale-[0.97]"
             )}
             aria-label={playButtonLabel}
           >
             {isPlaying ? (
-              <Pause className="w-6 h-6" />
+              <Pause className="w-7 h-7" />
             ) : (
-              <Play className="w-6 h-6 ml-0.5" />
+              <Play className="w-7 h-7 ml-0.5" />
             )}
-            <span className="hidden sm:inline">{playButtonLabel}</span>
           </button>
 
           <button
             type="button"
             onClick={onSkip}
-            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-secondary hover:bg-app-bg hover:text-ink-primary transition-colors shrink-0"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink-tertiary hover:text-ink-primary hover:bg-app-bg transition-colors shrink-0"
             aria-label="Skip to next stop"
           >
             <SkipForward className="w-5 h-5" />

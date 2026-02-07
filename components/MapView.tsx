@@ -59,12 +59,12 @@ export function MapView({
   const [retryCount, setRetryCount] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  const propsRef = useRef({ center, mapApiKey, onMapClick, userLocation });
-  propsRef.current = { center, mapApiKey, onMapClick, userLocation };
+  const propsRef = useRef({ center, mapApiKey, onMapClick, userLocation, navigationMode });
+  propsRef.current = { center, mapApiKey, onMapClick, userLocation, navigationMode };
 
   const initMapOnce = useCallback(async () => {
     if (typeof window === "undefined") return;
-    const { center: c, mapApiKey: key, onMapClick: onClick, userLocation: loc } = propsRef.current;
+    const { center: c, mapApiKey: key, onMapClick: onClick, userLocation: loc, navigationMode: navMode } = propsRef.current;
     if (!containerRef.current || !key) return;
     setMapError(null);
     const { loadGoogleMapsOnce } = await import("@/lib/maps/MapLoader");
@@ -82,10 +82,10 @@ export function MapView({
       center: { lat: c.lat, lng: c.lng },
       zoom: 15,
       disableDefaultUI: false,
-      zoomControl: true,
+      zoomControl: !navMode,
       mapTypeControl: false,
       streetViewControl: false,
-      fullscreenControl: true,
+      fullscreenControl: !navMode,
       gestureHandling: "greedy", // Better mobile UX: pan with one finger
       styles: [
         { featureType: "water", elementType: "geometry", stylers: [{ color: "#a3ccff" }] },

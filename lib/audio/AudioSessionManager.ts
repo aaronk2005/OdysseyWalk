@@ -28,7 +28,18 @@ function speakWithBrowserTts(text: string, lang: string): Promise<void> {
     // Cancel any in-progress speech
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang === "fr" ? "fr-FR" : "en-US";
+    // Map language codes to browser TTS language codes
+    const langMap: Record<string, string> = {
+      en: "en-US",
+      fr: "fr-FR",
+      es: "es-ES",
+      de: "de-DE",
+      it: "it-IT",
+      ja: "ja-JP",
+      pt: "pt-BR",
+      zh: "zh-CN",
+    };
+    utterance.lang = langMap[lang] || "en-US";
     utterance.rate = 0.95;
     utterance.pitch = 1;
     utterance.onend = () => resolve();

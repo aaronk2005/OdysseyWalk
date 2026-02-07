@@ -20,6 +20,7 @@ export function useActiveTour() {
   const [audioState, setAudioState] = useState<AudioState>(AudioState.IDLE);
   const [introPlayed, setIntroPlayed] = useState(false);
   const [askState, setAskState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
+  const [lastTriggeredPoi, setLastTriggeredPoi] = useState<POI | null>(null);
   const providerRef = useRef<typeof geoReal | typeof geoSim>(geoSim);
   const triggerCheckRef = useRef<ReturnType<typeof createTriggerEngine> | null>(null);
 
@@ -37,7 +38,10 @@ export function useActiveTour() {
       setUserLocation({ lat: points[0].lat, lng: points[0].lng });
     }
     triggerCheckRef.current = createTriggerEngine(s.pois, s.visitedPoiIds);
-    AudioSessionManager.setOptions({ lang: "en", voiceStyle: "friendly" });
+    // Use tour plan's voice settings for consistency throughout the tour
+    const tourLang = s.tourPlan.voiceLang ?? "en";
+    const tourVoiceStyle = s.tourPlan.voiceStyle ?? "friendly";
+    AudioSessionManager.setOptions({ lang: tourLang, voiceStyle: tourVoiceStyle });
     const firstScript = s.pois[0]
       ? (s.pois[0].script ?? s.pois[0].scripts?.friendly ?? s.pois[0].scripts?.historian ?? s.pois[0].scripts?.funny ?? "")
       : undefined;
@@ -71,7 +75,10 @@ export function useActiveTour() {
     if (!s) return;
     updateSession({ startedAt: Date.now(), mode: s.mode });
     setSession(loadTour());
-    AudioSessionManager.setOptions({ lang: "en", voiceStyle: "friendly" });
+    // Use tour plan's voice settings for consistency
+    const tourLang = s.tourPlan.voiceLang ?? "en";
+    const tourVoiceStyle = s.tourPlan.voiceStyle ?? "friendly";
+    AudioSessionManager.setOptions({ lang: tourLang, voiceStyle: tourVoiceStyle });
     try {
       await AudioSessionManager.playIntro(s.tourPlan.intro);
     } catch (e) {
@@ -98,6 +105,7 @@ export function useActiveTour() {
         const nextVisited = [...s.visitedPoiIds, ev.poiId];
         updateSession({ visitedPoiIds: nextVisited, activePoiId: ev.poiId });
         setSession(loadTour());
+        setLastTriggeredPoi(poi);
         AudioSessionManager.playPoiScript(poi);
         const isLast = nextVisited.length >= s.pois.length;
         if (isLast) {
@@ -173,6 +181,8 @@ export function useActiveTour() {
     : null;
   const nextPoi = session?.pois.find((p) => !session.visitedPoiIds.includes(p.poiId)) ?? null;
 
+  const clearLastTriggeredPoi = useCallback(() => setLastTriggeredPoi(null), []);
+
   return {
     session,
     userLocation,
@@ -190,5 +200,7 @@ export function useActiveTour() {
     refreshSession,
     currentPoi,
     nextPoi,
+    lastTriggeredPoi,
+    clearLastTriggeredPoi,
   };
 }

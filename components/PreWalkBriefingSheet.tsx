@@ -12,6 +12,8 @@ export interface PreWalkBriefingSheetProps {
   durationMin: number;
   stopCount: number;
   distanceKm?: number;
+  /** First POI name for anticipation */
+  firstStopName?: string | null;
   introLine: string;
   onStartWalk: () => void;
 }
@@ -21,6 +23,7 @@ export function PreWalkBriefingSheet({
   durationMin,
   stopCount,
   distanceKm,
+  firstStopName,
   introLine,
   onStartWalk,
 }: PreWalkBriefingSheetProps) {
@@ -52,6 +55,11 @@ export function PreWalkBriefingSheet({
         <p className="text-center text-caption text-ink-secondary mt-1.5">{meta}</p>
 
         <p className="text-body text-ink-secondary text-center mt-4 px-2">{introLine}</p>
+        {firstStopName && (
+          <p className="text-caption text-brand-primary font-medium text-center mt-2">
+            First stop: {firstStopName}
+          </p>
+        )}
 
         <button
           type="button"

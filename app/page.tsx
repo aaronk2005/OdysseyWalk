@@ -2,162 +2,211 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { MapPin, Clock, Sparkles, Search } from "lucide-react";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
+import { ResumeWalkBanner } from "@/components/ResumeWalkBanner";
+import { TourCard } from "@/components/TourCard";
+import { loadTour } from "@/lib/data/SessionStore";
+import { cn } from "@/lib/utils/cn";
+import type { SessionState, TourSummary } from "@/lib/types";
 
-const ONBOARDING_KEY = "odyssey-onboarding-seen";
+const sectionMotion = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.35 },
+};
+
+const cardStagger = 0.05;
 
 export default function LandingPage() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [tours, setTours] = useState<TourSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [resumableSession, setResumableSession] = useState<SessionState | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const seen = localStorage.getItem(ONBOARDING_KEY);
-    if (!seen) setShowOnboarding(true);
+    const s = loadTour();
+    if (s && s.startedAt > 0 && !s.endedAt) setResumableSession(s);
+    else setResumableSession(null);
   }, []);
 
-  const dismissOnboarding = () => {
-    setShowOnboarding(false);
-    if (typeof window !== "undefined") localStorage.setItem(ONBOARDING_KEY, "true");
-  };
+  useEffect(() => {
+    fetch("/api/tours")
+      .then((res) => res.json())
+      .then((data) => {
+        setTours(data.tours || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setTours([]);
+        setLoading(false);
+      });
+  }, []);
+
+  // Get unique cities from tours
+  const cities = Array.from(new Set(tours.map((t) => t.city))).sort();
+
+  // Filter tours by search and city
+  const filteredTours = tours.filter((tour) => {
+    const tags = Array.isArray(tour.tags) ? tour.tags : [];
+    const matchesSearch =
+      !searchQuery ||
+      (tour.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (tour.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tags.some((tag) => String(tag).toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCity = !selectedCity || tour.city === selectedCity;
+    return matchesSearch && matchesCity;
+  });
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-app-bg">
-      <header className="relative z-10 flex items-center justify-between px-4 py-5 max-w-6xl mx-auto">
-        <Link href="/" className="focus:outline-none min-h-[44px] flex items-center" aria-label="Odyssey Walk home">
-          <OdysseyLogo size="lg" />
-        </Link>
-        <Link
-          href="/create"
-          className="text-[15px] font-semibold px-5 py-2.5 rounded-full bg-ink-primary text-white hover:opacity-90 transition-opacity min-h-[44px] flex items-center"
-          aria-label="Create Tour"
-        >
-          Create Tour
-        </Link>
-      </header>
-
-      <AnimatePresence>
-        {showOnboarding && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="relative z-20 mx-4 mt-2 mb-4 rounded-card border border-app-border bg-surface p-4 shadow-sm"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-body text-ink-primary font-medium mb-1">Welcome!</p>
-                <p className="text-caption text-ink-secondary mb-4">
-                  Pick a spot on the map, choose a theme, and we&apos;ll generate a walking tour. You can try the demo first if you prefer.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href="/demo"
-                    onClick={dismissOnboarding}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-button bg-surface-muted text-ink-primary font-medium hover:bg-app-bg border border-app-border min-h-[44px]"
-                  >
-                    Try demo
-                  </Link>
-                  <Link
-                    href="/create"
-                    onClick={dismissOnboarding}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-button bg-brand-primary text-white font-medium hover:bg-brand-primaryHover min-h-[44px]"
-                  >
-                    Create tour
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={dismissOnboarding}
-                    className="inline-flex items-center px-4 py-2.5 rounded-button text-ink-secondary font-medium hover:bg-surface-muted min-h-[44px]"
-                  >
-                    Got it
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={dismissOnboarding}
-                className="p-2 rounded-button hover:bg-surface-muted text-ink-tertiary min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Dismiss welcome"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <main className="relative z-10 px-4 pt-16 pb-24 max-w-6xl mx-auto text-center">
-        <motion.h1
-          className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink-primary mb-6"
-          style={{ letterSpacing: "-0.03em", lineHeight: 1.1 }}
-          initial={{ opacity: 1, y: 0 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          Walk. Listen.{" "}
-          <span className="text-brand-primary">Ask.</span>
-        </motion.h1>
-        <motion.p
-          className="text-lg sm:text-xl text-ink-secondary mb-12 max-w-lg mx-auto font-medium"
-          style={{ letterSpacing: "-0.01em" }}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          Generate a walking tour from any starting point. Narration at each stop. Hold the mic to ask—AI answers out loud.
-        </motion.p>
-        <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-3"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
+    <div className="min-h-screen bg-app-bg">
+      {/* Header */}
+      <header className="sticky top-0 z-20 border-b border-app-border bg-surface/95 backdrop-blur-sm px-4 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link href="/" className="min-h-[44px] flex items-center" aria-label="Odyssey Walk home">
+            <OdysseyLogo size="lg" />
+          </Link>
           <Link
             href="/create"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-brand-primary text-white text-lg font-semibold hover:bg-brand-primaryHover transition-colors min-h-[44px]"
+            className="text-[15px] font-semibold px-5 py-2.5 rounded-full bg-brand-primary text-white hover:bg-brand-primaryHover transition-opacity min-h-[44px] flex items-center"
+            aria-label="Create Custom Tour"
           >
-            Create Tour
-            <ArrowRight className="w-5 h-5" />
+            Create Custom Tour
           </Link>
-          <Link
-            href="/demo"
-            className="inline-flex items-center px-6 py-3 rounded-full border border-app-border bg-surface text-ink-primary font-medium hover:bg-surface-muted transition-colors min-h-[44px]"
-          >
-            Try the demo first
-          </Link>
-        </motion.div>
+        </div>
+      </header>
 
-        <motion.section
-          className="mt-24 max-w-2xl mx-auto text-left"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
+      {/* Hero Section */}
+      <section className="px-4 py-12 sm:py-16 max-w-7xl mx-auto">
+        <motion.div
+          className="text-center max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="space-y-1 border-l-2 border-ink-primary/20 pl-6">
-            <p className="text-ink-primary font-semibold text-[15px]" style={{ letterSpacing: "-0.01em" }}>
-              Pick your start
-            </p>
-            <p className="text-ink-secondary text-sm mb-6">
-              Search or click the map to set your starting location.
-            </p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink-primary mb-4" style={{ letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+            Discover Walking Tours
+            <span className="text-brand-primary"> Worldwide</span>
+          </h1>
+          <p className="text-lg sm:text-xl text-ink-secondary mb-8 max-w-lg mx-auto font-medium" style={{ letterSpacing: "-0.01em" }}>
+            Explore pre-planned walking tours in major cities across the globe. Narrated stories, guided routes, and immersive experiences.
+          </p>
+        </motion.div>
+      </section>
 
-            <p className="text-ink-primary font-semibold text-[15px]" style={{ letterSpacing: "-0.01em" }}>
-              Generate route
-            </p>
-            <p className="text-ink-secondary text-sm mb-6">
-              Get a walking loop with 5–8 stops and narration scripts.
-            </p>
+      {/* Resume in-progress walk */}
+      {resumableSession && (
+        <section className="px-4 pb-4 max-w-7xl mx-auto">
+          <ResumeWalkBanner session={resumableSession} />
+        </section>
+      )}
 
-            <p className="text-ink-primary font-semibold text-[15px]" style={{ letterSpacing: "-0.01em" }}>
-              Ask along the way
-            </p>
-            <p className="text-ink-secondary text-sm">
-              Press and hold to ask questions; hear answers spoken back.
-            </p>
+      {/* Search and Filters */}
+      <section className="px-4 pb-8 max-w-7xl mx-auto">
+        <motion.div className="flex flex-col sm:flex-row gap-4 items-stretch" {...sectionMotion}>
+          {/* Search Bar */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-tertiary" />
+            <input
+              type="text"
+              placeholder="Search tours by name, city, or theme..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-button border border-app-border bg-surface text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:border-brand-primary"
+            />
           </div>
-        </motion.section>
+
+          {/* City Filter */}
+          {cities.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+              <button
+                onClick={() => setSelectedCity(null)}
+                className={cn(
+                  "px-4 py-2 rounded-button whitespace-nowrap font-medium transition-colors min-h-[44px]",
+                  !selectedCity
+                    ? "bg-brand-primary text-white"
+                    : "bg-surface border border-app-border text-ink-primary hover:bg-surface-muted"
+                )}
+              >
+                All Cities
+              </button>
+              {cities.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => setSelectedCity(city)}
+                  className={cn(
+                    "px-4 py-2 rounded-button whitespace-nowrap font-medium transition-colors min-h-[44px]",
+                    selectedCity === city
+                      ? "bg-brand-primary text-white"
+                      : "bg-surface border border-app-border text-ink-primary hover:bg-surface-muted"
+                  )}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </section>
+
+      {/* Tours Grid */}
+      <main className="px-4 pb-16 max-w-7xl mx-auto">
+        {loading ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="rounded-card border border-app-border bg-surface overflow-hidden shadow-sm"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="aspect-[16/10] bg-surface-muted animate-pulse" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 w-3/4 rounded bg-surface-muted animate-pulse" />
+                  <div className="h-3 w-1/2 rounded bg-surface-muted animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredTours.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-card border border-app-border bg-surface-muted/60 p-12 text-center"
+          >
+            <Sparkles className="w-12 h-12 mx-auto text-ink-tertiary mb-4" strokeWidth={1.25} />
+            <p className="text-body text-ink-secondary max-w-sm mx-auto mb-6">
+              {searchQuery || selectedCity
+                ? "No tours match your search. Try different filters."
+                : "No tours available yet. Check back soon!"}
+            </p>
+            {(searchQuery || selectedCity) && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCity(null);
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-primary text-white font-semibold hover:bg-brand-primaryHover transition-colors min-h-[44px]"
+              >
+                Clear Filters
+              </button>
+            )}
+          </motion.div>
+        ) : (
+          <>
+            <motion.div className="mb-6" {...sectionMotion}>
+              <p className="text-body text-ink-secondary">
+                {filteredTours.length} {filteredTours.length === 1 ? "tour" : "tours"} found
+              </p>
+            </motion.div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredTours.map((tour, i) => (
+                <TourCard key={tour.tourId} tour={tour} index={i} />
+              ))}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

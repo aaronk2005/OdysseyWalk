@@ -17,6 +17,36 @@ const GRADIUM_VOICE_IDS: Record<Lang, Partial<Record<VoiceStyle, string>>> = {
     historian: "axlOaUiFyOZhy4nv", // Leo
     funny: "axlOaUiFyOZhy4nv", // Leo
   },
+  es: {
+    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback (Spanish voices may vary)
+    historian: "KWJiFWu2O9nMPYcR",
+    funny: "LFZvm12tW_z0xfGo",
+  },
+  de: {
+    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
+    historian: "KWJiFWu2O9nMPYcR",
+    funny: "LFZvm12tW_z0xfGo",
+  },
+  it: {
+    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
+    historian: "KWJiFWu2O9nMPYcR",
+    funny: "LFZvm12tW_z0xfGo",
+  },
+  ja: {
+    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
+    historian: "KWJiFWu2O9nMPYcR",
+    funny: "LFZvm12tW_z0xfGo",
+  },
+  pt: {
+    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
+    historian: "KWJiFWu2O9nMPYcR",
+    funny: "LFZvm12tW_z0xfGo",
+  },
+  zh: {
+    friendly: "YTpq7expH9539ERJ", // Use English voice as fallback
+    historian: "KWJiFWu2O9nMPYcR",
+    funny: "LFZvm12tW_z0xfGo",
+  },
 };
 
 function getGradiumVoiceId(lang: Lang, voiceStyle: VoiceStyle): string {
@@ -81,7 +111,8 @@ export async function POST(req: Request) {
       voice_id: voiceId,
       output_format: "wav",
       only_audio: !returnBase64, // When only_audio=true, get raw bytes; when false, get JSON stream
-      ...(langKey ? { json_config: JSON.stringify({ rewrite_rules: langKey }) } : {}),
+      // Add language-specific config for non-English languages
+      ...(langKey !== "en" ? { json_config: JSON.stringify({ rewrite_rules: langKey }) } : {}),
     };
 
     const gradiumRes = await fetchWithTimeout(

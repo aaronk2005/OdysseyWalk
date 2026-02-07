@@ -17,6 +17,7 @@ import { VoiceFallbackBanner } from "@/components/VoiceFallbackBanner";
 import { DebugPanel, type ApiStatus } from "@/components/DebugPanel";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { useToast } from "@/components/ToastProvider";
+import { WalkStatusLine } from "@/components/WalkStatusLine";
 import { useActiveTour } from "@/hooks/useActiveTour";
 import { useVoiceNext } from "@/hooks/useVoiceNext";
 import { getClientConfig } from "@/lib/config";
@@ -54,6 +55,8 @@ export default function TourActivePage() {
     refreshSession,
     currentPoi,
     nextPoi,
+    lastTriggeredPoi,
+    clearLastTriggeredPoi,
   } = useActiveTour();
 
   // Voice next feature for hands-free navigation
@@ -82,6 +85,14 @@ export default function TourActivePage() {
       .then((d) => setApiStatus({ mapsKeyPresent: d.mapsKeyPresent, openRouterConfigured: d.openRouterConfigured, gradiumConfigured: d.gradiumConfigured }))
       .catch(() => setApiStatus(null));
   }, []);
+
+  // Entering-stop feedback: brief toast when geo triggers a new stop
+  useEffect(() => {
+    if (lastTriggeredPoi) {
+      toast.showToast(`Now at ${lastTriggeredPoi.name}`, "success");
+      clearLastTriggeredPoi();
+    }
+  }, [lastTriggeredPoi, clearLastTriggeredPoi, toast]);
 
   const handleAskStart = useCallback(() => {
     setLastError(null);
@@ -250,6 +261,7 @@ export default function TourActivePage() {
             durationMin={durationMin}
             stopCount={session.pois.length}
             distanceKm={distanceKm}
+            firstStopName={session.pois[0]?.name ?? null}
             introLine="You're about to start an audio-guided walk. Tap Start to hear the intro and begin."
             onStartWalk={startWalk}
           />
@@ -321,7 +333,7 @@ export default function TourActivePage() {
             )}
           </div>
 
-          {/* Zone 2: Audio panel (Spotify-like) */}
+          {/* Zone 2: Audio panel — now playing, primary Play/Pause */}
           <div className="shrink-0 pt-3">
             <ActiveWalkAudioPanel
               currentStopName={currentPoi?.name ?? "Intro"}
@@ -337,7 +349,18 @@ export default function TourActivePage() {
             />
           </div>
 
-          {/* Zone 3: Voice bar — mic is the hero + voice next */}
+          {/* Status line: what's happening now / what's next (no dead space) */}
+          <div className="shrink-0">
+            <WalkStatusLine
+              nextStopName={nextPoi?.name ?? null}
+              nextStopDistanceM={nextStopDistanceM}
+              stopIndex={session.visitedPoiIds.length}
+              totalStops={session.pois.length}
+              audioState={audioState}
+            />
+          </div>
+
+          {/* Zone 3: Voice bar — mic is the hero */}
           <div className="flex-1 min-h-0 flex flex-col justify-end relative">
             <VoiceBar
               askState={askState}

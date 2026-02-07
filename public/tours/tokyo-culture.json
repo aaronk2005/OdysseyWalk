@@ -1,0 +1,35 @@
+{
+  "tour": {
+    "tourId": "tokyo-culture",
+    "name": "Tokyo Cultural Walk",
+    "city": "Tokyo, Japan",
+    "estimatedMinutes": 55,
+    "thumbnailUrl": "/tours/thumb-tokyo.jpg",
+    "tags": ["culture", "temples", "tradition"],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Senso-ji Temple",
+      "lat": 35.7148,
+      "lng": 139.7967,
+      "orderIndex": 0
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Meiji Shrine",
+      "lat": 35.6762,
+      "lng": 139.6993,
+      "orderIndex": 1
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Shibuya Crossing",
+      "lat": 35.6598,
+      "lng": 139.7006,
+      "orderIndex": 2
+    }
+  ]
+}

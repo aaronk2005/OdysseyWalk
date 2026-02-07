@@ -52,6 +52,7 @@ const config: Config = {
       animation: {
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "ring-listening": "ring-listening 1.5s ease-in-out infinite",
+        "ring-pulse-outer": "ring-pulse-outer 1.5s ease-in-out infinite",
         "pulse-marker": "pulse-marker 1.5s ease-in-out infinite",
       },
       keyframes: {
@@ -66,6 +67,10 @@ const config: Config = {
         "ring-listening": {
           "0%, 100%": { boxShadow: "0 0 0 0 rgba(13, 148, 136, 0.4)" },
           "50%": { boxShadow: "0 0 0 12px rgba(13, 148, 136, 0)" },
+        },
+        "ring-pulse-outer": {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.7" },
+          "50%": { transform: "scale(1.12)", opacity: "0.25" },
         },
       },
       backdropBlur: {
