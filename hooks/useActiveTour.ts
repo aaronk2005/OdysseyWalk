@@ -131,9 +131,12 @@ export function useActiveTour() {
         const isLast = nextVisited.length >= s.pois.length;
         if (isLast) {
           updateSession({ endedAt: Date.now() });
-          AudioSessionManager.playPoiScript(poi).then(() =>
-            AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"))
-          );
+          AudioSessionManager.playPoiScript(poi).then(async () => {
+            if (s.tourPlan.voiceLang) AudioSessionManager.setOptions({ lang: s.tourPlan.voiceLang });
+            if (s.tourPlan.voiceStyle) AudioSessionManager.setOptions({ voiceStyle: s.tourPlan.voiceStyle });
+            await AudioSessionManager.prewarmOutro(s.tourPlan.outro ?? "");
+            router.push("/tour/complete");
+          });
         } else {
           AudioSessionManager.playPoiScript(poi);
           // Prewarm next 2-3 POIs immediately for reduced "Next stop" latency
@@ -164,9 +167,12 @@ export function useActiveTour() {
     const isLast = nextVisited.length >= s.pois.length;
     if (isLast) {
       updateSession({ endedAt: Date.now() });
-      AudioSessionManager.playPoiScript(poi).then(() =>
-        AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"))
-      );
+      AudioSessionManager.playPoiScript(poi).then(async () => {
+        if (s.tourPlan.voiceLang) AudioSessionManager.setOptions({ lang: s.tourPlan.voiceLang });
+        if (s.tourPlan.voiceStyle) AudioSessionManager.setOptions({ voiceStyle: s.tourPlan.voiceStyle });
+        await AudioSessionManager.prewarmOutro(s.tourPlan.outro ?? "");
+        router.push("/tour/complete");
+      });
     } else {
       AudioSessionManager.playPoiScript(poi);
     }
@@ -192,12 +198,15 @@ export function useActiveTour() {
     const poi = s.pois.find((p) => p.poiId === s.activePoiId);
     if (poi) AudioSessionManager.playPoiScript(poi);
   }, []);
-  const endTour = useCallback(() => {
+  const endTour = useCallback(async () => {
     const s = loadTour();
     if (!s) return;
     AudioSessionManager.stop();
     updateSession({ endedAt: Date.now() });
-    AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"));
+    if (s.tourPlan.voiceLang) AudioSessionManager.setOptions({ lang: s.tourPlan.voiceLang });
+    if (s.tourPlan.voiceStyle) AudioSessionManager.setOptions({ voiceStyle: s.tourPlan.voiceStyle });
+    await AudioSessionManager.prewarmOutro(s.tourPlan.outro ?? "");
+    router.push("/tour/complete");
   }, [router]);
   const clearAudioCache = useCallback(() => AudioSessionManager.clearCache(), []);
   const refreshSession = useCallback(() => {

@@ -36,6 +36,7 @@ export default function TourActivePage() {
   const [lastError, setLastError] = useState<string | null>(null);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
   const [prevAudioState, setPrevAudioState] = useState<AudioState>(AudioState.IDLE);
+  const [ending, setEnding] = useState(false);
   const toast = useToast();
 
   const {
@@ -210,15 +211,27 @@ export default function TourActivePage() {
         {introPlayed ? (
           <button
             type="button"
-            onClick={() => {
-              if (confirm("End this tour? You'll see your summary and can start a new walk.")) {
-                endTour();
+            disabled={ending}
+            onClick={async () => {
+              if (!confirm("End this tour? You'll see your summary and can start a new walk.")) return;
+              setEnding(true);
+              try {
+                await endTour();
+              } finally {
+                setEnding(false);
               }
             }}
-            className="px-3 py-1.5 mt-2 min-h-[40px] flex items-center gap-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors font-medium text-sm"
-            aria-label="End tour"
+            className="px-3 py-1.5 mt-2 min-h-[40px] flex items-center gap-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors font-medium text-sm disabled:opacity-70 disabled:cursor-wait"
+            aria-label={ending ? "Preparing" : "End tour"}
           >
-            <span>End Tour</span>
+            {ending ? (
+              <>
+                <span className="w-3.5 h-3.5 rounded-full border-2 border-red-400 border-t-transparent animate-spin" />
+                <span>Preparing…</span>
+              </>
+            ) : (
+              <span>End Tour</span>
+            )}
           </button>
         ) : (
           <button

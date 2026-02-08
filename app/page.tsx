@@ -4,24 +4,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, Search } from "lucide-react";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
-import { ResumeWalkBanner } from "@/components/ResumeWalkBanner";
 import { TourCard } from "@/components/TourCard";
-import { loadTour } from "@/lib/data/SessionStore";
 import { cn } from "@/lib/utils/cn";
-import type { SessionState, TourSummary } from "@/lib/types";
+import type { TourSummary } from "@/lib/types";
 
 export default function LandingPage() {
   const [tours, setTours] = useState<TourSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [resumableSession, setResumableSession] = useState<SessionState | null>(null);
-
-  useEffect(() => {
-    const s = loadTour();
-    if (s && s.startedAt > 0 && !s.endedAt) setResumableSession(s);
-    else setResumableSession(null);
-  }, []);
 
   useEffect(() => {
     fetch("/api/tours")
@@ -81,13 +72,6 @@ export default function LandingPage() {
           </p>
         </div>
       </section>
-
-      {/* Resume in-progress walk */}
-      {resumableSession && (
-        <section className="px-4 pb-4 max-w-7xl mx-auto">
-          <ResumeWalkBanner session={resumableSession} />
-        </section>
-      )}
 
       {/* Search and Filters — static */}
       <section className="px-4 pb-8 max-w-7xl mx-auto">

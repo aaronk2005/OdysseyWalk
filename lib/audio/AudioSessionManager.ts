@@ -190,6 +190,12 @@ class AudioSessionManagerImpl {
     await Promise.all(tasks).catch(() => {});
   }
 
+  /** Prewarm cache for outro so playback on the complete page starts with no latency. */
+  async prewarmOutro(text: string): Promise<void> {
+    if (!text?.trim()) return;
+    await this.fetchAndCacheTts(text, "outro").catch(() => {});
+  }
+
   private async fetchAndCacheTts(text: string, purpose: string, signal?: AbortSignal): Promise<void> {
     const key = this.cacheKey(text, purpose);
     if (this.cache.has(key)) return;
