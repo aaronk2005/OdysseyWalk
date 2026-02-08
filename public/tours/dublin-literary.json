@@ -1,0 +1,108 @@
+{
+  "tour": {
+    "tourId": "dublin-literary",
+    "name": "Dublin Literary & Historic Walk",
+    "city": "Dublin, Ireland",
+    "estimatedMinutes": 90,
+    "thumbnailUrl": "/tours/thumb-dublin-literary.jpg",
+    "tags": [
+      "literature",
+      "history",
+      "culture"
+    ],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Trinity College & Book of Kells",
+      "lat": 53.3438,
+      "lng": -6.2546,
+      "orderIndex": 0,
+      "radiusM": 45,
+      "script": "Trinity College was founded in 1592 by Elizabeth I and is Ireland's oldest university. The campus is a mix of cobblestones, green quads, and historic buildings. The Old Library holds the Book of Kells—a lavishly illustrated 9th-century Gospel manuscript and one of the world's greatest works of art. The Long Room, with its barrel-vaulted ceiling and rows of ancient books, is one of the most beautiful library halls in the world. Oscar Wilde, Samuel Beckett, and countless other writers studied or taught here. The front gate opens onto College Green and the bustle of central Dublin.",
+      "facts": [
+        "Founded 1592; Ireland's oldest university",
+        "Book of Kells in Old Library; 9th century",
+        "Long Room: barrel vault, 200,000+ books",
+        "Wilde, Beckett, and others linked to Trinity"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Temple Bar",
+      "lat": 53.3454,
+      "lng": -6.2625,
+      "orderIndex": 1,
+      "radiusM": 45,
+      "script": "Temple Bar is Dublin's cultural quarter—cobbled streets, pubs with live music, galleries, and street performers. The name comes from the Temple family who once owned land here; it was run-down until the 1990s when it was redeveloped as a cultural district. It's touristy and lively—the place for a pint of Guinness and traditional music. The Irish Film Institute, the Gallery of Photography, and small theatres sit alongside the pubs. By day it's relatively quiet; by night it's packed. Love it or find it too busy, it's central to Dublin's image.",
+      "facts": [
+        "Cultural quarter; redeveloped 1990s",
+        "Pubs, live music, galleries",
+        "Irish Film Institute and small theatres",
+        "Touristy but central to Dublin life"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Dublin Castle",
+      "lat": 53.3429,
+      "lng": -6.2672,
+      "orderIndex": 2,
+      "radiusM": 40,
+      "script": "Dublin Castle was the seat of British rule in Ireland for 700 years, from the 13th century until 1922. Most of the visible building is 18th and 19th century; the Record Tower is medieval. The State Apartments are used for presidential inaugurations and state events. The castle was handed over to the Irish government in 1922 after independence. The courtyard, the Chapel Royal, and the Chester Beatty Library—with its world-class collection of manuscripts and art from Asia, the Middle East, and Europe—are all worth a visit.",
+      "facts": [
+        "Seat of British rule 13th century–1922",
+        "Record Tower is medieval",
+        "State Apartments for state events",
+        "Chester Beatty Library on site"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Christ Church Cathedral",
+      "lat": 53.3434,
+      "lng": -6.271,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "Christ Church Cathedral is Dublin's oldest building in continuous use—founded in the 11th century and rebuilt in the 12th and 13th. The crypt is one of the largest in Britain and Ireland and holds monuments and the famous mummified cat and rat. The cathedral was restored in the 19th century with the help of the Guinness family. Strongbow—the Norman lord who invaded Ireland—is said to be buried here. The choir sings daily; the building sits on a hill above the Liffey and the former Viking settlement.",
+      "facts": [
+        "Oldest building in continuous use in Dublin",
+        "Crypt with monuments; mummified cat and rat",
+        "Strongbow linked to site; Norman invasion",
+        "19th-century restoration; Guinness support"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "St Patrick's Cathedral",
+      "lat": 53.3395,
+      "lng": -6.2714,
+      "orderIndex": 4,
+      "radiusM": 40,
+      "script": "St Patrick's Cathedral is the national cathedral of the Church of Ireland and the largest church in Ireland. Legend says St Patrick baptized converts here in a well. The present building dates from the 13th century. Jonathan Swift—author of Gulliver's Travels—was dean here in the 18th century and is buried in the cathedral. The choir, the monuments, and the peaceful grounds make it a refuge from the city. It's a few minutes' walk from Christ Church; together they define medieval Dublin.",
+      "facts": [
+        "Largest church in Ireland; national cathedral",
+        "Legend: St Patrick baptized here",
+        "Jonathan Swift dean here; buried in cathedral",
+        "13th-century building; choir and monuments"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Guinness Storehouse",
+      "lat": 53.3418,
+      "lng": -6.2868,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "The Guinness Storehouse is in the former fermentation plant at St James's Gate, where Arthur Guinness signed a 9,000-year lease in 1759. The building is now a museum of Guinness—the ingredients, the brewing process, the advertising, and the history of the brand. The Gravity Bar on the top floor offers a 360-degree view of Dublin with a pint included in the ticket. Whether you drink Guinness or not, the scale of the operation and the cultural role of the black stuff in Irish life make it a Dublin essential.",
+      "facts": [
+        "St James's Gate; Arthur Guinness 1759 lease",
+        "Museum of brewing and advertising",
+        "Gravity Bar: 360° view and pint",
+        "Icon of Irish culture"
+      ]
+    }
+  ]
+}

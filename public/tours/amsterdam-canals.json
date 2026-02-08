@@ -1,0 +1,93 @@
+{
+  "tour": {
+    "tourId": "amsterdam-canals",
+    "name": "Canals & Golden Age Amsterdam",
+    "city": "Amsterdam, Netherlands",
+    "estimatedMinutes": 60,
+    "thumbnailUrl": "/tours/thumb-amsterdam-canals.jpg",
+    "tags": [
+      "history",
+      "canals",
+      "architecture"
+    ],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Dam Square",
+      "lat": 52.373,
+      "lng": 4.8926,
+      "orderIndex": 0,
+      "radiusM": 35,
+      "script": "Dam Square is the historic heart of Amsterdam. The name comes from the dam built on the Amstel River in the 13th century that gave the city its start. The Royal Palace was originally the town hall of the Golden Age—built in the 17th century to showcase Amsterdam's wealth and power; it became a palace under Louis Napoleon. The National Monument, a white pillar, honors the dead of World War II and the resistance. From here the canal rings and shopping streets spread out in every direction. It's always busy with street performers, pigeons, and crowds.",
+      "facts": [
+        "Named for 13th-century dam on Amstel",
+        "Royal Palace: 17th-century town hall, then palace",
+        "National Monument for WWII and resistance",
+        "Central hub of canal rings"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Anne Frank House",
+      "lat": 52.3752,
+      "lng": 4.884,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "The Anne Frank House is where Anne Frank, her family, and four others hid for over two years during the Nazi occupation of the Netherlands. The secret annex was behind a movable bookcase. Anne wrote her diary here—a record of hope, fear, and growing up in confinement. The building is now a museum dedicated to her life, the Holocaust, and the fight against discrimination. The rooms are kept sparse, as they were after the arrest in 1944. Anne's diary has been read by millions; the house makes her story tangible and unforgettable. Book tickets well in advance.",
+      "facts": [
+        "Hidden annex behind bookcase; 1942–1944",
+        "Diary written here; published after the war",
+        "Museum since 1960; advance booking required",
+        "Rooms kept sparse after arrest"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Westerkerk",
+      "lat": 52.3745,
+      "lng": 4.8836,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "The Westerkerk is a Protestant church completed in 1631, with a tall tower that dominates the Jordaan skyline. Anne Frank wrote in her diary about hearing its bell from the annex—a connection to the outside world. Rembrandt is buried somewhere in the church in a pauper's grave; the exact location is unknown. The tower is open for climbs and offers one of the best views over the canal rings. The church is still in use for services and concerts. The Jordaan neighborhood around it—narrow streets, small bridges, and houseboats—is one of Amsterdam's most picturesque areas.",
+      "facts": [
+        "Completed 1631; tower dominates Jordaan",
+        "Anne Frank heard its bell from annex",
+        "Rembrandt buried in pauper's grave here",
+        "Tower climb for canal views"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Nine Streets (De Negen Straatjes)",
+      "lat": 52.3702,
+      "lng": 4.8825,
+      "orderIndex": 3,
+      "radiusM": 40,
+      "script": "The Nine Streets are nine narrow lanes that run between the main canals—Reestraat, Hartenstraat, and the rest—in the heart of the Grachtengordel. This is picture-postcard Amsterdam: gabled houses, bridges, bikes, and small boutiques, vintage shops, cafés, and galleries. The scale is human; you can wander without a fixed plan. The area was once working-class; it's now one of the city's most desirable and photogenic districts. Perfect for a coffee, a browse, or just soaking in the light on the water and the facades.",
+      "facts": [
+        "Nine lanes between Herengracht and Jordaan",
+        "Boutiques, vintage, cafés, galleries",
+        "Grachtengordel heart; gabled houses",
+        "Iconic canal and bridge views"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Rijksmuseum",
+      "lat": 52.36,
+      "lng": 4.8852,
+      "orderIndex": 4,
+      "radiusM": 50,
+      "script": "The Rijksmuseum holds the Dutch Golden Age: Rembrandt's Night Watch, Vermeer's Milkmaid, and countless other masterpieces. The building is neo-Gothic, designed by Cuypers and opened in 1885. The passage under the building—the only such passage in a major museum—is a public bike and foot route, so the museum literally bridges the city. The collection was reinstalled in 2013 after a long renovation. Allow at least half a day for a serious visit; the galleries of 17th-century painting, decorative arts, and Asian art are world-class. The Museumplein in front is a green space with the 'I amsterdam' sign and crowds in good weather.",
+      "facts": [
+        "Night Watch, Vermeer; Dutch Golden Age",
+        "Cuypers building 1885; passage for bikes and pedestrians",
+        "Major renovation and reinstall 2013",
+        "Museumplein; I amsterdam sign"
+      ]
+    }
+  ]
+}

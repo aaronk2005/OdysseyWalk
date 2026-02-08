@@ -1,0 +1,108 @@
+{
+  "tour": {
+    "tourId": "kyoto-temples",
+    "name": "Kyoto Temples & Bamboo",
+    "city": "Kyoto, Japan",
+    "estimatedMinutes": 110,
+    "thumbnailUrl": "/tours/thumb-kyoto-temples.jpg",
+    "tags": [
+      "culture",
+      "temples",
+      "nature"
+    ],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Kinkaku-ji (Golden Pavilion)",
+      "lat": 35.0394,
+      "lng": 135.7292,
+      "orderIndex": 0,
+      "radiusM": 45,
+      "script": "Kinkaku-ji—the Golden Pavilion—is a Zen temple whose top two floors are covered in gold leaf. The pavilion stands over a pond, reflecting in the water; the garden is designed for contemplation. It was built in the 14th century as a retirement villa and converted to a temple. The current structure is a 1955 reconstruction after a monk set fire to the original in 1950. Despite the crowds, the sight of the golden building against the trees and water is unforgettable. Go early to enjoy a moment of relative calm.",
+      "facts": [
+        "Gold-leaf pavilion over pond",
+        "14th century; villa then temple",
+        "Reconstructed 1955 after 1950 fire",
+        "Zen temple; Rokuon-ji"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Ryoan-ji (Rock Garden)",
+      "lat": 35.0345,
+      "lng": 135.7183,
+      "orderIndex": 1,
+      "radiusM": 40,
+      "script": "Ryoan-ji is famous for its karesansui—a dry landscape rock garden. Fifteen rocks are arranged in white gravel in a rectangular space; from any viewing point you can see only fourteen at once. The garden's meaning is deliberately ambiguous—some see islands in a sea, others abstraction. The temple was built in the 15th century; the garden may date from the 16th. Sit on the veranda and look. The rest of the temple has a pond garden and walking paths. It's a UNESCO World Heritage site and a masterpiece of Zen aesthetics.",
+      "facts": [
+        "Fifteen rocks; 14 visible from any angle",
+        "Karesansui—dry landscape",
+        "15th–16th century; Zen temple",
+        "UNESCO World Heritage"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Arashiyama Bamboo Grove",
+      "lat": 35.0172,
+      "lng": 135.6722,
+      "orderIndex": 2,
+      "radiusM": 50,
+      "script": "The bamboo grove in Arashiyama is one of Kyoto's most photographed places. A path runs between towering stalks of bamboo that sway and rustle in the wind and filter the light. The grove is near Tenryu-ji temple and the Togetsukyo Bridge. It's magical early in the morning or on a windy day. Arashiyama is a district on the western edge of Kyoto—hills, the river, and several temples. The grove is free to enter; combine it with a visit to Tenryu-ji or a walk along the river.",
+      "facts": [
+        "Path through towering bamboo",
+        "Near Tenryu-ji and Togetsukyo Bridge",
+        "Arashiyama district; western Kyoto",
+        "Free; best early or windy"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Fushimi Inari Taisha (gate trail)",
+      "lat": 34.9671,
+      "lng": 135.7727,
+      "orderIndex": 3,
+      "radiusM": 55,
+      "script": "Fushimi Inari Taisha is the head shrine of Inari, the Shinto god of rice and prosperity. Thousands of vermilion torii gates form tunnels along the paths up the mountain. Donors have given the gates over the centuries; their names are inscribed on the posts. The main trail goes to the summit—about two hours up and down—but even a short walk through the first gates is memorable. Fox statues guard the shrine—Inari's messengers. The shrine is open 24 hours; go early or in the evening to avoid the midday crowds. It's one of Japan's most iconic sights.",
+      "facts": [
+        "Thousands of torii gates; donor inscriptions",
+        "Inari—god of rice; fox messengers",
+        "Trail to summit; 24 hours",
+        "South Kyoto; JR Inari station"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Kiyomizu-dera (view)",
+      "lat": 34.9949,
+      "lng": 135.785,
+      "orderIndex": 4,
+      "radiusM": 50,
+      "script": "Kiyomizu-dera is a Buddhist temple on a hillside east of the city. The main hall has a huge wooden stage that juts out over the valley—built without nails. The view over Kyoto is spectacular, especially in cherry and maple season. The temple was founded in the 8th century; the present buildings are 17th century. Below the stage, the Otowa waterfall has three streams—drink from one for health, love, or longevity (pick one, or it's greedy). The approach through Ninenzaka and Sannenzaka is a preserved historic street with shops and teahouses.",
+      "facts": [
+        "Wooden stage over valley; no nails",
+        "Founded 8th century; present buildings 17th",
+        "Otowa waterfall; three streams",
+        "Ninenzaka and Sannenzaka approach"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Gion (geisha district)",
+      "lat": 35.0037,
+      "lng": 135.7755,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "Gion is Kyoto's most famous geisha district—narrow streets, wooden machiya houses, and teahouses. Maiko and geiko (apprentice and full geisha) still work here; you might see them in the evening on the way to appointments. Hanami-koji is the main street; the Shirakawa canal is picturesque. The area is touristy but the architecture and the atmosphere are real. Respect privacy—don't block or chase geisha for photos. Gion is also a place for kaiseki meals and traditional performance. Combine with a visit to Yasaka Shrine or a walk along the Kamo River.",
+      "facts": [
+        "Geisha district; maiko and geiko",
+        "Hanami-koji; Shirakawa canal",
+        "Machiya and teahouses",
+        "Yasaka Shrine nearby"
+      ]
+    }
+  ]
+}

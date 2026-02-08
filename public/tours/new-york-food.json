@@ -1,11 +1,15 @@
 {
   "tour": {
     "tourId": "new-york-food",
-    "name": "NYC Food Tour",
+    "name": "NYC Neighborhoods, Food & Culture",
     "city": "New York, USA",
-    "estimatedMinutes": 60,
-    "thumbnailUrl": "/tours/thumb-nyc.jpg",
-    "tags": ["food", "culture", "dining"],
+    "estimatedMinutes": 105,
+    "thumbnailUrl": "/tours/thumb-new-york-food.jpg",
+    "tags": [
+      "food",
+      "culture",
+      "neighborhoods"
+    ],
     "defaultVoiceStyle": "friendly",
     "defaultLang": "en"
   },
@@ -15,21 +19,120 @@
       "name": "Little Italy",
       "lat": 40.7191,
       "lng": -73.9973,
-      "orderIndex": 0
+      "orderIndex": 0,
+      "radiusM": 40,
+      "script": "Little Italy was once a large Italian enclave—at its peak it stretched for blocks and was the heart of Italian-American life in New York. Today it's a compact strip along Mulberry Street, with red-sauce restaurants, cafés, bakeries, and old-school signage. The Feast of San Gennaro in September draws huge crowds for sausage, zeppole, and religious processions. Grab a cannoli from one of the classic bakeries or an espresso at a sidewalk table and take in the flags, neon, and chatter. The neighborhood has been immortalized in film and remains a touchstone of immigrant New York.",
+      "facts": [
+        "Centered on Mulberry Street; once much larger",
+        "Feast of San Gennaro every September",
+        "Historic Italian-American heart of Manhattan",
+        "Classic cannoli, pasta, and espresso"
+      ]
     },
     {
       "poiId": "poi-2",
       "name": "Chinatown",
       "lat": 40.7158,
-      "lng": -73.9970,
-      "orderIndex": 1
+      "lng": -73.997,
+      "orderIndex": 1,
+      "radiusM": 45,
+      "script": "Manhattan's Chinatown is one of the largest and oldest Chinatowns in the Americas. Bakeries with egg tarts and pork buns, noodle shops with hand-pulled noodles, and markets full of exotic produce and live fish line the streets. The gate on Canal Street marks the heart of the district. Visit for dim sum at a bustling cart hall, for soup dumplings, or for a walk through the dense grid of Mott, Mulberry, and Bayard. The neighborhood has grown and shifted over decades but remains a vital center of Chinese-American life and some of the best, most affordable eating in the city.",
+      "facts": [
+        "One of largest Chinatowns in the Americas",
+        "Dim sum, hand-pulled noodles, bakeries",
+        "Canal Street gate; Mott and Mulberry core",
+        "Vital Chinese-American community"
+      ]
     },
     {
       "poiId": "poi-3",
+      "name": "Nolita & Elizabeth Street",
+      "lat": 40.723,
+      "lng": -73.9945,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "Nolita—North of Little Italy—mixes old tenements with boutiques, cafés, and small galleries. Elizabeth Street is the spine: independent shops, vintage clothing, and some of the city's best coffee and pastries. The scale is human; the pace is slower than SoHo or Chinatown. You'll find designer consignment, handmade jewelry, and hole-in-the-wall restaurants. It's a neighborhood that has evolved from working-class Italian and Irish to a mix of creatives and long-term residents. A good place to wander without a fixed plan.",
+      "facts": [
+        "North of Little Italy; Elizabeth Street spine",
+        "Boutiques, vintage, coffee, pastries",
+        "Human scale; quieter than SoHo",
+        "Mix of old tenements and new shops"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "SoHo Cast-Iron District",
+      "lat": 40.7233,
+      "lng": -74.003,
+      "orderIndex": 3,
+      "radiusM": 45,
+      "script": "SoHo is famous for its cast-iron architecture—ornate facades that were prefabricated in foundries and assembled on site in the late 19th century. The district was once a manufacturing and warehouse area; artists moved in when rents were low in the 1960s and 70s, and it became the center of the New York art scene. Today it's high-end shopping and galleries, but the cobblestone streets and the cast-iron facades—with their columns, arches, and decorative details—remain some of the best 19th-century industrial architecture in the country. Greene Street and Mercer Street are especially rich in examples.",
+      "facts": [
+        "Cast-iron facades, late 19th century",
+        "Artist lofts in 1960s–70s; then galleries and retail",
+        "Cobblestone streets; Greene and Mercer highlights",
+        "Largest cast-iron district in the world"
+      ]
+    },
+    {
+      "poiId": "poi-5",
       "name": "Greenwich Village",
       "lat": 40.7336,
       "lng": -74.0027,
-      "orderIndex": 2
+      "orderIndex": 4,
+      "radiusM": 50,
+      "script": "Greenwich Village has been the heart of bohemian New York for over a century—folk music in the 1960s, the Beat poets, the birth of the modern LGBTQ rights movement at the Stonewall Inn. The streets break from Manhattan's grid, creating intimate blocks and unexpected corners. Washington Square Park, with its arch and fountain, is the Village's living room. Brownstones, jazz clubs, comedy clubs, and pizza joints define the character. It's a place to people-watch, to hear street musicians, and to feel the layers of cultural history that make New York what it is.",
+      "facts": [
+        "Folk revival, Beats, LGBTQ history; Stonewall 1969",
+        "Washington Square Park and arch",
+        "Off-grid streets; brownstones and trees",
+        "Jazz, comedy, and pizza"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Washington Square Park",
+      "lat": 40.7308,
+      "lng": -73.997,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "Washington Square Park is the Village's backyard and one of the most democratic spaces in the city. The Washington Arch, inspired by the Arc de Triomphe, was built in 1892 to commemorate the centennial of George Washington's inauguration. The central fountain is a gathering spot for chess players, musicians, students from NYU, and sunbathers. The park has been a stage for protests, performances, and everyday life for over a century. It was once a potter's field; later a parade ground. Today it's the heart of the Village—noisy, messy, and full of life.",
+      "facts": [
+        "Washington Arch 1892; commemorates 1789 inauguration",
+        "Central fountain; chess tables; NYU adjacent",
+        "Former potter's field and parade ground",
+        "Protests, performances, and street life"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "High Line (southern section)",
+      "lat": 40.748,
+      "lng": -74.0048,
+      "orderIndex": 6,
+      "radiusM": 50,
+      "script": "The High Line is a park built on a former elevated freight rail line that once carried trains through the meatpacking district. Saved from demolition by community advocates, it opened as a public park in 2009 and has become one of New York's most beloved spaces. You walk above the streets on a narrow strip of planting, art, and views of the Hudson and the city. The southern section runs past the Whitney Museum and through the meatpacking district. It's a masterclass in adaptive reuse and urban green space.",
+      "facts": [
+        "Opened 2009 on former freight rail",
+        "Community-led preservation; design with planting and art",
+        "Runs from Gansevoort to Hudson Yards",
+        "Whitney Museum at southern end"
+      ]
+    },
+    {
+      "poiId": "poi-8",
+      "name": "Chelsea Market",
+      "lat": 40.7424,
+      "lng": -74.0044,
+      "orderIndex": 7,
+      "radiusM": 40,
+      "script": "Chelsea Market is a food hall and retail space in the former Nabisco factory where the Oreo was invented. The building spans a full block; inside, dozens of vendors sell everything from lobster rolls to tacos to doughnuts to oysters. It's crowded and touristy but genuinely fun—the industrial brick and steel frame give it character, and the variety of food is huge. The High Line runs alongside it. Grab a bite, browse the shops, and then head up to the elevated park or into the galleries of Chelsea.",
+      "facts": [
+        "Former Nabisco factory; Oreo invented here",
+        "Food hall with dozens of vendors",
+        "Brick and steel industrial space",
+        "Adjacent to High Line"
+      ]
     }
   ]
 }

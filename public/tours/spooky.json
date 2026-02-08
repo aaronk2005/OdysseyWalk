@@ -2,51 +2,77 @@
   "tour": {
     "tourId": "spooky",
     "name": "Haunted San Francisco",
-    "city": "San Francisco",
-    "routePoints": [
-      { "lat": 37.7872, "lng": -122.4048 },
-      { "lat": 37.7865, "lng": -122.4060 },
-      { "lat": 37.7858, "lng": -122.4072 }
+    "city": "San Francisco, USA",
+    "estimatedMinutes": 50,
+    "thumbnailUrl": "/tours/thumb-spooky.jpg",
+    "tags": [
+      "spooky",
+      "history",
+      "haunted"
     ],
-    "poiIds": ["spooky-1", "spooky-2", "spooky-3"],
     "defaultVoiceStyle": "friendly",
-    "defaultLang": "en",
-    "estimatedMinutes": 20,
-    "tags": ["spooky", "history"]
+    "defaultLang": "en"
   },
   "pois": [
     {
       "poiId": "spooky-1",
-      "tourId": "spooky",
       "name": "Queen Anne Hotel",
-      "lat": 37.7870,
+      "lat": 37.787,
       "lng": -122.4245,
+      "orderIndex": 0,
       "radiusM": 35,
-      "scripts": { "friendly": "The Queen Anne Hotel is said to be haunted by a schoolteacher named Mary Lake. Guests report items moving and a comforting presence. The building was a girls' school in the late 1800s." },
-      "facts": ["Reportedly haunted by Mary Lake", "Was a girls' school in 1800s", "Victorian building"],
-      "scriptVersion": 1
+      "script": "The Queen Anne Hotel is a Victorian building that once housed a girls' school run by Mary Lake, a beloved teacher who lived and died here. According to legend, her spirit never left. Guests and staff report items moving on their own, the smell of roses in empty rooms, and a comforting presence—especially in room 410, which was once her quarters. The hotel embraces its reputation: it's elegant, creaky, and full of period detail. Whether you believe in ghosts or not, the building's history as a school and the stories that have grown around Mary Lake make it a classic stop on any haunted San Francisco walk.",
+      "facts": [
+        "Mary Lake: teacher at girls' school here",
+        "Room 410 most reported; roses and movement",
+        "Victorian building; late 1800s",
+        "Staff and guests report phenomena"
+      ]
     },
     {
       "poiId": "spooky-2",
-      "tourId": "spooky",
-      "name": "Alcatraz",
-      "lat": 37.8270,
-      "lng": -122.4230,
+      "name": "Alcatraz (view)",
+      "lat": 37.827,
+      "lng": -122.423,
+      "orderIndex": 1,
       "radiusM": 50,
-      "scripts": { "friendly": "Alcatraz Island held some of America's most notorious prisoners. Many claim the island is haunted by former inmates and guards. Night tours emphasize its eerie history." },
-      "facts": ["Federal prison until 1963", "Famous escape attempts", "Native occupation 1969-71"],
-      "scriptVersion": 1
+      "script": "Alcatraz Island held some of America's most notorious prisoners—Al Capone, Robert Stroud the 'Birdman,' and men who attempted impossible escapes. The federal prison closed in 1963; the island was occupied by Native American activists from 1969 to 1971, a key moment in the Red Power movement. Today it's a national park and museum. Many visitors and former guards claim the island is haunted—cold spots, voices, and the feeling of being watched. Night tours lean into the eerie atmosphere. From the waterfront you can see the prison on the rock—silent, fog-shrouded, and loaded with history and legend.",
+      "facts": [
+        "Federal prison 1934–1963; Capone, Birdman",
+        "Famous escape attempts; none confirmed successful",
+        "Native occupation 1969–71",
+        "Night tours; reports of hauntings"
+      ]
     },
     {
       "poiId": "spooky-3",
-      "tourId": "spooky",
       "name": "Presidio Pet Cemetery",
       "lat": 37.7985,
-      "lng": -122.4660,
+      "lng": -122.466,
+      "orderIndex": 2,
       "radiusM": 35,
-      "scripts": { "friendly": "A small cemetery where military families buried their pets. It's quiet and a bit melancholy—hundreds of tiny graves with names and dates. A unique and touching spot." },
-      "facts": ["Military pet cemetery", "Hundreds of pet graves", "Within Presidio"],
-      "scriptVersion": 1
+      "script": "Tucked within the Presidio is a small cemetery where military families buried their pets over many decades. Hundreds of tiny graves have names, dates, and sometimes epitaphs—'Beloved companion,' 'Faithful friend.' It's quiet, a bit melancholy, and entirely unique. The cemetery is not officially maintained but is cared for by volunteers and visitors. Some people say they feel a gentle, sad presence here—the love that was poured into these graves. Whether or not you sense anything otherworldly, it's a touching reminder of the bond between people and animals, and the hidden corners of military life.",
+      "facts": [
+        "Military families' pets; decades of burials",
+        "Hundreds of graves with names and dates",
+        "Unofficial; volunteer care",
+        "Within Presidio; quiet and secluded"
+      ]
+    },
+    {
+      "poiId": "spooky-4",
+      "name": "San Francisco National Cemetery",
+      "lat": 37.8002,
+      "lng": -122.4645,
+      "orderIndex": 3,
+      "radiusM": 40,
+      "script": "The San Francisco National Cemetery in the Presidio holds the remains of service members from the Civil War onward. Row after row of white headstones stretch across the grass. Fog often rolls in from the bay, softening the light and muffling sound. It's a place of quiet reflection and respect. Over the years, visitors and Presidio staff have reported unexplained footsteps, shadowy figures between the rows, and the sense of being watched—especially at dusk. Whether those stories are imagination or something else, the cemetery's history and atmosphere make it a fitting stop on a tour of San Francisco's haunted and hallowed ground.",
+      "facts": [
+        "Civil War era to present; military only",
+        "Part of Presidio; white headstones",
+        "Reports of footsteps and figures at dusk",
+        "Fog and atmosphere; solemn and still"
+      ]
     }
   ]
 }

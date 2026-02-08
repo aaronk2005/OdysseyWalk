@@ -1,11 +1,15 @@
 {
   "tour": {
     "tourId": "paris-history",
-    "name": "Historic Paris Walk",
+    "name": "Historic Paris: Île de la Cité to Champs-Élysées",
     "city": "Paris, France",
-    "estimatedMinutes": 45,
-    "thumbnailUrl": "/tours/thumb-paris.jpg",
-    "tags": ["history", "architecture", "landmarks"],
+    "estimatedMinutes": 95,
+    "thumbnailUrl": "/tours/thumb-paris-history.jpg",
+    "tags": [
+      "history",
+      "architecture",
+      "landmarks"
+    ],
     "defaultVoiceStyle": "historian",
     "defaultLang": "en"
   },
@@ -13,23 +17,122 @@
     {
       "poiId": "poi-1",
       "name": "Notre-Dame Cathedral",
-      "lat": 48.8530,
+      "lat": 48.853,
       "lng": 2.3499,
-      "orderIndex": 0
+      "orderIndex": 0,
+      "radiusM": 40,
+      "script": "Notre-Dame has dominated the Île de la Cité since the 12th century. Its flying buttresses, rose windows, and gargoyles defined Gothic architecture across Europe. Victor Hugo's novel saved it from demolition in the 19th century; Viollet-le-Duc restored it. After the devastating 2019 fire, restoration continues—the square and exterior remain a powerful symbol of Paris and French identity. Stand in the parvis and imagine the medieval processions and coronations that passed through these doors.",
+      "facts": [
+        "Construction began 1163, completed c. 1345",
+        "2019 fire destroyed roof and spire; restoration ongoing",
+        "Flying buttresses were revolutionary for Gothic architecture",
+        "Victor Hugo's novel prompted 19th-century restoration"
+      ]
     },
     {
       "poiId": "poi-2",
-      "name": "Louvre Museum",
-      "lat": 48.8606,
-      "lng": 2.3376,
-      "orderIndex": 1
+      "name": "Sainte-Chapelle",
+      "lat": 48.8556,
+      "lng": 2.345,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "Sainte-Chapelle was built in just seven years by Louis IX to house relics of the Passion—including the Crown of Thorns, which he acquired at enormous cost. The lower chapel served the palace staff; the upper chapel is a cage of stained glass with over 1,100 biblical scenes in deep reds and blues. In sunlight the effect is overwhelming—the stone almost disappears. It is the supreme masterpiece of Rayonnant Gothic and one of the most beautiful interiors in the world.",
+      "facts": [
+        "Built 1242–1248 for Louis IX",
+        "Housed Crown of Thorns and other Passion relics",
+        "Over 1,100 stained glass scenes in upper chapel",
+        "Rayonnant Gothic at its peak"
+      ]
     },
     {
       "poiId": "poi-3",
-      "name": "Arc de Triomphe",
-      "lat": 48.8738,
-      "lng": 2.2950,
-      "orderIndex": 2
+      "name": "Conciergerie",
+      "lat": 48.8564,
+      "lng": 2.3456,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "The Conciergerie began as a royal palace—the seat of the medieval kings of France. When the court moved to the Louvre and Versailles, it became a prison. During the Terror, Marie-Antoinette, Danton, and Robespierre passed through here. The Hall of the Guards, with its vaulted ceiling, and the recreated cells—including a reconstruction of the queen's cell—tell a dark chapter of the Revolution. Over 2,700 people were sent to the guillotine from this building.",
+      "facts": [
+        "Former royal palace, then prison",
+        "Marie-Antoinette held here before execution",
+        "Hall of the Guards has 14th-century vaulting",
+        "Over 2,700 prisoners sent to guillotine during Terror"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Pont Neuf",
+      "lat": 48.8575,
+      "lng": 2.3415,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "Pont Neuf is the oldest standing bridge across the Seine in Paris. Despite its name—'new bridge'—it was completed in 1607 under Henri IV, who inaugurated it. It was the first bridge without houses on it, so Parisians could enjoy the view. Henri's equestrian statue stands on the bridge; the original was melted in the Revolution and replaced in 1818. It links the Île de la Cité to both banks and has been a gathering place for street performers and vendors for centuries.",
+      "facts": [
+        "Oldest standing bridge over Seine in Paris",
+        "Completed 1607; first bridge without houses",
+        "Henri IV statue replaced in 1818",
+        "Connects Île de la Cité to Left and Right banks"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Louvre Museum (Cour Napoléon)",
+      "lat": 48.8606,
+      "lng": 2.3376,
+      "orderIndex": 4,
+      "radiusM": 50,
+      "script": "The Louvre was a medieval fortress, then a royal palace—François I, Henri IV, and Louis XIV all expanded it. After the court moved to Versailles, ideas for a public museum grew; the Revolution opened it in 1793. Today it is the world's largest art museum, with holdings from antiquity to 1848: the Mona Lisa, the Venus de Milo, the Winged Victory of Samothrace, and countless others. I. M. Pei's glass pyramid, completed in 1989, controversially and brilliantly marks the main entrance and has become iconic in its own right.",
+      "facts": [
+        "World's largest art museum; opened to public 1793",
+        "Glass pyramid by I. M. Pei, 1989",
+        "Collection spans antiquity to 1848",
+        "Former royal residence from medieval period"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Tuileries Garden",
+      "lat": 48.8634,
+      "lng": 2.3274,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "The Tuileries Garden was created in the 16th century for the Tuileries Palace, which burned during the Paris Commune in 1871. Le Nôtre redesigned it in the 17th century in the formal French style—geometric paths, parterres, and long vistas. It stretches from the Louvre to Place de la Concorde. The two ponds, the statues (including works by Maillol), and the tree-lined alleys make it the perfect place to pause. On summer days Parisians and visitors fill the green metal chairs facing the water.",
+      "facts": [
+        "Created for Tuileries Palace; Le Nôtre redesign 17th century",
+        "Palace burned 1871 during Commune",
+        "Links Louvre to Place de la Concorde",
+        "Classic French formal garden with ponds and statues"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Place de la Concorde",
+      "lat": 48.8656,
+      "lng": 2.3212,
+      "orderIndex": 6,
+      "radiusM": 50,
+      "script": "Place de la Concorde is one of the largest public squares in the world. During the Revolution it was Place de la Révolution—Louis XVI and Marie-Antoinette were executed here. The Egyptian obelisk from Luxor, a gift to France in the 19th century, stands in the center. The square is framed by the Tuileries, the Champs-Élysées, and the Seine; the views toward the Arc de Triomphe and the Eiffel Tower are spectacular. The name 'Concorde' was chosen to mark reconciliation after the Terror.",
+      "facts": [
+        "Louis XVI and Marie-Antoinette executed here",
+        "Obelisk from Luxor, 3,300 years old",
+        "One of largest public squares in the world",
+        "Renamed Concorde to mark reconciliation"
+      ]
+    },
+    {
+      "poiId": "poi-8",
+      "name": "Champs-Élysées (lower end)",
+      "lat": 48.8698,
+      "lng": 2.3078,
+      "orderIndex": 7,
+      "radiusM": 45,
+      "script": "The Champs-Élysées runs from Place de la Concorde to the Arc de Triomphe—the 'most beautiful avenue in the world' to the French. It was laid out in the 17th century as an extension of the Tuileries garden; today it mixes luxury shops, cafés, cinemas, and grand institutions. The lower end, near the Place, is greener and more relaxed. Look down the axis toward the Arc de Triomphe—Napoleon's triumphal arch, completed in 1836, stands at the center of the étoile, the star of twelve radiating avenues.",
+      "facts": [
+        "Extended from Tuileries in 17th century",
+        "Arc de Triomphe at western end, completed 1836",
+        "Twelve avenues meet at Place de l'Étoile",
+        "Site of Bastille Day military parade"
+      ]
     }
   ]
 }

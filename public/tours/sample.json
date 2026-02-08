@@ -5,18 +5,47 @@
     "city": "San Francisco",
     "polyline": "",
     "routePoints": [
-      { "lat": 37.7955, "lng": -122.3937 },
-      { "lat": 37.7952, "lng": -122.4028 },
-      { "lat": 37.7961, "lng": -122.4094 },
-      { "lat": 37.7880, "lng": -122.4074 },
-      { "lat": 37.7858, "lng": -122.4098 },
-      { "lat": 37.7857, "lng": -122.4011 }
+      {
+        "lat": 37.7955,
+        "lng": -122.3937
+      },
+      {
+        "lat": 37.7952,
+        "lng": -122.4028
+      },
+      {
+        "lat": 37.7961,
+        "lng": -122.4094
+      },
+      {
+        "lat": 37.788,
+        "lng": -122.4074
+      },
+      {
+        "lat": 37.7858,
+        "lng": -122.4098
+      },
+      {
+        "lat": 37.7857,
+        "lng": -122.4011
+      }
     ],
-    "poiIds": ["poi-1", "poi-2", "poi-3", "poi-4", "poi-5", "poi-6"],
+    "poiIds": [
+      "poi-1",
+      "poi-2",
+      "poi-3",
+      "poi-4",
+      "poi-5",
+      "poi-6"
+    ],
     "defaultVoiceStyle": "friendly",
     "defaultLang": "en",
     "estimatedMinutes": 35,
-    "tags": ["history", "downtown"]
+    "tags": [
+      "history",
+      "downtown"
+    ],
+    "thumbnailUrl": "/tours/thumb-sample.jpg"
   },
   "pois": [
     {
@@ -29,7 +58,11 @@
       "scripts": {
         "friendly": "Welcome to the Ferry Building! This landmark opened in 1898 and was once the second busiest transit terminal in the world. Today it houses a famous marketplace with local food and shops. The clock tower is one of the city's most recognizable symbols."
       },
-      "facts": ["Opened 1898", "Clock tower is a city symbol", "Houses Ferry Building Marketplace"],
+      "facts": [
+        "Opened 1898",
+        "Clock tower is a city symbol",
+        "Houses Ferry Building Marketplace"
+      ],
       "scriptVersion": 1
     },
     {
@@ -42,7 +75,11 @@
       "scripts": {
         "friendly": "The Transamerica Pyramid was completed in 1972 and was the tallest skyscraper in San Francisco until 2018. Its distinctive shape was designed to allow more sunlight to reach the streets below."
       },
-      "facts": ["Completed 1972", "Was tallest in SF until 2018", "Shape designed for street sunlight"],
+      "facts": [
+        "Completed 1972",
+        "Was tallest in SF until 2018",
+        "Shape designed for street sunlight"
+      ],
       "scriptVersion": 1
     },
     {
@@ -55,20 +92,28 @@
       "scripts": {
         "friendly": "This is the Dragon Gate, the entrance to Chinatown. San Francisco's Chinatown is the oldest in North America. The gate was dedicated in 1970 and features figures from Chinese mythology."
       },
-      "facts": ["Dragon Gate dedicated 1970", "Oldest Chinatown in North America", "Figures from Chinese mythology"],
+      "facts": [
+        "Dragon Gate dedicated 1970",
+        "Oldest Chinatown in North America",
+        "Figures from Chinese mythology"
+      ],
       "scriptVersion": 1
     },
     {
       "poiId": "poi-4",
       "tourId": "sample",
       "name": "Union Square",
-      "lat": 37.7880,
+      "lat": 37.788,
       "lng": -122.4074,
       "radiusM": 35,
       "scripts": {
         "friendly": "Union Square is the heart of downtown shopping and culture. The Dewey Monument honors Admiral Dewey's victory at Manila Bay. During the Civil War, pro-Union rallies were held here—hence the name."
       },
-      "facts": ["Dewey Monument honors Admiral Dewey", "Named for Civil War Union rallies", "Hub of downtown shopping"],
+      "facts": [
+        "Dewey Monument honors Admiral Dewey",
+        "Named for Civil War Union rallies",
+        "Hub of downtown shopping"
+      ],
       "scriptVersion": 1
     },
     {
@@ -81,7 +126,11 @@
       "scripts": {
         "friendly": "You're at the Powell Street cable car turnaround. The cable car system started in 1873 and is the last manually operated system of its kind. Watching the turntable spin the cars is a classic San Francisco moment."
       },
-      "facts": ["Cable cars started 1873", "Last manually operated system", "Powell turnaround is iconic"],
+      "facts": [
+        "Cable cars started 1873",
+        "Last manually operated system",
+        "Powell turnaround is iconic"
+      ],
       "scriptVersion": 1
     },
     {
@@ -94,7 +143,11 @@
       "scripts": {
         "friendly": "SFMOMA holds one of the largest collections of modern and contemporary art in the world. The building was expanded in 2016 with a striking addition by Snøhetta. Even from outside, the architecture is worth a pause."
       },
-      "facts": ["Major modern art collection", "2016 expansion by Snøhetta", "Landmark downtown building"],
+      "facts": [
+        "Major modern art collection",
+        "2016 expansion by Snøhetta",
+        "Landmark downtown building"
+      ],
       "scriptVersion": 1
     }
   ]

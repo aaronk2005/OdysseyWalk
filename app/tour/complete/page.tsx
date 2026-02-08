@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { ArrowLeft, Sparkles, RotateCcw, Share2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Sparkles, RotateCcw, CheckCircle2 } from "lucide-react";
 import { MapView } from "@/components/MapView";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { Confetti } from "@/components/Confetti";
@@ -52,40 +52,6 @@ export default function TourCompletePage() {
     if (voiceStyle) AudioSessionManager.setOptions({ voiceStyle });
     AudioSessionManager.playOutro(session.tourPlan.outro).catch(() => {});
   }, [session?.sessionId, session?.tourPlan?.outro, session?.tourPlan?.voiceLang, session?.tourPlan?.voiceStyle]);
-
-  const handleShare = async () => {
-    const tourName = session?.tourPlan?.theme
-      ? `${session.tourPlan.theme.charAt(0).toUpperCase() + session.tourPlan.theme.slice(1)} Walk`
-      : "Odyssey Walk";
-    const text = `I just completed "${tourName}" on Odyssey Walk.`;
-    const url = typeof window !== "undefined" ? window.location.origin : "";
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({
-          title: "Odyssey Walk",
-          text,
-          url,
-        });
-        showToast("Shared successfully!", "success");
-      } catch (e) {
-        if ((e as Error).name !== "AbortError") {
-          try {
-            await navigator.clipboard.writeText(`${text} ${url}`);
-            showToast("Link copied to clipboard", "success");
-          } catch {
-            showToast("Could not share", "error");
-          }
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(`${text} ${url}`);
-        showToast("Link copied to clipboard", "success");
-      } catch {
-        showToast("Could not copy link", "error");
-      }
-    }
-  };
 
   if (!session) {
     return (
@@ -206,14 +172,6 @@ export default function TourCompletePage() {
             >
               Create another walk
             </Link>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-surface border border-app-border text-ink-primary font-medium hover:bg-surface-muted transition-colors min-h-[48px]"
-            >
-              <Share2 className="w-4 h-4" />
-              Share this walk
-            </button>
           </div>
         </div>
       </motion.div>

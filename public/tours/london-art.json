@@ -1,11 +1,15 @@
 {
   "tour": {
     "tourId": "london-art",
-    "name": "London Art Walk",
+    "name": "London Art, Museums & South Bank",
     "city": "London, UK",
-    "estimatedMinutes": 50,
-    "thumbnailUrl": "/tours/thumb-london.jpg",
-    "tags": ["art", "museums", "culture"],
+    "estimatedMinutes": 110,
+    "thumbnailUrl": "/tours/thumb-london-art.jpg",
+    "tags": [
+      "art",
+      "museums",
+      "culture"
+    ],
     "defaultVoiceStyle": "friendly",
     "defaultLang": "en"
   },
@@ -15,21 +19,120 @@
       "name": "Tate Modern",
       "lat": 51.5076,
       "lng": -0.0994,
-      "orderIndex": 0
+      "orderIndex": 0,
+      "radiusM": 40,
+      "script": "Tate Modern sits in the former Bankside Power Station, transformed by Herzog & de Meuron and opened in 2000. It holds international modern and contemporary art—Warhol, Hockney, Rothko, and countless others—and the permanent collection is free. The vast Turbine Hall hosts ambitious temporary installations. The viewing level on the top floor offers one of the best views of St Paul's and the City. The Blavatnik Building extension added more gallery space and a 360-degree viewing terrace. Whether you step inside or just take in the building and the river, it's the anchor of the South Bank's cultural strip.",
+      "facts": [
+        "Opened 2000 in former power station; Herzog & de Meuron",
+        "Turbine Hall for large-scale installations",
+        "Free permanent collection; Blavatnik Building extension",
+        "Viewing level over St Paul's and Thames"
+      ]
     },
     {
       "poiId": "poi-2",
-      "name": "National Gallery",
-      "lat": 51.5089,
-      "lng": -0.1283,
-      "orderIndex": 1
+      "name": "Shakespeare's Globe",
+      "lat": 51.5081,
+      "lng": -0.0972,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "The Globe is a painstaking reconstruction of Shakespeare's playhouse, built near the original site and opened in 1997. It's an open-air, thatched theatre where you can see Shakespeare and his contemporaries performed as they were in the 1600s—daylight, minimal sets, and audience interaction. The exhibition under the theatre tells the story of the Elizabethan stage and the rebuilding project. The original Globe burned in 1613 when a cannon set the thatch alight during Henry VIII; it was rebuilt and then closed by the Puritans in 1642. This Globe brings that world back to life.",
+      "facts": [
+        "Reconstruction of 1599 Globe; opened 1997",
+        "Only thatched building permitted in London since Great Fire",
+        "Original burned 1613; closed by Puritans 1642",
+        "Exhibition and guided tours underground"
+      ]
     },
     {
       "poiId": "poi-3",
+      "name": "Millennium Bridge",
+      "lat": 51.5095,
+      "lng": -0.0983,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "The Millennium Bridge is a slender footbridge linking the South Bank to St Paul's Cathedral. It opened in 2000 and had to close after two days because the crowd's footsteps caused an unexpected sway—engineers fixed it with dampers and it reopened in 2002. The view of St Paul's from the middle of the bridge is one of London's best: the dome seems to float above the river. It's nicknamed the 'Wobbly Bridge' with affection now. Cross it toward the City for the full effect.",
+      "facts": [
+        "Opened 2000; closed for wobble, reopened 2002",
+        "First new Thames bridge in over a century",
+        "Pedestrian-only; links Tate to St Paul's",
+        "Dampers added to eliminate sway"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "St Paul's Cathedral",
+      "lat": 51.5089,
+      "lng": -0.0983,
+      "orderIndex": 3,
+      "radiusM": 45,
+      "script": "St Paul's Cathedral was designed by Christopher Wren after the Great Fire of 1666 destroyed the old Gothic cathedral. The present building was completed in 1710; its dome has dominated the London skyline ever since. It survived the Blitz—photographs of the dome standing through smoke and fire became symbols of resilience. The wedding of Charles and Diana took place here in 1981. Inside, the Whispering Gallery runs around the base of the dome; the crypt holds Wren's tomb, inscribed 'Si monumentum requiris, circumspice'—if you seek his monument, look around you.",
+      "facts": [
+        "Wren's design; completed 1710",
+        "Dome survived Blitz; iconic wartime image",
+        "Charles and Diana married here 1981",
+        "Whispering Gallery; Wren's tomb in crypt"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Trafalgar Square & National Gallery",
+      "lat": 51.5089,
+      "lng": -0.1283,
+      "orderIndex": 4,
+      "radiusM": 45,
+      "script": "Trafalgar Square was laid out in the 1830s to commemorate Nelson's victory at Trafalgar. Nelson's Column, with the admiral on top and four lions at the base, is the centerpiece. The National Gallery on the north side holds Western European painting from the 13th to the 19th century—Van Gogh's Sunflowers, Turner's seascapes, Botticelli, Rembrandt, and over 2,300 other works. Entry to the permanent collection is free. The square is a gathering place for celebrations, protests, and the annual Christmas tree from Norway. The fountains and the steps are perfect for people-watching.",
+      "facts": [
+        "Nelson's Column 1843; lions added 1867",
+        "National Gallery: free permanent collection, 2,300+ works",
+        "Christmas tree from Norway each year",
+        "Site of demonstrations and celebrations"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "National Portrait Gallery",
+      "lat": 51.5094,
+      "lng": -0.1281,
+      "orderIndex": 5,
+      "radiusM": 35,
+      "script": "The National Portrait Gallery was the first portrait gallery in the world when it opened in 1856. It holds likenesses of British figures—kings and queens, writers like Shakespeare and the Brontës, scientists, politicians, and modern celebrities. The collection is arranged chronologically, so you walk through British history in faces. The Tudor gallery, the Victorians, and the contemporary top floor each have a distinct character. Entry is free. The rooftop restaurant has views over Trafalgar Square and the rooftops of London.",
+      "facts": [
+        "First portrait gallery in the world, 1856",
+        "Chronological display from Tudors to now",
+        "Free entry; rooftop restaurant",
+        "Shakespeare 'Chandos' portrait and many others"
+      ]
+    },
+    {
+      "poiId": "poi-7",
       "name": "British Museum",
       "lat": 51.5194,
-      "lng": -0.1270,
-      "orderIndex": 2
+      "lng": -0.127,
+      "orderIndex": 6,
+      "radiusM": 50,
+      "script": "The British Museum was founded in 1753 and was the first national public museum in the world. It holds human history from every continent: the Rosetta Stone, which unlocked Egyptian hieroglyphs; the Parthenon sculptures; Egyptian mummies; the Lewis chessmen; and the Assyrian lion hunts. The Great Court, redesigned by Norman Foster and opened in 2000, is a spectacular covered space with the Reading Room at its center. Admission is free, though special exhibitions are ticketed. You could spend days here; even a short visit to the highlights is unforgettable.",
+      "facts": [
+        "Founded 1753; first national public museum",
+        "Rosetta Stone, Parthenon marbles, Egyptian galleries",
+        "Great Court by Foster, 2000; Reading Room at center",
+        "Free admission to permanent collection"
+      ]
+    },
+    {
+      "poiId": "poi-8",
+      "name": "British Library",
+      "lat": 51.5294,
+      "lng": -0.1269,
+      "orderIndex": 7,
+      "radiusM": 40,
+      "script": "The British Library holds over 170 million items—books, manuscripts, maps, and sound recordings. In the Treasures Gallery you can see the Magna Carta, Leonardo da Vinci's notebooks, the Lindisfarne Gospels, original Beatles lyrics, and the Gutenberg Bible. The building near St Pancras, opened in 1998, has a public piazza, a café, and regular exhibitions. The library was part of the British Museum until 1973; it became independent and moved to this purpose-built home. Even if you don't go inside, the red-brick and modern architecture next to St Pancras is worth a look.",
+      "facts": [
+        "Over 170 million items",
+        "Treasures: Magna Carta, Leonardo, Lindisfarne Gospels, Beatles",
+        "Opened at St Pancras 1998",
+        "Free Treasures Gallery"
+      ]
     }
   ]
 }

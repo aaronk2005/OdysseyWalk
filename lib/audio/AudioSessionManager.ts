@@ -123,12 +123,13 @@ class AudioSessionManagerImpl {
   }
 
   async playIntro(text: string): Promise<{ played: boolean }> {
+    const safeText = typeof text === "string" && text.trim() ? text.trim() : "Welcome. Let's begin.";
     this.stop();
     this.abortInFlightFetch();
     this.fetchAbortController = new AbortController();
     this.currentPlayId = ++this.playId;
     this.setState(AudioState.PLAYING_INTRO);
-    return this.playTts(text, "intro", this.fetchAbortController.signal).then((r) => {
+    return this.playTts(safeText, "intro", this.fetchAbortController.signal).then((r) => {
       if (this.state === AudioState.PLAYING_INTRO) this.setState(AudioState.NAVIGATING);
       return r;
     });

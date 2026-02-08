@@ -1,0 +1,123 @@
+{
+  "tour": {
+    "tourId": "boston-freedom",
+    "name": "Freedom Trail & Historic Boston",
+    "city": "Boston, USA",
+    "estimatedMinutes": 100,
+    "thumbnailUrl": "/tours/thumb-boston-freedom.jpg",
+    "tags": [
+      "history",
+      "freedom trail",
+      "colonial"
+    ],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Boston Common",
+      "lat": 42.3551,
+      "lng": -71.0656,
+      "orderIndex": 0,
+      "radiusM": 45,
+      "script": "Boston Common is the oldest public park in America, in continuous use since 1634. It was a communal pasture, a British army camp in the years before the Revolution, and a site for public hangings, protests, and celebrations. The Puritans grazed cattle here; during the Siege of Boston, redcoats trained on the same ground. Today it's a green anchor at the start of the Freedom Trail—50 acres of lawns, paths, and the Frog Pond. In winter you can skate; in summer you can sit under the trees. It has never been built over; it remains the city's common backyard.",
+      "facts": [
+        "Oldest public park in America; used since 1634",
+        "British camp during Revolution; pasture before",
+        "50 acres; Frog Pond for skating and play",
+        "Start of the Freedom Trail"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Massachusetts State House",
+      "lat": 42.3587,
+      "lng": -71.0637,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "The Massachusetts State House was designed by Charles Bulfinch and completed in 1798 on land that had been John Hancock's pasture. The building sits on Beacon Hill and has been the seat of state government ever since. The golden dome was originally wood shingles; it was covered in copper by Paul Revere's company and gilded in 1874. The dome is again gilded with gold leaf; it shines over the city. Inside, the House and Senate chambers and the Hall of Flags tell the story of Massachusetts government. The Sacred Cod in the House chamber represents the importance of fishing to the colony.",
+      "facts": [
+        "Bulfinch design; completed 1798",
+        "Dome: wood, then Revere copper, gilded 1874",
+        "Sacred Cod in House chamber",
+        "Seat of Massachusetts government"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Park Street Church",
+      "lat": 42.3564,
+      "lng": -71.0624,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "Park Street Church was built in 1809; its 217-foot spire was once the first thing travelers saw approaching Boston from the south. The church was a center of abolitionist activity—William Lloyd Garrison gave his first anti-slavery speech here in 1829. 'My Country 'Tis of Thee' was first sung here on July 4, 1831. The church still holds services and is known for its strong tradition of preaching and music. The brick building and white spire stand at the corner of the Common and the beginning of the Freedom Trail's red brick line.",
+      "facts": [
+        "Built 1809; 217-foot spire",
+        "'My Country 'Tis of Thee' first sung here July 4, 1831",
+        "Garrison's first anti-slavery speech 1829",
+        "Corner of Common and Freedom Trail"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Old State House",
+      "lat": 42.3589,
+      "lng": -71.0574,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "The Old State House is the oldest surviving public building in Boston, built in 1713. It was the seat of British colonial government and later the state government. The Boston Massacre took place in front of it on March 5, 1770—British soldiers fired into a crowd, killing five. On July 18, 1776, the Declaration of Independence was read from the balcony to the crowd below. The building is now a museum of Boston and American history. The lion and unicorn on the facade are replicas; the originals were burned after the Declaration was read.",
+      "facts": [
+        "Built 1713; oldest surviving public building in Boston",
+        "Boston Massacre March 5, 1770 in front",
+        "Declaration of Independence read from balcony July 18, 1776",
+        "Museum of Boston history"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Faneuil Hall",
+      "lat": 42.3602,
+      "lng": -71.0564,
+      "orderIndex": 4,
+      "radiusM": 40,
+      "script": "Faneuil Hall was a gift from the merchant Peter Faneuil and opened in 1742. It was a marketplace on the ground floor and a meeting hall above—'the Cradle of Liberty,' where patriots rallied against British policy. Samuel Adams and others gave speeches here in the years before the Revolution. The building was expanded in 1806; the grasshopper weathervane on the roof has become a symbol of Boston. Today the hall is still used for public debate; the ground floor and the adjacent Quincy Market are packed with shops, food stalls, and crowds. The Freedom Trail continues through the market toward the North End.",
+      "facts": [
+        "Peter Faneuil gift; opened 1742",
+        "Cradle of Liberty; Adams and patriots spoke here",
+        "Quincy Market adjacent; food and shops",
+        "Grasshopper weathervane symbol of Boston"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "North End & Paul Revere House",
+      "lat": 42.3637,
+      "lng": -71.0544,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "The North End is Boston's oldest neighborhood—narrow streets, brick buildings, and the city's best Italian bakeries and restaurants. The Paul Revere House, built around 1680, is the oldest remaining structure in downtown Boston. Revere lived here with his family and left from this house on the night of April 18, 1775, for his famous ride to Lexington to warn that the British were coming. The house is now a museum with period furnishings. The Old North Church is a short walk away; from its steeple the two lanterns were hung to signal the British route.",
+      "facts": [
+        "Paul Revere House c. 1680; oldest in downtown Boston",
+        "Revere left here for his ride April 18, 1775",
+        "North End: Italian bakeries and restaurants",
+        "Old North Church nearby"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Old North Church",
+      "lat": 42.3662,
+      "lng": -71.0544,
+      "orderIndex": 6,
+      "radiusM": 35,
+      "script": "One if by land, two if by sea. On the night of April 18, 1775, two lanterns were hung in the steeple of the Old North Church to signal that the British were crossing the Charles River by boat. Paul Revere and William Dawes rode to Lexington and Concord to warn the militia. The church, built in 1723, is Boston's oldest standing church building. It's still an active Episcopal congregation. The interior—with its box pews and chandeliers—evokes colonial Boston. The crypt holds remains from the colonial period. The steeple you see today is a later reconstruction; the original was toppled in a storm.",
+      "facts": [
+        "Two lanterns April 18, 1775; 'one if by land, two if by sea'",
+        "Built 1723; Boston's oldest standing church",
+        "Still active Episcopal church; box pews",
+        "Revere and Dawes rode to warn militia"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "tour": {
+    "tourId": "barcelona-gaudi",
+    "name": "Gaudí & Modernisme Walk",
+    "city": "Barcelona, Spain",
+    "estimatedMinutes": 55,
+    "thumbnailUrl": "/tours/thumb-barcelona-gaudi.jpg",
+    "tags": [
+      "architecture",
+      "art",
+      "modernisme"
+    ],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Casa Batlló",
+      "lat": 41.3917,
+      "lng": 2.1649,
+      "orderIndex": 0,
+      "radiusM": 35,
+      "script": "Casa Batlló is one of Gaudí's masterworks on the Block of Discord—Passeig de Gràcia's stretch of competing Modernisme facades. Gaudí renovated an existing building between 1904 and 1906 for the Batlló family. The facade suggests a dragon: the scales are trencadís mosaic, the balconies look like skulls or masks, and the roof evokes Saint George's dragon with its arched back and iridescent tiles. Inside, the central light well, the curved woodwork, and the rooftop with its famous chimney are designed for light, comfort, and fantasy. Every detail—doors, handles, ceilings—is part of a single organic vision.",
+      "facts": [
+        "Renovated 1904–1906 for Batlló family",
+        "Block of Discord; dragon and Saint George theme",
+        "Trencadís mosaic; organic interiors",
+        "Rooftop chimney and spine"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Casa Amatller",
+      "lat": 41.3919,
+      "lng": 2.1647,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "Next door to Casa Batlló, the Casa Amatller was designed by Josep Puig i Cadafalch for the chocolate magnate Antoni Amatller. It's a blend of Gothic revival and Dutch influence—the stepped gable is distinctive. The facade has sgraffito and sculptural details; the first floor held the Amatller chocolate shop. Together with Batlló and Lleó Morera's house, it forms the Illa de la Discòrdia—three competing visions of Modernisme on one block. Puig i Cadafalch was a key figure in Catalan architecture and politics.",
+      "facts": [
+        "Puig i Cadafalch; chocolate magnate Amatller",
+        "Stepped gable; Gothic and Dutch influence",
+        "Part of Block of Discord",
+        "Sgraffito and sculpture on facade"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "La Pedrera (Casa Milà)",
+      "lat": 41.3954,
+      "lng": 2.1619,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "La Pedrera—'the quarry'—or Casa Milà was Gaudí's last civic project before he devoted himself entirely to the Sagrada Família. Completed in 1912, it has no right angles: the undulating stone facade and the wrought-iron balconies look like a cliff carved by wind and water. The rooftop is a forest of sculptural chimneys and ventilation towers that double as sculpture. The building was controversial in its day; the Milà family had disputes with Gaudí. Today it's a UNESCO World Heritage site and houses a museum, a recreated apartment, and the unforgettable roof. The attic has a striking ribbed structure.",
+      "facts": [
+        "Completed 1912; Gaudí's last civic work",
+        "No right angles; undulating stone and iron",
+        "Rooftop chimneys and vents as sculpture",
+        "UNESCO World Heritage; museum and apartment"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Palau de la Música Catalana",
+      "lat": 41.3876,
+      "lng": 2.1752,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "The Palau de la Música Catalana is a concert hall designed by Lluís Domènech i Montaner and completed in 1908. It's a burst of color and form: the facade has mosaic, brick, and sculpture; the interior is a climax of stained glass, floral motifs, and the famous inverted dome skylight in the main hall that floods the space with light. The Palau was built for the Orfeó Català choral society and remains a symbol of Catalan culture. Guided tours take you inside; even from the street the building is a masterpiece of Modernisme. UNESCO World Heritage.",
+      "facts": [
+        "Domènech i Montaner; completed 1908",
+        "Orfeó Català choral society",
+        "Inverted dome skylight; stained glass",
+        "UNESCO World Heritage"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Sagrada Família (exterior)",
+      "lat": 41.4036,
+      "lng": 2.1744,
+      "orderIndex": 4,
+      "radiusM": 50,
+      "script": "The Sagrada Família has been under construction since 1882. Gaudí took over a year later and made it his life's work; he is buried in the crypt. The Nativity facade—which he completed—teems with sculpture: animals, plants, and biblical scenes in a celebration of creation. The Passion facade is more austere, telling the story of the crucifixion. The Glory facade is still being built. The towers rise like organic spires; the interior, when you visit, is a forest of columns and light. From the outside you can take in the scale, the detail, and the ambition of the most visited monument in Spain.",
+      "facts": [
+        "Construction began 1882; Gaudí from 1883",
+        "Nativity facade by Gaudí; Passion and Glory later",
+        "Most visited monument in Spain",
+        "Organic columns and light inside"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Park Güell (entrance zone)",
+      "lat": 41.4145,
+      "lng": 2.1527,
+      "orderIndex": 5,
+      "radiusM": 55,
+      "script": "Park Güell was designed by Gaudí as a garden city for Eusebi Güell; only two houses were built (one is now the Gaudí House Museum). The park is a fantasy of curving benches covered in trencadís, columns that look like trees, and the famous dragon fountain at the entrance. The main terrace has one of the longest bench-seats in the world, a serpentine mosaic border with views over Barcelona. The park became municipal in 1926. The monumental zone requires a ticket; the rest of the park is free. It's a place where architecture and nature merge—pure Gaudí.",
+      "facts": [
+        "Garden city for Güell; two houses built",
+        "Dragon fountain; serpentine bench",
+        "Trencadís and organic forms",
+        "Monumental zone ticketed; rest free"
+      ]
+    }
+  ]
+}

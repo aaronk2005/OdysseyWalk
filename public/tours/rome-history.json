@@ -1,11 +1,15 @@
 {
   "tour": {
     "tourId": "rome-history",
-    "name": "Ancient Rome Walk",
+    "name": "Ancient Rome: Colosseum to Baroque Heart",
     "city": "Rome, Italy",
-    "estimatedMinutes": 50,
-    "thumbnailUrl": "/tours/thumb-rome.jpg",
-    "tags": ["history", "ancient", "architecture"],
+    "estimatedMinutes": 150,
+    "thumbnailUrl": "/tours/thumb-rome-history.jpg",
+    "tags": [
+      "history",
+      "ancient",
+      "architecture"
+    ],
     "defaultVoiceStyle": "historian",
     "defaultLang": "en"
   },
@@ -15,21 +19,180 @@
       "name": "Colosseum",
       "lat": 41.8902,
       "lng": 12.4922,
-      "orderIndex": 0
+      "orderIndex": 0,
+      "radiusM": 50,
+      "script": "The Colosseum was completed in AD 80 under Emperor Titus, and inaugurated with 100 days of games. It could hold around 50,000 spectators in tiered seating—senators at the bottom, women and the poor at the top. Gladiatorial combats, animal hunts, and even mock sea battles (the arena could be flooded) took place here. The outer wall is travertine limestone; much of the interior was quarried in the Middle Ages for building material. It remains the enduring symbol of ancient Rome and Roman engineering—the elliptical shape and vaulted corridors allowed the crowd to be filled or emptied in minutes.",
+      "facts": [
+        "Completed AD 80 under Titus; 100 days of inaugural games",
+        "Seated about 50,000 in three tiers by social class",
+        "Arena could be flooded for naumachiae (sea battles)",
+        "Travertine exterior; interior quarried in Middle Ages"
+      ]
     },
     {
       "poiId": "poi-2",
-      "name": "Roman Forum",
-      "lat": 41.8925,
-      "lng": 12.4853,
-      "orderIndex": 1
+      "name": "Arch of Constantine",
+      "lat": 41.8897,
+      "lng": 12.4907,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "The Arch of Constantine was dedicated in AD 315 to celebrate Constantine's victory at the Milvian Bridge in 312—after which he legalized Christianity. Many of its reliefs were spolia, taken from earlier monuments of Trajan, Hadrian, and Marcus Aurelius; only the frieze showing Constantine's campaign is new. It stands between the Colosseum and the Palatine, marking the start of the triumphal route into the Forum. It is the largest surviving Roman triumphal arch and the last great monument of imperial Rome.",
+      "facts": [
+        "Dedicated AD 315; celebrates Milvian Bridge, 312",
+        "Reliefs largely spolia from 2nd-century emperors",
+        "Largest surviving Roman triumphal arch",
+        "Stood at start of triumphal route"
+      ]
     },
     {
       "poiId": "poi-3",
+      "name": "Roman Forum",
+      "lat": 41.8925,
+      "lng": 12.4853,
+      "orderIndex": 2,
+      "radiusM": 55,
+      "script": "The Roman Forum was the political, religious, and commercial heart of Rome for over a millennium. Here stood the Senate house, the Rostra where orators addressed the people, the Temple of Vesta, and the basilicas where law and business were conducted. You are walking where Cicero, Caesar, and Augustus walked. The ruins you see span centuries—Republican temples, Imperial rebuilds, and later Christian reuse. The Via Sacra, the sacred way, ran through the Forum and was used for triumphal processions. Take time to imagine the crowds, the sacrifices, and the speeches that defined Roman public life.",
+      "facts": [
+        "Political and religious center for over 1,000 years",
+        "Rostra: orators' platform; Senate met nearby",
+        "Via Sacra used for triumphal processions",
+        "Layers from Republic through late antiquity"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Temple of Saturn",
+      "lat": 41.8927,
+      "lng": 12.4842,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "The Temple of Saturn's eight surviving columns and pediment are one of the Forum's most photographed views. The temple housed the state treasury—the aerarium—and the cult of Saturn, an ancient god of agriculture and time. The present remains date from a late reconstruction after fire; the original went back to the early Republic. The Saturnalia festival in December—when roles were reversed and masters served slaves—was celebrated here. The inscription on the frieze records a restoration under the Senate and People of Rome.",
+      "facts": [
+        "Housed state treasury (aerarium)",
+        "Cult of Saturn; Saturnalia celebrated here",
+        "Present columns from late reconstruction",
+        "One of Forum's oldest cult sites"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "House of the Vestal Virgins",
+      "lat": 41.8915,
+      "lng": 12.4875,
+      "orderIndex": 4,
+      "radiusM": 40,
+      "script": "The Vestal Virgins tended the sacred fire of Vesta, which was never allowed to go out—the continuity of Rome depended on it. They lived in this complex next to the round Temple of Vesta. Chosen as young girls from noble families, they served for thirty years and enjoyed privileges no other Roman women had. The courtyard held statues of chief Vestals; inscriptions honored those who had served with distinction. The order was disbanded in 394 when the Christian emperor Theodosius banned pagan cults. The standing statues and the layout of the house give a rare glimpse into their world.",
+      "facts": [
+        "Sacred fire of Vesta never extinguished",
+        "Thirty-year service; chosen as girls",
+        "Order disbanded 394 under Theodosius",
+        "Statues of chief Vestals in courtyard"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Palatine Hill",
+      "lat": 41.8892,
+      "lng": 12.4878,
+      "orderIndex": 5,
+      "radiusM": 50,
+      "script": "The Palatine was where Rome's wealthiest and most powerful lived—and where emperors built their vast palaces. Legend said Romulus founded the city here and drew the first boundary. Augustus was born on the Palatine and made it the seat of imperial power; the word 'palace' comes from Palatine. From the terraces you look over the Forum and the Colosseum. The ruins of the Domus Augustana and the Stadium of Domitian still crown the hill. Gardens, frescoes, and private quarters give a sense of how the emperors lived above the city.",
+      "facts": [
+        "Legendary founding by Romulus; 'palace' from Palatine",
+        "Augustus born here; imperial residence",
+        "Domus Augustana, Stadium of Domitian",
+        "Overlooks Forum and Colosseum"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Capitoline Hill & Piazza del Campidoglio",
+      "lat": 41.8931,
+      "lng": 12.4828,
+      "orderIndex": 6,
+      "radiusM": 45,
+      "script": "The Capitoline was the religious center of Rome—the Temple of Jupiter Optimus Maximus stood here, the most important temple in the Republic. Michelangelo designed the Piazza del Campidoglio in the 16th century: the trapezoidal square, the ramp (Cordonata), and the facades of the Palazzo dei Conservatori and Palazzo Nuovo. The equestrian statue of Marcus Aurelius stands in the center. The Capitoline Museums, on either side, hold some of the greatest ancient sculpture in the world—the She-Wolf, the Dying Gaul, the bronze Marcus Aurelius. The view from the piazza toward the Forum is one of the most memorable in Rome.",
+      "facts": [
+        "Temple of Jupiter Optimus Maximus stood here",
+        "Michelangelo's piazza and Cordonata, 16th century",
+        "Capitoline Museums: She-Wolf, Dying Gaul",
+        "Equestrian Marcus Aurelius in center"
+      ]
+    },
+    {
+      "poiId": "poi-8",
       "name": "Pantheon",
       "lat": 41.8986,
       "lng": 12.4769,
-      "orderIndex": 2
+      "orderIndex": 7,
+      "radiusM": 45,
+      "script": "The Pantheon was rebuilt by Hadrian around AD 126 on the site of an earlier temple. The dome—43.3 meters in diameter—is still the world's largest unreinforced concrete dome. The oculus, the open circle at the top, is 9 meters across and lets in light and rain; the floor has drainage. The structure has survived because it became the Church of Santa Maria ad Martyres in 609, which preserved it from stone-robbing. Raphael is buried here, as are two kings of Italy. The interior is overwhelming in its simplicity and scale—a perfect sphere inscribed in a cylinder.",
+      "facts": [
+        "Hadrian's rebuild c. AD 126; dome 43.3 m diameter",
+        "Largest unreinforced concrete dome in the world",
+        "Became church 609; Raphael buried here",
+        "Oculus 9 m across; no interior support"
+      ]
+    },
+    {
+      "poiId": "poi-9",
+      "name": "Piazza Navona",
+      "lat": 41.8992,
+      "lng": 12.4731,
+      "orderIndex": 8,
+      "radiusM": 45,
+      "script": "Piazza Navona follows the shape of Domitian's stadium, built around AD 86 for athletic contests. The stadium's outline is preserved in the curve of the buildings. Bernini's Fountain of the Four Rivers, with its obelisk and figures representing the Nile, Ganges, Danube, and Río de la Plata, dominates the center. The church of Sant'Agnese in Agone, by Borromini, faces it. The piazza is full of life—artists, cafés, street performers, and crowds. In the summer it was sometimes flooded for mock naval battles; today it is one of Rome's most beloved gathering places.",
+      "facts": [
+        "Built over Domitian's stadium, c. AD 86",
+        "Bernini's Four Rivers fountain, 1651",
+        "Borromini's Sant'Agnese in Agone",
+        "Once flooded for summer spectacles"
+      ]
+    },
+    {
+      "poiId": "poi-10",
+      "name": "Campo de' Fiori",
+      "lat": 41.8955,
+      "lng": 12.4722,
+      "orderIndex": 9,
+      "radiusM": 40,
+      "script": "Campo de' Fiori—'field of flowers'—was once a meadow, then a place of executions: the philosopher Giordano Bruno was burned here for heresy in 1600. His statue stands in the center of the square. Since the 19th century it has hosted a daily market—fruit, vegetables, spices, and flowers—and at night it becomes a hub of bars and restaurants. The mix of history, commerce, and nightlife makes it one of Rome's most vibrant squares. No church faces it, unique for a major piazza in Rome.",
+      "facts": [
+        "Giordano Bruno burned here 1600; statue in center",
+        "Daily market since 19th century",
+        "No church on the square",
+        "Nightlife and dining hub"
+      ]
+    },
+    {
+      "poiId": "poi-11",
+      "name": "Trevi Fountain",
+      "lat": 41.9009,
+      "lng": 12.4833,
+      "orderIndex": 10,
+      "radiusM": 40,
+      "script": "The Trevi Fountain is the largest and most famous Baroque fountain in Rome. It marks the end of the Acqua Vergine aqueduct, which has brought water to Rome since 19 BC. Nicola Salvi's design—Oceanus in the center, tritons and horses, rock and water—was completed in 1762. The tradition of throwing a coin with your right hand over your left shoulder is said to ensure your return to Rome. The fountain was restored with funding from the fashion house Fendi in 2015. It is always crowded; go early or late for a clearer view.",
+      "facts": [
+        "Acqua Vergine aqueduct since 19 BC",
+        "Salvi's design completed 1762",
+        "Coin tradition for return to Rome",
+        "Restored 2015 with Fendi funding"
+      ]
+    },
+    {
+      "poiId": "poi-12",
+      "name": "Spanish Steps",
+      "lat": 41.9058,
+      "lng": 12.4823,
+      "orderIndex": 11,
+      "radiusM": 45,
+      "script": "The Spanish Steps connect the Piazza di Spagna at the bottom with the church of Trinità dei Monti at the top. The name comes from the Spanish Embassy to the Holy See, which has been in the square since the 17th century. The 135 steps were designed by Francesco de Sanctis and completed in 1725. The Barcaccia fountain at the base is by Bernini's father. The steps have long been a meeting place for artists, writers, and travelers—Keats lived and died in the house beside them. In spring the steps are decorated with azaleas; sitting on them is now restricted to protect the stone.",
+      "facts": [
+        "135 steps; completed 1725, Francesco de Sanctis",
+        "Spanish Embassy to Holy See in piazza",
+        "Keats lived and died in house beside steps",
+        "Trinità dei Monti at top"
+      ]
     }
   ]
 }

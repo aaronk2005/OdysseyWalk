@@ -13,7 +13,8 @@ import { AudioState } from "@/lib/types";
 const geoReal = new GeoProvider();
 const geoSim = new GeoSimProvider();
 
-export function useActiveTour() {
+/** setupComplete: for pre-planned tours, false until user completes language/voice setup; then we prewarm. For generated tours, pass true so we prewarm immediately. */
+export function useActiveTour(setupComplete = true) {
   const router = useRouter();
   const [session, setSession] = useState<SessionState | null>(null);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
@@ -26,6 +27,7 @@ export function useActiveTour() {
   const providerRef = useRef<typeof geoReal | typeof geoSim>(geoSim);
   const triggerCheckRef = useRef<ReturnType<typeof createTriggerEngine> | null>(null);
 
+  // Load session, route, POIs, and (when ready) set voice options and prewarm audio
   useEffect(() => {
     const s = loadTour();
     if (!s) {
@@ -40,7 +42,14 @@ export function useActiveTour() {
       setUserLocation({ lat: points[0].lat, lng: points[0].lng });
     }
     triggerCheckRef.current = createTriggerEngine(s.pois, s.visitedPoiIds);
-    // Use tour plan's voice settings for consistency throughout the tour
+
+    // Pre-planned: wait for setup (language/voice). Generated: prewarm immediately.
+    const readyToPrewarm = s.isPreplanned ? setupComplete : true;
+    if (!readyToPrewarm) {
+      setIntroAudioReady(false);
+      return;
+    }
+    // User has confirmed language/voice (or no setup step): apply tour settings and prewarm
     const tourLang = s.tourPlan.voiceLang ?? "en";
     const tourVoiceStyle = s.tourPlan.voiceStyle ?? "friendly";
     AudioSessionManager.setOptions({ lang: tourLang, voiceStyle: tourVoiceStyle });
@@ -48,18 +57,16 @@ export function useActiveTour() {
       ? (s.pois[0].script ?? s.pois[0].scripts?.friendly ?? s.pois[0].scripts?.historian ?? s.pois[0].scripts?.funny ?? "")
       : undefined;
     setIntroAudioReady(false);
-    // Prewarm intro and first POI first; delay "Start" until ready so first tap is instant
     AudioSessionManager.prewarm(s.tourPlan.intro, firstScript)
       .then(() => setIntroAudioReady(true))
-      .catch(() => setIntroAudioReady(true)); // On error, allow Start (will use fetch or fallback)
-    // Prewarm next 2-3 POIs immediately (no delay) for lower "Next stop" latency
+      .catch(() => setIntroAudioReady(true));
     const scriptsToPrewarm = s.pois.slice(1, 4).map(poi =>
       poi.script ?? poi.scripts?.friendly ?? poi.scripts?.historian ?? poi.scripts?.funny ?? ""
     ).filter(scr => scr.length > 0);
     if (scriptsToPrewarm.length > 0) {
       AudioSessionManager.prewarmPois(scriptsToPrewarm).catch(() => {});
     }
-  }, [router]);
+  }, [router, setupComplete]);
 
   useEffect(() => {
     if (!session) return;
@@ -96,8 +103,10 @@ export function useActiveTour() {
     const tourLang = s.tourPlan.voiceLang ?? "en";
     const tourVoiceStyle = s.tourPlan.voiceStyle ?? "friendly";
     AudioSessionManager.setOptions({ lang: tourLang, voiceStyle: tourVoiceStyle });
+    const introText =
+      (typeof s.tourPlan?.intro === "string" && s.tourPlan.intro.trim()) || "Welcome. Let's begin.";
     try {
-      await AudioSessionManager.playIntro(s.tourPlan.intro);
+      await AudioSessionManager.playIntro(introText);
       // After intro, announce the first checkpoint destination
       if (s.pois.length > 0) {
         const firstPoi = s.pois[0];

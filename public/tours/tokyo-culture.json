@@ -1,11 +1,15 @@
 {
   "tour": {
     "tourId": "tokyo-culture",
-    "name": "Tokyo Cultural Walk",
+    "name": "Tokyo Temples, Shrines & Tradition",
     "city": "Tokyo, Japan",
-    "estimatedMinutes": 55,
-    "thumbnailUrl": "/tours/thumb-tokyo.jpg",
-    "tags": ["culture", "temples", "tradition"],
+    "estimatedMinutes": 70,
+    "thumbnailUrl": "/tours/thumb-tokyo-culture.jpg",
+    "tags": [
+      "culture",
+      "temples",
+      "tradition"
+    ],
     "defaultVoiceStyle": "friendly",
     "defaultLang": "en"
   },
@@ -15,21 +19,105 @@
       "name": "Senso-ji Temple",
       "lat": 35.7148,
       "lng": 139.7967,
-      "orderIndex": 0
+      "orderIndex": 0,
+      "radiusM": 40,
+      "script": "Senso-ji is Tokyo's oldest temple, founded in 645. Legend says a statue of Kannon was pulled from the Sumida River by two brothers and the temple was built to house it. The Thunder Gate—Kaminarimon—with its giant lantern and statues of the wind and thunder gods, marks the start of Nakamise-dori. The main hall is dedicated to Kannon, the bodhisattva of mercy. The atmosphere is both spiritual and bustling: pilgrims, tourists, and the smell of incense. The temple was destroyed in the war and rebuilt; it remains the heart of Asakusa and one of the most visited religious sites in Japan.",
+      "facts": [
+        "Tokyo's oldest temple; founded 645",
+        "Kannon from Sumida; Kaminarimon gate",
+        "Rebuilt after WWII",
+        "Heart of Asakusa"
+      ]
     },
     {
       "poiId": "poi-2",
-      "name": "Meiji Shrine",
-      "lat": 35.6762,
-      "lng": 139.6993,
-      "orderIndex": 1
+      "name": "Nakamise-dori",
+      "lat": 35.7118,
+      "lng": 139.7965,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "Nakamise-dori is the 250-meter shopping street that leads from the Thunder Gate to the main hall of Senso-ji. It has been serving pilgrims and visitors for centuries—the current buildings are post-war, but the tradition is old. You'll find ningyo-yaki (small cakes), kaminari-okoshi (rice crackers), and other traditional snacks, plus souvenirs, fans, and yukata. The street is crowded but cheerful; it's the classic approach to the temple. Early morning is quieter if you want to avoid the crowds.",
+      "facts": [
+        "250 m; Thunder Gate to main hall",
+        "Ningyo-yaki, kaminari-okoshi, souvenirs",
+        "Centuries-old pilgrim route",
+        "Post-war buildings; tradition continues"
+      ]
     },
     {
       "poiId": "poi-3",
+      "name": "Ueno Park (entrance)",
+      "lat": 35.7148,
+      "lng": 139.7744,
+      "orderIndex": 2,
+      "radiusM": 50,
+      "script": "Ueno Park was established in 1873 on land that had been part of Kanei-ji temple. It was one of Japan's first public parks. Today it holds the Tokyo National Museum, the National Museum of Western Art, Ueno Zoo, and several temples and shrines. In spring the cherry blossoms draw huge crowds for hanami. The statue of Saigo Takamori—the 'last samurai'—stands near the main entrance. Even a short walk through the park gives you a sense of Tokyo's blend of nature, art, and history. The pond with lotus and the Bentendo temple on an island are peaceful corners.",
+      "facts": [
+        "Established 1873; former Kanei-ji land",
+        "Museums, zoo, temples; cherry blossoms",
+        "Saigo Takamori statue",
+        "Bentendo and Shinobazu Pond"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Meiji Shrine",
+      "lat": 35.6764,
+      "lng": 139.6993,
+      "orderIndex": 3,
+      "radiusM": 45,
+      "script": "Meiji Shrine is dedicated to Emperor Meiji and Empress Shoken. The shrine was completed in 1920; the forest around it—over 100,000 trees donated from across Japan—was planted to create a sacred grove in the center of the city. It feels worlds away from the neon of Shibuya nearby. The iris garden is stunning in June. Weddings and Shinto ceremonies are often held here. The main approach is through massive torii gates; the atmosphere is solemn and green. It's one of Japan's most visited shrines.",
+      "facts": [
+        "Dedicated to Emperor Meiji and Empress Shoken",
+        "Completed 1920; 100,000 trees",
+        "Iris garden in June",
+        "Torii and forest in central Tokyo"
+      ]
+    },
+    {
+      "poiId": "poi-5",
       "name": "Shibuya Crossing",
-      "lat": 35.6598,
-      "lng": 139.7006,
-      "orderIndex": 2
+      "lat": 35.6595,
+      "lng": 139.7004,
+      "orderIndex": 4,
+      "radiusM": 40,
+      "script": "Shibuya Crossing is one of the busiest pedestrian crossings in the world—thousands of people cross at once when the lights change. Surrounded by giant screens and neon, it's the image of modern Tokyo. The Hachiko statue nearby honors the loyal dog who waited for his owner at Shibuya station every day for years after the owner's death. The crossing has appeared in countless films and photos. For the best view, grab a seat in the Starbucks above the crossing or stand on the corner and watch the human river flow.",
+      "facts": [
+        "Among world's busiest pedestrian crossings",
+        "Hachiko statue; loyal dog story",
+        "Giant screens and neon",
+        "Icon of modern Tokyo"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Yoyogi Park",
+      "lat": 35.6702,
+      "lng": 139.6989,
+      "orderIndex": 5,
+      "radiusM": 50,
+      "script": "Yoyogi Park is a vast green space next to Meiji Shrine. It was the site of the 1964 Olympic Village; the athletes stayed here. Today it's a place for picnics, jogging, and people-watching. On weekends you might see rockabilly dancers in 1950s gear, cosplayers, and musicians. The contrast with the solemn shrine next door is part of Tokyo's character—sacred and secular, tradition and play, side by side. The park is especially popular in cherry blossom season and on sunny weekends.",
+      "facts": [
+        "Site of 1964 Olympic Village",
+        "Rockabilly dancers and cosplayers on weekends",
+        "Adjacent to Meiji Shrine",
+        "Picnics and people-watching"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Omotesando (tree-lined avenue)",
+      "lat": 35.6652,
+      "lng": 139.7125,
+      "orderIndex": 6,
+      "radiusM": 45,
+      "script": "Omotesando is a broad, tree-lined avenue often called Tokyo's Champs-Élysées. It runs from Harajuku to Aoyama and is lined with flagship stores, cafés, and striking architecture—including buildings by Tadao Ando and Herzog & de Meuron. The zelkova trees make it pleasant for a walk even on a hot day. Harajuku at one end is the center of youth fashion and cosplay; Aoyama at the other is more refined. The mix of high fashion, design, and street culture makes Omotesando a good place to feel Tokyo's energy. Combine with Meiji Shrine and Yoyogi for a full half-day.",
+      "facts": [
+        "Tree-lined avenue; Harajuku to Aoyama",
+        "Flagship stores and notable architecture",
+        "Harajuku: youth fashion; Aoyama: refined",
+        "Zelkova trees; design and street culture"
+      ]
     }
   ]
 }

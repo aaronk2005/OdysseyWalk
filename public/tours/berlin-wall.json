@@ -1,0 +1,108 @@
+{
+  "tour": {
+    "tourId": "berlin-wall",
+    "name": "Berlin Wall & Cold War Walk",
+    "city": "Berlin, Germany",
+    "estimatedMinutes": 95,
+    "thumbnailUrl": "/tours/thumb-berlin-wall.jpg",
+    "tags": [
+      "history",
+      "cold war",
+      "culture"
+    ],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "East Side Gallery",
+      "lat": 52.5055,
+      "lng": 13.44,
+      "orderIndex": 0,
+      "radiusM": 50,
+      "script": "The East Side Gallery is the longest surviving section of the Berlin Wall—1.3 kilometers along the Spree River. After the Wall fell in 1989, artists from around the world painted over 100 murals on the east side. The most famous is the 'Fraternal Kiss' between Honecker and Brezhnev. The gallery is open-air and free; it's a monument to the Wall, to the division of the city, and to the hope that followed. The paintings have been restored and retouched over the years. It's one of Berlin's most visited sites and a powerful start to a Cold War walk.",
+      "facts": [
+        "Longest surviving Wall section; 1.3 km",
+        "Over 100 murals by international artists, 1990",
+        "Fraternal Kiss and other iconic images",
+        "Open-air; free; along Spree"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Oberbaum Bridge",
+      "lat": 52.5014,
+      "lng": 13.4589,
+      "orderIndex": 1,
+      "radiusM": 40,
+      "script": "The Oberbaum Bridge crosses the Spree and once linked East and West Berlin. During the division it was a border crossing—only pedestrians could use it. The current bridge is a double-decker from the late 19th century: road on the lower level, U-Bahn on the upper. The brick towers and the pointed arches make it one of Berlin's most photogenic structures. After reunification it became a symbol of connection. From here you can walk toward Kreuzberg or follow the river. The East Side Gallery runs along the bank on the other side.",
+      "facts": [
+        "Border crossing during division",
+        "Double-decker: road and U-Bahn",
+        "19th-century brick; towers and arches",
+        "Symbol of reunification"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Checkpoint Charlie",
+      "lat": 52.5074,
+      "lng": 13.3904,
+      "orderIndex": 2,
+      "radiusM": 40,
+      "script": "Checkpoint Charlie was the best-known crossing between East and West Berlin during the Cold War—used by foreigners and Allied personnel. The name came from the NATO phonetic alphabet (Alpha, Bravo, Charlie). Tanks faced each other here during the 1961 standoff. The guardhouse you see today is a replica; the original is in the Allied Museum. The site is now a tourist hub with a museum (the Mauermuseum) that tells the story of the Wall and escape attempts. The signage and the actors in period costume make the history tangible, even if the setting is commercialized.",
+      "facts": [
+        "Main crossing for foreigners and Allies",
+        "1961 tank standoff",
+        "Replica guardhouse; Mauermuseum nearby",
+        "NATO name: Charlie"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Berlin Wall Memorial (Bernauer Strasse)",
+      "lat": 52.5352,
+      "lng": 13.3902,
+      "orderIndex": 3,
+      "radiusM": 50,
+      "script": "The Berlin Wall Memorial on Bernauer Strasse is the central memorial to the division of the city. The street was split by the Wall—houses were in the East, the sidewalk in the West. People jumped from windows to escape; the wall was later sealed. The memorial includes a preserved section of the Wall with the death strip, a documentation center, and the Chapel of Reconciliation. The outdoor exhibition runs along the former border. It's sobering and essential—the best place to understand how the Wall worked and what it cost.",
+      "facts": [
+        "Bernauer Strasse: houses East, sidewalk West",
+        "Escape jumps from windows",
+        "Preserved death strip; documentation center",
+        "Chapel of Reconciliation"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Brandenburg Gate",
+      "lat": 52.5163,
+      "lng": 13.3777,
+      "orderIndex": 4,
+      "radiusM": 45,
+      "script": "The Brandenburg Gate was built in the 18th century as a triumphal arch and became a symbol of division—it stood in the no-man's-land between East and West. When the Wall fell, it became the symbol of reunification. Reagan gave his 'Tear down this wall' speech at the Reichstag nearby. The gate is neoclassical, crowned by the Quadriga—a chariot drawn by four horses. The Pariser Platz in front was rebuilt after reunification with embassies and the Hotel Adlon. It's the most iconic landmark in Berlin—always crowded, always powerful.",
+      "facts": [
+        "18th century; Quadriga on top",
+        "Stood in no-man's-land during division",
+        "Symbol of reunification; Reagan speech nearby",
+        "Pariser Platz rebuilt after 1990"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Reichstag Building",
+      "lat": 52.5186,
+      "lng": 13.3762,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "The Reichstag is the seat of the German parliament, the Bundestag. The building was completed in 1894, burned in 1933 (a key moment in the Nazi takeover), and was restored after reunification with a new glass dome by Norman Foster. The dome is open to the public—you can walk to the top and look down into the chamber. The view over Berlin is superb. Booking is required and free; bring ID. The Reichstag represents both the dark past and the democratic present of Germany.",
+      "facts": [
+        "Bundestag seat; completed 1894",
+        "1933 fire; Foster dome 1999",
+        "Dome open to public; book in advance",
+        "Views over Berlin"
+      ]
+    }
+  ]
+}

@@ -11,12 +11,6 @@ const THEMES: { value: Theme; label: string }[] = [
 const LANGS: { value: Lang; label: string }[] = [
   { value: "en", label: "English" },
   { value: "fr", label: "Français" },
-  { value: "es", label: "Español" },
-  { value: "de", label: "Deutsch" },
-  { value: "it", label: "Italiano" },
-  { value: "ja", label: "日本語" },
-  { value: "pt", label: "Português" },
-  { value: "zh", label: "中文" },
 ];
 
 const VOICES: { value: VoiceStyle; label: string }[] = [

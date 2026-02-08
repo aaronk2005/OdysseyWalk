@@ -1,0 +1,123 @@
+{
+  "tour": {
+    "tourId": "new-orleans-french-quarter",
+    "name": "French Quarter & Creole New Orleans",
+    "city": "New Orleans, USA",
+    "estimatedMinutes": 90,
+    "thumbnailUrl": "/tours/thumb-new-orleans-french-quarter.jpg",
+    "tags": [
+      "history",
+      "culture",
+      "music"
+    ],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Jackson Square",
+      "lat": 29.9584,
+      "lng": -90.0634,
+      "orderIndex": 0,
+      "radiusM": 45,
+      "script": "Jackson Square was the heart of the French Quarter when New Orleans was a French and Spanish colony. The equestrian statue of Andrew Jackson—hero of the Battle of New Orleans—stands in the center. The square faces St. Louis Cathedral, the oldest continuously active cathedral in the United States. The Pontalba Buildings on either side are among the oldest apartment buildings in the country. Artists, musicians, and tarot readers set up around the square; the Decatur Street side looks over the Mississippi. It's the most photographed spot in the Quarter and the best place to feel the city's layered history.",
+      "facts": [
+        "Andrew Jackson statue; Battle of New Orleans",
+        "St. Louis Cathedral: oldest active cathedral in US",
+        "Pontalba Buildings: early apartment buildings",
+        "Artists, musicians, and river view"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "St. Louis Cathedral",
+      "lat": 29.9584,
+      "lng": -90.0642,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "St. Louis Cathedral has stood on this site since the 18th century. The current building dates from 1850, after the previous one was damaged by fire. The triple spires and the white facade dominate Jackson Square. Inside, the ceiling is painted with scenes from the life of Louis IX of France, for whom the cathedral is named. The cathedral has witnessed Mardi Gras, jazz funerals, and centuries of Catholic life in a city that blends French, Spanish, African, and Creole traditions. Free to enter; respectful silence when services are not in progress.",
+      "facts": [
+        "Current building 1850; site used since 18th century",
+        "Triple spires; Louis IX ceiling",
+        "Catholic heart of Creole New Orleans",
+        "Jazz funerals and Mardi Gras"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "French Market",
+      "lat": 29.9592,
+      "lng": -90.0612,
+      "orderIndex": 2,
+      "radiusM": 45,
+      "script": "The French Market has been a market since the late 18th century—originally a Native American trading post, then a place where Creole and French vendors sold produce, meat, and goods. Today it's a mix of food stalls, crafts, and the historic Café du Monde (for beignets and café au lait). The market runs along Decatur Street toward the river. The flea market section has souvenirs and local art. It's crowded and touristy but the atmosphere—the smells, the sounds, the river breeze—is unmistakably New Orleans.",
+      "facts": [
+        "Market since late 18th century",
+        "Café du Monde: beignets and café au lait",
+        "Produce, crafts, flea market",
+        "Along Decatur toward river"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Bourbon Street (day walk)",
+      "lat": 29.9572,
+      "lng": -90.0654,
+      "orderIndex": 3,
+      "radiusM": 45,
+      "script": "Bourbon Street is the most famous street in the Quarter—by night it's bars, music, and crowds. By day it's quieter: you can see the wrought-iron balconies, the colorful facades, and the historic buildings without the party. The street was named for the French royal family, not the drink. Jazz and blues spill from doorways; some clubs have been here for decades. Love it or find it overwhelming, Bourbon is central to the city's image. For a calmer parallel, try Royal Street with its antiques and galleries.",
+      "facts": [
+        "Named for French royal family",
+        "Wrought-iron balconies; bars and music",
+        "Jazz and blues; historic clubs",
+        "Royal Street parallel: antiques and galleries"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Preservation Hall",
+      "lat": 29.9582,
+      "lng": -90.0658,
+      "orderIndex": 4,
+      "radiusM": 35,
+      "script": "Preservation Hall has been presenting traditional New Orleans jazz since 1961. The venue is deliberately no-frills—wooden benches, no drinks served inside—so the focus is on the music. The house band and guest musicians play the classics: when the saints go marching in, and the rest. It's one of the best places in the world to hear live traditional jazz in an authentic setting. Shows run several times a night; arrive early or book ahead. The hall is a nonprofit dedicated to preserving and perpetuating the music.",
+      "facts": [
+        "Traditional jazz since 1961",
+        "No-frills; music only",
+        "Nonprofit; preservation mission",
+        "Multiple shows nightly"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Congo Square (Louis Armstrong Park)",
+      "lat": 29.9642,
+      "lng": -90.0692,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "Congo Square is one of the most important sites in American music history. In the 18th and 19th centuries, enslaved and free people of African descent were allowed to gather here on Sundays to dance, drum, and sing. These gatherings preserved African rhythms and traditions that would feed into jazz, blues, and ultimately rock and roll. The square is now part of Louis Armstrong Park, which also honors the great trumpeter and other New Orleans musicians. A monument and interpretive panels tell the story. It's a short walk from the Quarter—quiet, reflective, and essential.",
+      "facts": [
+        "Sunday gatherings: dance, drum, song",
+        "African traditions → jazz and American music",
+        "Now in Louis Armstrong Park",
+        "Monument and interpretation"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Lafayette Cemetery No. 1 (Garden District)",
+      "lat": 29.9262,
+      "lng": -90.0844,
+      "orderIndex": 6,
+      "radiusM": 40,
+      "script": "Lafayette Cemetery No. 1 is one of New Orleans' historic above-ground cemeteries—'cities of the dead' with tombs and vaults built above the water table. The cemetery opened in 1833 and is in the Garden District. The tombs are often family tombs with multiple generations; the design reflects French and Spanish influence. Guided tours explain the burial customs and the symbolism. The Garden District around it has magnificent antebellum mansions and live oaks. It's a short streetcar ride from the Quarter and a different side of New Orleans—elegant, green, and haunted by history.",
+      "facts": [
+        "Above-ground tombs; water table",
+        "Opened 1833; Garden District",
+        "Family tombs; French and Spanish influence",
+        "Streetcar from Quarter; antebellum mansions"
+      ]
+    }
+  ]
+}

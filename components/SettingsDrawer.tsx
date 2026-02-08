@@ -27,12 +27,6 @@ const VOICE_OPTIONS: { value: VoiceStyle; label: string }[] = [
 const LANG_OPTIONS: { value: Lang; label: string }[] = [
   { value: "en", label: "English" },
   { value: "fr", label: "Français" },
-  { value: "es", label: "Español" },
-  { value: "de", label: "Deutsch" },
-  { value: "it", label: "Italiano" },
-  { value: "ja", label: "日本語" },
-  { value: "pt", label: "Português" },
-  { value: "zh", label: "中文" },
 ];
 
 export function SettingsDrawer({

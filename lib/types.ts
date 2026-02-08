@@ -114,6 +114,8 @@ export interface SessionState {
   mode: SessionMode;
   startedAt: number;
   endedAt?: number;
+  /** True when session was loaded from a pre-planned tour (not generated). Used to show language/voice setup only for pre-planned. */
+  isPreplanned?: boolean;
 }
 
 // ─── Audio ───────────────────────────────────────────────────────────────────

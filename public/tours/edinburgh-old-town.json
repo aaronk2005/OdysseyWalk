@@ -1,0 +1,123 @@
+{
+  "tour": {
+    "tourId": "edinburgh-old-town",
+    "name": "Edinburgh Old Town & Royal Mile",
+    "city": "Edinburgh, UK",
+    "estimatedMinutes": 100,
+    "thumbnailUrl": "/tours/thumb-edinburgh-old-town.jpg",
+    "tags": [
+      "history",
+      "castle",
+      "culture"
+    ],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Edinburgh Castle",
+      "lat": 55.9486,
+      "lng": -3.1999,
+      "orderIndex": 0,
+      "radiusM": 55,
+      "script": "Edinburgh Castle sits on Castle Rock, a volcanic plug that has been fortified since at least the 12th century. It was a royal residence, a garrison, and a prison. The Crown Jewels of Scotland and the Stone of Destiny are displayed inside. The One O'Clock Gun is fired every day except Sunday. The views over the city and the Firth of Forth are spectacular. The castle is the top of the Royal Mile—the spine of the Old Town that runs down to the Palace of Holyroodhouse. Allow at least two hours to explore the ramparts, the Great Hall, and the war memorial.",
+      "facts": [
+        "Castle Rock fortified since 12th century",
+        "Crown Jewels and Stone of Destiny",
+        "One O'Clock Gun daily",
+        "Top of Royal Mile"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Royal Mile (upper)",
+      "lat": 55.9495,
+      "lng": -3.1915,
+      "orderIndex": 1,
+      "radiusM": 40,
+      "script": "The Royal Mile is the name given to the succession of streets that run from the castle to the palace—actually slightly over a mile. It's the historic spine of the Old Town: narrow closes (alleys) run off it, leading to courtyards and hidden corners. The street is lined with shops, whisky tastings, and tourist attractions, but the architecture and the sense of layered history are real. Look for the closes with names like Advocate's Close and Brodie's Close; many have plaques explaining their history. The High Street section is the busiest; the stretch near the castle is slightly quieter.",
+      "facts": [
+        "Castle to Holyrood; slightly over a mile",
+        "Closes (alleys) run off the main street",
+        "Shops, whisky, and history",
+        "Heart of Old Town"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "St Giles' Cathedral",
+      "lat": 55.9494,
+      "lng": -3.1904,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "St Giles' Cathedral is the principal church of the Church of Scotland and has been at the center of Scottish religious life for centuries. The present building is largely 14th and 15th century, with a distinctive crown spire. John Knox preached here during the Reformation. The Thistle Chapel, added in 1911, is the home of the Order of the Thistle—Scotland's chivalric order. The interior has beautiful stained glass and monuments. The church stands on the Royal Mile; the heart-shaped pattern in the cobbles outside marks the site of the old tollbooth.",
+      "facts": [
+        "Principal church of Church of Scotland",
+        "Crown spire; 14th–15th century",
+        "John Knox preached here; Reformation",
+        "Thistle Chapel; Order of the Thistle"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Real Mary King's Close",
+      "lat": 55.9498,
+      "lng": -3.1885,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "Under the Royal Mile, a network of closes and rooms was preserved when the Royal Exchange (now the City Chambers) was built on top in the 18th century. Mary King's Close is one of these—a street that was literally buried. Guided tours take you underground to see how people lived in the 17th century: the cramped conditions, the plague, and the legends (including the ghost of a girl named Annie). It's a unique glimpse into the layered, often dark history of the Old Town. Book in advance; tours are popular.",
+      "facts": [
+        "Street buried under City Chambers",
+        "Preserved 17th-century closes",
+        "Tours: plague, legends, Annie's room",
+        "Unique underground history"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Grassmarket",
+      "lat": 55.9469,
+      "lng": -3.1992,
+      "orderIndex": 4,
+      "radiusM": 40,
+      "script": "The Grassmarket was once a market for hay and horses and a site of public executions. The gallows stood here; the Covenanters and others were hanged. Today it's a broad square with pubs, restaurants, and a view up to the castle. The area has a bohemian feel—independent shops, hostels, and a weekly market. The White Hart Inn claims to be one of Edinburgh's oldest pubs. From the Grassmarket you can climb the steps to the castle or walk to the Cowgate and the rest of the Old Town.",
+      "facts": [
+        "Historic market; site of executions",
+        "View of castle; gallows once here",
+        "Pubs and restaurants; White Hart Inn",
+        "Steps up to castle"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "National Museum of Scotland",
+      "lat": 55.9468,
+      "lng": -3.1896,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "The National Museum of Scotland covers Scottish history from prehistoric times to the present—and the natural world, technology, and cultures from around the globe. The Victorian building was extended with a striking modern addition; the main hall is a soaring glass-roofed space. Highlights include the Lewis chessmen, the Maiden (an early guillotine), and the gallery of Scottish history. Entry is free. It's a short walk from the Royal Mile and a good place to deepen your understanding of Scotland before or after exploring the Old Town.",
+      "facts": [
+        "Scottish history, nature, and world cultures",
+        "Lewis chessmen; the Maiden",
+        "Victorian building with modern extension",
+        "Free entry"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Palace of Holyroodhouse",
+      "lat": 55.9525,
+      "lng": -3.1721,
+      "orderIndex": 6,
+      "radiusM": 50,
+      "script": "The Palace of Holyroodhouse is the Queen's official residence in Scotland, at the bottom of the Royal Mile. The abbey next to it was founded in 1128; the palace was built and expanded over centuries. Mary, Queen of Scots lived here; her secretary David Rizzio was murdered in her apartments. The state apartments are open when the royal family is not in residence. The ruins of Holyrood Abbey and the park leading to Arthur's Seat are behind. It's a fitting end to a Royal Mile walk—from castle to palace, with centuries of Scottish history in between.",
+      "facts": [
+        "Queen's official residence in Scotland",
+        "Mary, Queen of Scots; Rizzio murdered here",
+        "Holyrood Abbey ruins; Arthur's Seat behind",
+        "State apartments when royal family away"
+      ]
+    }
+  ]
+}

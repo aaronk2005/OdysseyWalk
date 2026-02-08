@@ -1,0 +1,153 @@
+{
+  "tour": {
+    "tourId": "chicago-architecture",
+    "name": "Chicago Architecture & River Walk",
+    "city": "Chicago, USA",
+    "estimatedMinutes": 135,
+    "thumbnailUrl": "/tours/thumb-chicago-architecture.jpg",
+    "tags": [
+      "architecture",
+      "skyscrapers",
+      "history"
+    ],
+    "defaultVoiceStyle": "historian",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Chicago Riverwalk",
+      "lat": 41.8874,
+      "lng": -87.622,
+      "orderIndex": 0,
+      "radiusM": 45,
+      "script": "The Chicago Riverwalk runs along the main branch of the Chicago River through the heart of downtown. It's a pedestrian path with steps, bridges, seating, and public art—and it puts you at eye level with the buildings that made Chicago the birthplace of the skyscraper. The river was reversed in 1900 so that it flowed away from Lake Michigan, solving the city's sewage and drinking-water crisis. Today the river is cleaner and the walk is one of the best ways to see the architecture. The famous architecture boat tours leave from here; even on foot you get close-up views of the towers and the movable bridges.",
+      "facts": [
+        "River reversed 1900; flows away from Lake Michigan",
+        "Pedestrian path with seating and art",
+        "Architecture boat tours depart from here",
+        "Close-up views of skyscraper foundations"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Wrigley Building",
+      "lat": 41.8897,
+      "lng": -87.6248,
+      "orderIndex": 1,
+      "radiusM": 35,
+      "script": "The Wrigley Building was completed in 1924 as the headquarters of the Wrigley chewing-gum company. It was one of the first buildings in the country to be fully air-conditioned. The clock tower and the gleaming white terra-cotta facade—which is lit at night—have made it a landmark on Michigan Avenue and a symbol of 1920s Chicago ambition. The two towers are connected by a bridge; the southern tower was finished first, the northern one a few years later. It sits at the head of the Magnificent Mile.",
+      "facts": [
+        "Completed 1924; Wrigley Company headquarters",
+        "Early full air-conditioning",
+        "White terra-cotta; lit at night",
+        "Twin towers with connecting bridge"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "Tribune Tower",
+      "lat": 41.8905,
+      "lng": -87.6222,
+      "orderIndex": 2,
+      "radiusM": 35,
+      "script": "The Tribune Tower was the result of a famous 1922 international design competition—the Chicago Tribune wanted the most beautiful building in the world. The winning neo-Gothic design by Howells & Hood rises in setbacks to a crown. Embedded in the base are fragments from world landmarks: Westminster Abbey, the Parthenon, the Great Wall of China, the Alamo, and many more—reporters brought them back from assignments. The Chicago Tribune was based here for decades. The building is now being converted to condominiums, but the exterior and the fragments remain.",
+      "facts": [
+        "1922 international design competition",
+        "Fragments from world landmarks in limestone base",
+        "Neo-Gothic; Howells & Hood",
+        "Tribune headquarters for decades"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Marina City",
+      "lat": 41.8882,
+      "lng": -87.6292,
+      "orderIndex": 3,
+      "radiusM": 40,
+      "script": "Marina City's twin towers—nicknamed the 'corncobs'—were completed in 1964. Designed by Bertrand Goldberg, they were among the first mixed-use high-rises: apartments in the upper floors, a marina and commercial space at the base, and spiral parking decks in the middle. The circular form was meant to give every unit a view and to stand out on the skyline. They've appeared in films and on album covers (including Wilco's Yankee Hotel Foxtrot). They remain a beloved Chicago icon and a landmark of 1960s urban design.",
+      "facts": [
+        "Completed 1964; Bertrand Goldberg",
+        "Apartments, parking, marina in one complex",
+        "Circular form; 'corncob' nickname",
+        "Icon of 1960s urban design"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Willis Tower",
+      "lat": 41.8789,
+      "lng": -87.6359,
+      "orderIndex": 4,
+      "radiusM": 50,
+      "script": "Willis Tower—still called Sears Tower by most Chicagoans—was the world's tallest building from 1973 until 1998. The bundled-tube structure, designed by Skidmore, Owings & Merrill, uses nine tubes of different heights bound together, which allows for strength and flexibility without interior columns. The Skydeck on the 103rd floor offers views over four states on a clear day. The glass ledges that extend out from the wall give the sensation of floating over the city. The building was built for Sears, which once occupied much of it; the name changed when Willis Group Holdings moved in.",
+      "facts": [
+        "World's tallest 1973–1998; 1,450 feet",
+        "Bundled-tube design; SOM",
+        "Skydeck 103rd floor; glass ledges",
+        "Built for Sears; now Willis Tower"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Art Institute of Chicago",
+      "lat": 41.8796,
+      "lng": -87.6237,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "The Art Institute is one of the world's great museums. Its collection spans ancient to contemporary—with exceptional holdings in Impressionism (Monet, Renoir, Seurat), American art (Hopper, Wood, O'Keeffe), and medieval to modern. The building faces Millennium Park; the two bronze lions at the entrance have been Chicago icons since 1894. Allow at least a few hours for a visit; the scale of the collection is enormous. The Modern Wing, by Renzo Piano, added light-filled galleries for 20th- and 21st-century art.",
+      "facts": [
+        "World-class collection; Impressionism and American art",
+        "Lion statues 1894; Chicago symbols",
+        "Modern Wing by Renzo Piano",
+        "Faces Millennium Park"
+      ]
+    },
+    {
+      "poiId": "poi-7",
+      "name": "Millennium Park & Cloud Gate",
+      "lat": 41.8827,
+      "lng": -87.6233,
+      "orderIndex": 6,
+      "radiusM": 50,
+      "script": "Millennium Park is Chicago's front yard—a 24-acre park built over rail yards and opened in 2004. Anish Kapoor's Cloud Gate, nicknamed 'The Bean,' reflects the skyline and the crowds in its polished surface; it's the park's most photographed feature. The Pritzker Pavilion, by Frank Gehry, hosts free concerts in summer. The Lurie Garden is a quiet garden with perennials and a boardwalk. The Crown Fountain has towers that show faces and spout water. The park is free, crowded, and full of life—a symbol of Chicago's investment in public space.",
+      "facts": [
+        "Opened 2004; built over rail yards",
+        "Cloud Gate ('The Bean') by Anish Kapoor",
+        "Pritzker Pavilion by Gehry; free summer concerts",
+        "Lurie Garden; Crown Fountain"
+      ]
+    },
+    {
+      "poiId": "poi-8",
+      "name": "Chicago Cultural Center",
+      "lat": 41.8837,
+      "lng": -87.6248,
+      "orderIndex": 7,
+      "radiusM": 35,
+      "script": "The Chicago Cultural Center was the city's first central public library, opened in 1897. The building is a Beaux-Arts masterpiece. Preston Bradley Hall has one of the largest Tiffany glass domes in the world—millions of pieces of glass in a stunning mosaic. The building became the Cultural Center in 1991 and now hosts free exhibitions, concerts, and events. There's no admission fee. The grand staircases, marble, and stained glass make it one of the most beautiful interiors in Chicago—and one of the city's best-kept secrets for visitors.",
+      "facts": [
+        "Former central library; opened 1897",
+        "Tiffany glass dome in Preston Bradley Hall",
+        "Became Cultural Center 1991; free events",
+        "Beaux-Arts; marble and stained glass"
+      ]
+    },
+    {
+      "poiId": "poi-9",
+      "name": "Historic Water Tower",
+      "lat": 41.891,
+      "lng": -87.6248,
+      "orderIndex": 8,
+      "radiusM": 35,
+      "script": "The Water Tower is one of the few buildings that survived the Great Chicago Fire of 1871. The castellated Gothic design, by William Boyington, made it a symbol of the city's resilience—'the city that wouldn't die.' It was a pumping station that drew water from the lake; the adjacent pumping station still functions. The tower is now a gallery space and a landmark on the Magnificent Mile. The contrast between the small, ornate tower and the glass towers around it captures Chicago's layered history.",
+      "facts": [
+        "Survived Great Chicago Fire 1871",
+        "Castellated Gothic; William Boyington",
+        "Symbol of resilience; now gallery",
+        "Pumping station still in use next door"
+      ]
+    }
+  ]
+}

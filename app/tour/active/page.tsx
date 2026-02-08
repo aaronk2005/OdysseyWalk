@@ -12,7 +12,6 @@ import { FirstTimeHint } from "@/components/FirstTimeHint";
 import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { VoiceFallbackBanner } from "@/components/VoiceFallbackBanner";
-import { DebugPanel, type ApiStatus } from "@/components/DebugPanel";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { useToast } from "@/components/ToastProvider";
 import { useActiveTour } from "@/hooks/useActiveTour";
@@ -22,14 +21,26 @@ import { startRecording, stopRecording } from "@/lib/voice/VoiceController";
 import { loadTour, updateSession } from "@/lib/data/SessionStore";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
 import { AudioState } from "@/lib/types";
+import type { Lang, VoiceStyle } from "@/lib/types";
 import { distanceMeters } from "@/lib/maps/haversine";
 import { cn } from "@/lib/utils/cn";
+
+const LANG_OPTIONS: { value: Lang; label: string }[] = [
+  { value: "en", label: "English" },
+  { value: "fr", label: "Français" },
+];
+
+const VOICE_OPTIONS: { value: VoiceStyle; label: string }[] = [
+  { value: "friendly", label: "Friendly" },
+  { value: "historian", label: "Historian" },
+  { value: "funny", label: "Funny" },
+];
 
 export default function TourActivePage() {
   const clientConfig = getClientConfig();
   const mapKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+  const [setupComplete, setSetupComplete] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
   const [prevAudioState, setPrevAudioState] = useState<AudioState>(AudioState.IDLE);
@@ -58,7 +69,7 @@ export default function TourActivePage() {
     nextPoi,
     lastTriggeredPoi,
     clearLastTriggeredPoi,
-  } = useActiveTour();
+  } = useActiveTour(setupComplete);
 
   // Voice next feature for hands-free navigation
   const {
@@ -81,12 +92,6 @@ export default function TourActivePage() {
   }, [audioState]);
 
   useEffect(() => {
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then((d) => setApiStatus({ mapsKeyPresent: d.mapsKeyPresent, openRouterConfigured: d.openRouterConfigured, gradiumConfigured: d.gradiumConfigured, gradiumTtsMethod: d.gradiumTtsMethod, warnings: d.warnings, fallbacks: d.fallbacks }))
-      .catch(() => setApiStatus(null));
-    
-    // Cleanup: Stop any playing audio when leaving this page
     return () => {
       AudioSessionManager.stop();
     };
@@ -129,6 +134,95 @@ export default function TourActivePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-app-bg">
         <div className="w-10 h-10 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  const currentVoice = session.tourPlan.voiceStyle ?? "friendly";
+  const currentLang = session.tourPlan.voiceLang === "fr" ? "fr" : "en";
+
+  // Language & voice setup step only for pre-planned tours (before briefing and audio prewarm)
+  if (session.isPreplanned && !setupComplete) {
+    return (
+      <div className="fixed inset-0 flex flex-col bg-app-bg">
+        <header className="flex items-center justify-between px-4 py-3 border-b border-app-border bg-surface/95 z-20 safe-top">
+          <Link
+            href="/"
+            className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <Link href="/" className="min-h-[40px] flex items-center justify-center" aria-label="Odyssey Walk home">
+            <OdysseyLogo size="sm" />
+          </Link>
+          <div className="w-10" />
+        </header>
+        <main className="flex-1 overflow-auto px-4 py-8 max-w-lg mx-auto w-full">
+          <h1 className="text-xl font-semibold text-ink-primary mb-1">Language & voice</h1>
+          <p className="text-body text-ink-secondary mb-6">
+            Choose how you&apos;ll hear this tour. Narration will load after you continue.
+          </p>
+          <div className="space-y-6">
+            <div>
+              <p className="text-caption font-medium text-ink-secondary mb-2">Language</p>
+              <div className="flex flex-wrap gap-2">
+                {LANG_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      updateSession({ tourPlan: { ...session.tourPlan, voiceLang: opt.value } });
+                      refreshSession();
+                    }}
+                    className={cn(
+                      "px-4 py-2.5 rounded-button text-sm font-medium transition-colors min-h-[44px]",
+                      currentLang === opt.value
+                        ? "bg-brand-primary text-white border border-brand-primary"
+                        : "bg-surface border border-app-border text-ink-primary hover:bg-surface-muted"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-caption font-medium text-ink-secondary mb-2">Voice style</p>
+              <div className="flex flex-wrap gap-2">
+                {VOICE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      updateSession({ tourPlan: { ...session.tourPlan, voiceStyle: opt.value } });
+                      refreshSession();
+                    }}
+                    className={cn(
+                      "px-4 py-2.5 rounded-button text-sm font-medium transition-colors min-h-[44px]",
+                      currentVoice === opt.value
+                        ? "bg-brand-primary text-white border border-brand-primary"
+                        : "bg-surface border border-app-border text-ink-primary hover:bg-surface-muted"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              updateSession({ tourPlan: { ...session.tourPlan, voiceLang: currentLang, voiceStyle: currentVoice } });
+              refreshSession();
+              setSetupComplete(true);
+            }}
+            className="mt-8 w-full py-3.5 rounded-full bg-brand-primary text-white font-semibold hover:bg-brand-primaryHover transition-colors min-h-[48px]"
+          >
+            Continue
+          </button>
+        </main>
       </div>
     );
   }
@@ -433,23 +527,6 @@ export default function TourActivePage() {
         onLangChange={(l) => AudioSessionManager.setOptions({ lang: l })}
       />
 
-      {introPlayed && (
-        <DebugPanel
-          pois={session.pois}
-          visitedPoiIds={session.visitedPoiIds}
-          onJumpToPoi={(poiId) => {
-            const p = session.pois.find((x) => x.poiId === poiId);
-            if (p) playPoi(p);
-          }}
-          onForceTriggerNext={jumpNext}
-          onClearAudioCache={clearAudioCache}
-          userLat={userLocation?.lat}
-          userLng={userLocation?.lng}
-          audioState={audioState}
-          apiStatus={apiStatus}
-          lastError={lastError}
-        />
-      )}
     </div>
   );
 }

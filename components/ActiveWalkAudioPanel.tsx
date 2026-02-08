@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play, Pause, SkipForward, RotateCcw, Mic, ExternalLink, ArrowRight } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Mic, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AudioState } from "@/lib/types";
 import { PlayingIndicator } from "./PlayingIndicator";
@@ -178,50 +178,6 @@ export function ActiveWalkAudioPanel({
         </div>
       </div>
 
-      {/* Voice next + status hint (single line, centered) */}
-      {(onVoiceNextStart || hasMic) && (
-        <div className="px-4 pb-3 flex items-center justify-center gap-2 flex-wrap text-center">
-          {onVoiceNextStart && onVoiceNextStop && (
-            <button
-              type="button"
-              onMouseDown={onVoiceNextStart}
-              onMouseLeave={onVoiceNextStop}
-              onMouseUp={onVoiceNextStop}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                onVoiceNextStart();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                onVoiceNextStop();
-              }}
-              onTouchCancel={onVoiceNextStop}
-              className={cn(
-                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors",
-                isVoiceNextRecording
-                  ? "bg-brand-primary/20 text-brand-primary"
-                  : "text-ink-secondary hover:text-ink-primary"
-              )}
-              aria-label='Hold and say "next"'
-            >
-              <ArrowRight className="w-3 h-3" />
-              Say &quot;next&quot;
-            </button>
-          )}
-          <span className="text-[11px] text-ink-tertiary">
-            {askState === "listening"
-              ? "Listening…"
-              : askState === "thinking"
-                ? "Thinking…"
-                : askState === "speaking"
-                  ? "Speaking…"
-                  : "Hold mic to ask"}
-          </span>
-          {voiceNextError && (
-            <span className="text-[11px] text-red-500">{voiceNextError}</span>
-          )}
-        </div>
-      )}
     </motion.div>
   );
 }

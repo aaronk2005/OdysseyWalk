@@ -1,0 +1,108 @@
+{
+  "tour": {
+    "tourId": "lisbon-hills",
+    "name": "Lisbon Hills & Alfama",
+    "city": "Lisbon, Portugal",
+    "estimatedMinutes": 85,
+    "thumbnailUrl": "/tours/thumb-lisbon-hills.jpg",
+    "tags": [
+      "history",
+      "culture",
+      "views"
+    ],
+    "defaultVoiceStyle": "friendly",
+    "defaultLang": "en"
+  },
+  "pois": [
+    {
+      "poiId": "poi-1",
+      "name": "Praça do Comércio",
+      "lat": 38.7076,
+      "lng": -9.1365,
+      "orderIndex": 0,
+      "radiusM": 50,
+      "script": "Praça do Comércio—Commerce Square—is one of the largest squares in Europe, opening onto the Tagus River. It was the site of the royal palace until the 1755 earthquake destroyed it. The square was rebuilt as the heart of the new Baixa; the triumphal arch at the north end and the yellow facades define it. The statue of King José I on horseback stands in the center. This is where you feel Lisbon's connection to the sea and to the age of discoveries. The arcades hold cafés and government offices; the riverfront is a place to walk and watch the light change.",
+      "facts": [
+        "Site of royal palace until 1755 earthquake",
+        "Rebuilt as center of Baixa",
+        "Triumphal arch; statue of José I",
+        "Opens onto Tagus River"
+      ]
+    },
+    {
+      "poiId": "poi-2",
+      "name": "Alfama District",
+      "lat": 38.7108,
+      "lng": -9.1312,
+      "orderIndex": 1,
+      "radiusM": 50,
+      "script": "Alfama is Lisbon's oldest neighborhood—a maze of narrow streets, steep stairs, and whitewashed houses that survived the 1755 earthquake. It was the Moorish quarter; the name may come from the Arabic for 'hot springs.' Fado—Portugal's soulful music—was born in these streets. Get lost in the alleys, peek into tiny squares, and listen for a guitarra and a voice from an open window. The Miradouro de Santa Luzia and other viewpoints offer sweeping views of the river and the red roofs. Tram 28 climbs through the district—ride it or walk.",
+      "facts": [
+        "Oldest neighborhood; survived 1755 quake",
+        "Moorish origin; narrow streets and stairs",
+        "Birthplace of fado",
+        "Tram 28; miradouros with river views"
+      ]
+    },
+    {
+      "poiId": "poi-3",
+      "name": "São Jorge Castle",
+      "lat": 38.7139,
+      "lng": -9.1334,
+      "orderIndex": 2,
+      "radiusM": 45,
+      "script": "São Jorge Castle crowns the highest hill in Lisbon. The site has been fortified since at least Roman times; the Moors built the castle, and the Portuguese reconquered it in 1147. The walls and towers offer the best views of the city and the Tagus. Peacocks roam the grounds. The castle was a royal residence until the 16th century, then barracks and prison. Today it's a monument and a park—wind through the walls, sit in the sun, and look out over the red roofs, the river, and the 25 de Abril Bridge. Go early or late to avoid the crowds.",
+      "facts": [
+        "Fortified since Roman times; Moorish castle",
+        "Reconquered 1147; royal residence to 16th century",
+        "Best views of Lisbon and Tagus",
+        "Peacocks; walls and towers"
+      ]
+    },
+    {
+      "poiId": "poi-4",
+      "name": "Sé Cathedral",
+      "lat": 38.7098,
+      "lng": -9.1326,
+      "orderIndex": 3,
+      "radiusM": 35,
+      "script": "The Sé—Lisbon's cathedral—was built in the 12th century on the site of a mosque after the Christian reconquest. It's a Romanesque fortress-church with thick walls and a sober interior. The cloister has been excavated to reveal Roman and Moorish remains. The treasury holds relics and liturgical objects. The cathedral has been damaged by earthquakes and restored many times; the mix of styles tells the story of Lisbon's history. It sits in the heart of Alfama, a short walk from the castle.",
+      "facts": [
+        "12th-century Romanesque; built after reconquest",
+        "Fortress-church; thick walls",
+        "Cloister with Roman and Moorish remains",
+        "Damaged and restored in earthquakes"
+      ]
+    },
+    {
+      "poiId": "poi-5",
+      "name": "Miradouro da Graça",
+      "lat": 38.7175,
+      "lng": -9.1332,
+      "orderIndex": 4,
+      "radiusM": 40,
+      "script": "The Miradouro da Graça is one of Lisbon's best viewpoints—a terrace with a café and a sweeping view over the castle, the Baixa, and the river. Locals and visitors gather at sunset. The church and convent of Graça are behind you; the neighborhood is residential and quiet. It's a good place to rest after the climb from Alfama and to take in the scale of the city. The 28 tram passes nearby if you prefer not to walk back down.",
+      "facts": [
+        "Viewpoint over castle, Baixa, and river",
+        "Church and convent of Graça",
+        "Popular at sunset",
+        "Tram 28 nearby"
+      ]
+    },
+    {
+      "poiId": "poi-6",
+      "name": "Bairro Alto (overview)",
+      "lat": 38.7145,
+      "lng": -9.1432,
+      "orderIndex": 5,
+      "radiusM": 45,
+      "script": "Bairro Alto is the bohemian and nightlife district—narrow streets, small bars, restaurants, and fado houses. By day it's relatively quiet; by night it comes alive. It was built in the 16th century as an expansion of the city; the grid of small streets was designed for craftsmen and merchants. Today it's a mix of residents, students, and visitors. The Santa Justa lift connects the Baixa to Bairro Alto (and the Carmo ruins); the view from the top is worth the queue. End your walk here with a drink and the promise of dinner or live music.",
+      "facts": [
+        "Bohemian and nightlife district",
+        "16th-century grid; craftsmen and merchants",
+        "Santa Justa lift to Baixa",
+        "Bars, fado, and restaurants"
+      ]
+    }
+  ]
+}
