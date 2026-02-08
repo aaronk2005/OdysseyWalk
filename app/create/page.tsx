@@ -110,7 +110,6 @@ export default function CreateTourPage() {
       navigator.geolocation.getCurrentPosition(
         (pos) => onSuccess(pos.coords.latitude, pos.coords.longitude),
         (err) => {
-          console.warn("[Geolocation] Browser geolocation failed:", err.code, err.message);
           // Fallback to Google Geolocation API
           if (!tryGoogleGeolocate()) {
             const msg =

@@ -6,6 +6,8 @@ import { getClientIp } from "@/lib/api/getClientIp";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { gradiumTtsOverWebSocket } from "@/lib/tts/gradiumTtsWs";
 
+export const maxDuration = 30;
+
 /** Gradium voice_id by (lang, voiceStyle). From https://gradium.ai/api_docs.html */
 const GRADIUM_VOICE_IDS: Record<Lang, Partial<Record<VoiceStyle, string>>> = {
   en: {
@@ -142,7 +144,6 @@ export async function POST(req: Request) {
         });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "TTS WebSocket failed";
-        console.error("[TTS] WebSocket failed:", msg, e instanceof Error ? e.stack : "");
         return NextResponse.json(
           { error: msg },
           { status: 502, headers: getRateLimitHeaders(ip, "/api/tts") }
@@ -198,7 +199,7 @@ export async function POST(req: Request) {
       if (gradiumRes.status === 401) {
         hint = " Check GRADIUM_API_KEY: use a key from https://gradium.ai (gd_ or gsk_...).";
       } else if (gradiumRes.status === 404) {
-        hint = " Endpoint not found. Check GRADIUM_TTS_URL - competition keys may use different endpoints. See docs/GRADIUM_COMPETITION_SETUP.md";
+        hint = " Endpoint not found. Check GRADIUM_TTS_URL - competition keys may use different endpoints. See README.md.";
       }
       return NextResponse.json(
         { error: "TTS provider error: " + errText + hint },

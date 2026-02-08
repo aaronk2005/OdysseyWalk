@@ -139,8 +139,7 @@ function runOneSession(
       try {
         const raw = typeof data === "string" ? data : data.toString("utf8");
         msg = JSON.parse(raw) as GradiumWsMessage;
-      } catch (e) {
-        console.warn("[GradiumWS] Failed to parse message:", e);
+      } catch {
         return;
       }
 
@@ -154,8 +153,8 @@ function runOneSession(
           if (msg.audio) {
             try {
               chunks.push(Buffer.from(msg.audio, "base64"));
-            } catch (e) {
-              console.warn("[GradiumWS] Failed to decode audio chunk:", e);
+            } catch {
+              // Skip malformed chunk
             }
           }
           break;

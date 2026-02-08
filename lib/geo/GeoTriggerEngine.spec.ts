@@ -51,12 +51,9 @@ function runSpec(): void {
   };
   const first = check(atPoi1);
   const second = check(atPoi1);
-  console.log("First trigger at POI1:", first?.poiId);
-  console.log("Second trigger (same tick, cooldown):", second);
   const visited = ["poi-1"];
   const check2 = createTriggerEngine(mockPois, visited);
-  const atPoi1Again = check2(atPoi1);
-  console.log("After visiting poi-1, trigger at same location:", atPoi1Again);
+  check2(atPoi1);
 }
 
 export { runSpec };

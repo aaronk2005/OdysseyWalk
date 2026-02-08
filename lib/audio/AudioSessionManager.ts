@@ -249,14 +249,10 @@ class AudioSessionManagerImpl {
       } catch {
         errorMessage = errBody.slice(0, 200) || `TTS failed (${res.status})`;
       }
-      console.warn("[TTS] Server returned", res.status, errorMessage);
       throw new Error(errorMessage);
     }
     const blob = await res.blob();
-    if (blob.size === 0) {
-      console.warn("[TTS] Server returned empty audio");
-      throw new Error("TTS returned no audio");
-    }
+    if (blob.size === 0) throw new Error("TTS returned no audio");
     this.cache.set(key, URL.createObjectURL(blob));
   }
 
@@ -392,8 +388,7 @@ class AudioSessionManagerImpl {
 
   resume(): void {
     if (this.currentAudio && this.currentAudio.paused) {
-      this.currentAudio.play().catch((e) => {
-        console.warn("[AudioSessionManager] Resume failed:", e);
+      this.currentAudio.play().catch(() => {
         this.setState(AudioState.NAVIGATING);
       });
       // Restore the state we were in before pause (NARRATING, ANSWERING, etc.)

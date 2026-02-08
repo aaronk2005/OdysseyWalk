@@ -72,7 +72,6 @@ export async function POST(req: Request) {
     const hint = message.includes("ffmpeg")
       ? " Install ffmpeg on the server to convert browser audio to PCM for Gradium STT."
       : " Leave GRADIUM_STT_WS_URL unset in .env.local to use browser speech recognition instead.";
-    console.error("[STT] POST /api/stt error:", message, e instanceof Error ? e.stack : e);
     return NextResponse.json(
       {
         transcript: "",

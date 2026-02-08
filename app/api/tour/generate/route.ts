@@ -9,6 +9,9 @@ import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { distanceMeters } from "@/lib/maps/haversine";
 import { getWalkingDirections, getWalkingDirectionsByPlaces } from "@/lib/maps/directions";
 
+/** Allow up to 60s for LLM + Directions (Vercel Pro; Hobby plan caps at 10s) */
+export const maxDuration = 60;
+
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 /** ~80 m/min walking speed for time-to-get-there estimate */
@@ -249,13 +252,7 @@ Structure:
         const hasMinScript = wordCount >= 50; // Minimum 50 words for meaningful content
         const hasMinFacts = poi.facts.length >= 2; // At least 2 facts
         
-        if (!hasName || !hasMinScript || !hasMinFacts) {
-          console.warn(
-            `Excluding POI ${poi.poiId} (${poi.name}): ` +
-            `hasName=${hasName}, wordCount=${wordCount}, facts=${poi.facts.length}`
-          );
-          return false;
-        }
+        if (!hasName || !hasMinScript || !hasMinFacts) return false;
         
         // Remove temporary validation field
         delete (poi as any)._wordCount;
@@ -295,7 +292,6 @@ Structure:
         return `${p.name} near ${startLabel}`;
       });
 
-      console.log("[Tour] Trying address-based directions with queries:", placeQueries);
       const placeResult = await getWalkingDirectionsByPlaces(startLatLng, placeQueries, mapsApiKey);
 
       if (placeResult && placeResult.routePoints.length > 10) {
@@ -311,7 +307,6 @@ Structure:
           // Update coordinates with Google's exact location
           const loc = placeResult.waypointLocations[newIdx];
           if (loc) {
-            console.log(`[Tour] POI ${poi.name}: LLM (${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}) -> Google (${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)})`);
             poi.lat = loc.lat;
             poi.lng = loc.lng;
           }
@@ -324,11 +319,6 @@ Structure:
         // Replace pois array with the reordered one
         pois.length = 0;
         pois.push(...reorderedPois);
-
-        console.log(`[Tour] Address-based directions: ${routePoints.length} detailed route points, ${Math.round(totalDistanceMeters)}m`);
-        console.log(`[Tour] Optimized stop order: ${pois.map(p => p.name).join(" -> ")}`);
-      } else {
-        console.warn("[Tour] Address-based directions failed, trying coordinate-based...");
       }
 
       // ── 2. Fall back to coordinate-based directions ──
@@ -340,14 +330,12 @@ Structure:
           totalDistanceMeters = directions.distanceMeters;
           totalDurationSeconds = directions.durationSeconds;
           directionsSucceeded = true;
-          console.log(`[Tour] Coord-based directions: ${routePoints.length} detailed route points`);
         }
       }
     }
 
     // ── 3. Final fallback: Haversine estimates ──
     if (!directionsSucceeded) {
-      console.warn("[Tour] All Directions API attempts failed, using Haversine fallback");
       const fallbackWaypoints: LatLng[] = [startLatLng, ...pois.map(p => ({ lat: p.lat, lng: p.lng })), startLatLng];
       for (let i = 1; i < fallbackWaypoints.length; i++) {
         totalDistanceMeters += distanceMeters(fallbackWaypoints[i - 1], fallbackWaypoints[i]);

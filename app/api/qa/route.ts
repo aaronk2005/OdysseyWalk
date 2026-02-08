@@ -4,6 +4,8 @@ import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/api/getClientIp";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 
+export const maxDuration = 30;
+
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 export async function POST(req: Request) {

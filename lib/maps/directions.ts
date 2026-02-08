@@ -39,16 +39,11 @@ export async function getWalkingDirectionsByPlaces(
     url.searchParams.set("mode", "walking");
     url.searchParams.set("key", apiKey);
 
-    console.log(`[Directions] Place-based request: ${placeQueries.length} waypoints`);
     const response = await fetch(url.toString());
-    if (!response.ok) {
-      console.warn(`[Directions] Place-based HTTP error: ${response.status}`);
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
     if (data.status !== "OK" || !data.routes?.[0]) {
-      console.warn(`[Directions] Place-based API status: ${data.status}`, data.error_message || "");
       return null;
     }
 
@@ -95,12 +90,6 @@ export async function getWalkingDirectionsByPlaces(
     // e.g. waypoint_order: [2, 0, 1] means original waypoint 2 comes first
     const waypointOrder: number[] = route.waypoint_order ?? placeQueries.map((_: string, i: number) => i);
 
-    console.log(
-      `[Directions] Place-based success: ${allPoints.length} detailed points, ` +
-        `${waypointLocations.length} waypoint locations, ${Math.round(totalDistanceMeters)}m, ` +
-        `optimized order: [${waypointOrder.join(",")}]`
-    );
-
     return {
       distanceMeters: totalDistanceMeters,
       durationSeconds: totalDurationSeconds,
@@ -109,8 +98,7 @@ export async function getWalkingDirectionsByPlaces(
       waypointLocations,
       waypointOrder,
     };
-  } catch (error) {
-    console.warn("[Directions] Place-based API error:", error);
+  } catch {
     return null;
   }
 }
@@ -188,7 +176,6 @@ export async function getWalkingDirections(
     }
 
     const polyline = route.overview_polyline?.points || "";
-    console.log(`[Directions] Coord-based: ${allPoints.length} detailed points`);
 
     return {
       distanceMeters: totalDistanceMeters,
@@ -196,8 +183,7 @@ export async function getWalkingDirections(
       polyline,
       routePoints: allPoints,
     };
-  } catch (error) {
-    console.warn("[Directions] Coord-based API error:", error);
+  } catch {
     return null;
   }
 }

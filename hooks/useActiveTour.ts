@@ -113,8 +113,7 @@ export function useActiveTour(setupComplete = true) {
         const firstCheckpointMsg = `Let's head to our first stop: ${firstPoi.name}. Follow the route on your map.`;
         await AudioSessionManager.playAnswer(firstCheckpointMsg);
       }
-    } catch (e) {
-      console.warn("[useActiveTour] Intro playback issue:", e);
+    } catch {
       // Continue anyway — browser TTS fallback or silent mode
     }
     updateSession({});

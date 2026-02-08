@@ -450,7 +450,7 @@ export function MapView({
       {showDirections && (
         <div
           ref={(el) => {
-            panelRef.current = el;
+            (panelRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
             if (el) setDirectionsPanelReady(true);
           }}
           className="absolute bottom-0 left-0 right-0 z-10 max-h-[35%] min-h-[80px] overflow-auto rounded-t-xl bg-surface/98 backdrop-blur-sm border border-app-border border-b-0 shadow-lg text-center text-sm font-medium text-ink-primary [&_.adp]:!text-ink-primary [&_.adp]:!font-medium [&_.adp-step]:!text-ink-secondary [&_.adp-placemark]:!text-ink-secondary [&_.adp-text]:!text-ink-primary [&_.adp-text]:!text-sm [&_.adp-text]:!font-normal [&_.adp-warnbox]:!hidden [&_.warnbox-content]:!hidden"
