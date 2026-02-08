@@ -12,8 +12,16 @@ function simpleHash(s: string): string {
 }
 
 /**
+ * When true, use only browser SpeechSynthesis (no Gradium /api/tts).
+ * Set NEXT_PUBLIC_USE_BROWSER_TTS=true in .env.local to enable.
+ */
+function useBrowserTtsOnly(): boolean {
+  return typeof window !== "undefined" && process.env.NEXT_PUBLIC_USE_BROWSER_TTS === "true";
+}
+
+/**
  * Browser-native TTS fallback using SpeechSynthesis API.
- * Used when the server TTS endpoint is unavailable.
+ * Used when the server TTS endpoint is unavailable, or when useBrowserTtsOnly() is true.
  */
 function browserTtsAvailable(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
@@ -122,6 +130,9 @@ class AudioSessionManagerImpl {
     }
   }
 
+  /** When user starts recording we pause current narration and save it here; after answer we resume. */
+  private pausedForMic: { audio: HTMLAudioElement; currentTime: number; state: AudioState } | null = null;
+
   async playIntro(text: string): Promise<{ played: boolean }> {
     const safeText = typeof text === "string" && text.trim() ? text.trim() : "Welcome. Let's begin.";
     this.stop();
@@ -150,15 +161,31 @@ class AudioSessionManagerImpl {
     });
   }
 
+  /** Play LLM answer; does not call stop() so we can resume narration after. When answer ends, resume paused narration if any. */
   async playAnswer(text: string): Promise<{ played: boolean }> {
-    this.stop();
     this.abortInFlightFetch();
     this.fetchAbortController = new AbortController();
     this.currentPlayId = ++this.playId;
     this.setState(AudioState.ANSWERING);
     return this.playTts(text, "answer", this.fetchAbortController.signal).then((r) => {
       if (this.state === AudioState.ANSWERING) this.setState(AudioState.NAVIGATING);
+      this.resumeAfterAnswer();
       return r;
+    });
+  }
+
+  /** After answer finishes, resume narration that was paused for the mic (no overlapping). */
+  private resumeAfterAnswer(): void {
+    if (!this.pausedForMic) return;
+    const { audio, currentTime, state } = this.pausedForMic;
+    this.pausedForMic = null;
+    this.currentAudio = audio;
+    this.stateBeforePause = state;
+    this.setState(state);
+    audio.currentTime = currentTime;
+    audio.play().catch(() => {
+      this.currentAudio = null;
+      this.setState(AudioState.NAVIGATING);
     });
   }
 
@@ -198,6 +225,7 @@ class AudioSessionManagerImpl {
   }
 
   private async fetchAndCacheTts(text: string, purpose: string, signal?: AbortSignal): Promise<void> {
+    if (useBrowserTtsOnly()) return; // nothing to cache
     const key = this.cacheKey(text, purpose);
     if (this.cache.has(key)) return;
     const res = await fetch("/api/tts", {
@@ -237,6 +265,21 @@ class AudioSessionManagerImpl {
   private async playTts(text: string, purpose: string, signal?: AbortSignal): Promise<{ played: boolean }> {
     this.usingBrowserTts = false;
     const myPlayId = this.currentPlayId;
+
+    // Browser-only TTS: skip Gradium entirely (intro, POI, answer, outro)
+    if (useBrowserTtsOnly() && browserTtsAvailable()) {
+      if (this.currentPlayId !== myPlayId) return { played: false };
+      try {
+        this.usingBrowserTts = true;
+        await speakWithBrowserTts(text, this.lang);
+        this.usingBrowserTts = false;
+        return { played: true };
+      } catch (e) {
+        this.usingBrowserTts = false;
+        if (e instanceof Error && e.name === "AbortError") return { played: false };
+      }
+    }
+
     const key = this.cacheKey(text, purpose);
     const cached = this.cache.get(key);
     if (cached) {
@@ -258,11 +301,14 @@ class AudioSessionManagerImpl {
       }
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return { played: false };
-      // fall through to browser TTS
+      if (purpose === "answer") {
+        // Gradium-only for answers when not in browser-TTS mode
+      } else {
+        // fall through to browser TTS for intro/poi/outro
+      }
     }
     if (this.currentPlayId !== myPlayId) return { played: false };
-    // Fallback: use browser's built-in SpeechSynthesis API
-    if (browserTtsAvailable()) {
+    if (purpose !== "answer" && browserTtsAvailable()) {
       try {
         this.usingBrowserTts = true;
         await speakWithBrowserTts(text, this.lang);
@@ -270,7 +316,6 @@ class AudioSessionManagerImpl {
         return { played: true };
       } catch {
         this.usingBrowserTts = false;
-        // fall through to placeholder
       }
     }
     if (this.currentPlayId !== myPlayId) return { played: false };
@@ -312,9 +357,21 @@ class AudioSessionManagerImpl {
     });
   }
 
+  /** Pause current narration for mic; keep reference so we can resume from same position after answer. Only save intro/poi/outro, not the answer. */
   pauseForMic(): void {
     cancelBrowserTts();
     if (this.currentAudio) {
+      const isNarration =
+        this.state === AudioState.NARRATING ||
+        this.state === AudioState.PLAYING_INTRO ||
+        this.state === AudioState.PLAYING_OUTRO;
+      if (isNarration) {
+        this.pausedForMic = {
+          audio: this.currentAudio,
+          currentTime: this.currentAudio.currentTime,
+          state: this.state,
+        };
+      }
       this.currentAudio.pause();
       this.currentAudio = null;
     }
@@ -352,6 +409,7 @@ class AudioSessionManagerImpl {
 
   stop(): void {
     this.currentPlayId = 0;
+    this.pausedForMic = null;
     this.abortInFlightFetch();
     cancelBrowserTts();
     if (this.currentAudio) {

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Play, Pause, SkipForward, RotateCcw, Mic, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Pause, SkipForward, RotateCcw, Mic, ExternalLink, Loader2, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AudioState } from "@/lib/types";
 import { PlayingIndicator } from "./PlayingIndicator";
@@ -150,33 +150,69 @@ export function ActiveWalkAudioPanel({
           {hasMic && (
             <button
               type="button"
-              onMouseDown={onAskStart}
-              onMouseLeave={onAskStop}
-              onMouseUp={onAskStop}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                onAskStart?.();
+              onClick={() => {
+                if (askState === "idle") onAskStart?.();
+                else if (askState === "listening") onAskStop?.();
               }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                onAskStop?.();
-              }}
-              onTouchCancel={onAskStop}
+              disabled={askState === "thinking" || askState === "speaking"}
               className={cn(
                 "p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full transition-colors shrink-0",
                 askState === "idle" &&
                   "text-ink-tertiary hover:text-brand-primary hover:bg-app-bg",
-                askState === "listening" && "bg-brand-primary/20 text-brand-primary",
-                askState === "thinking" && "bg-amber-500/20 text-amber-600",
-                askState === "speaking" && "bg-emerald-500/20 text-emerald-600"
+                askState === "listening" && "bg-brand-primary/20 text-brand-primary ring-2 ring-brand-primary/50",
+                askState === "thinking" && "bg-amber-500/20 text-amber-600 ring-2 ring-amber-500/40",
+                askState === "speaking" && "bg-emerald-500/20 text-emerald-600 ring-2 ring-emerald-500/40",
+                (askState === "thinking" || askState === "speaking") && "opacity-70 cursor-not-allowed"
               )}
-              aria-label="Hold to ask about this place"
+              aria-label={askState === "listening" ? "Tap to stop recording and send" : "Tap to ask a question (tap again to send)"}
             >
               <Mic className="w-5 h-5" />
             </button>
           )}
         </div>
       </div>
+
+      {/* Visual status: Recording | Thinking | Answering */}
+      {hasMic && askState !== "idle" && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={askState}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              "px-3 py-2 flex items-center justify-center gap-2 border-t border-app-border/60",
+              askState === "listening" && "bg-brand-primary/10",
+              askState === "thinking" && "bg-amber-500/10",
+              askState === "speaking" && "bg-emerald-500/10"
+            )}
+            aria-live="polite"
+          >
+            {askState === "listening" && (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-primary" />
+                </span>
+                <span className="text-xs font-medium text-brand-primary">Recording… Tap again to send</span>
+              </>
+            )}
+            {askState === "thinking" && (
+              <>
+                <Loader2 className="w-4 h-4 text-amber-600 animate-spin shrink-0" />
+                <span className="text-xs font-medium text-amber-700">Thinking…</span>
+              </>
+            )}
+            {askState === "speaking" && (
+              <>
+                <Volume2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-medium text-emerald-700">Answering…</span>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      )}
 
     </motion.div>
   );

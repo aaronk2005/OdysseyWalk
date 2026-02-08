@@ -43,7 +43,7 @@ Use a **Gradium** API key from [gradium.ai](https://gradium.ai). Keys start with
    - **Region (eu vs us):** Gradium has **EU** and **US** regions. Use **`us`** if you’re in North America (e.g. Canada) for lower latency; use **`eu`** for Europe. Same host pattern: `wss://us.api.gradium.ai/...` or `wss://eu.api.gradium.ai/...`, and `https://us.api.gradium.ai/...` or `https://eu.api.gradium.ai/...` for POST.
    - **TTS WebSocket** (recommended): `GRADIUM_TTS_WS_URL=wss://us.api.gradium.ai/api/speech/tts` (or `eu` if you prefer).
    - **TTS POST** (alternative): `GRADIUM_TTS_URL=https://us.api.gradium.ai/api/post/speech/tts` — must be **https** and path must include **`/post/`**. Auth: `x-api-key` only ([Gradium API](https://gradium.ai/api_docs.html)).
-   - **STT**: Gradium STT is **WebSocket-only** (`wss://us.api.gradium.ai/api/speech/asr` or `eu`). The app does not implement the STT WebSocket client; leave `GRADIUM_STT_URL` unset to use the browser SpeechRecognition fallback.
+   - **STT**: Gradium STT is **WebSocket-only** in the API. Set **`GRADIUM_STT_WS_URL`** (e.g. `wss://us.api.gradium.ai/api/speech/asr` or `wss://eu.api.gradium.ai/api/speech/asr`) plus `GRADIUM_API_KEY` to use server STT. The app converts browser webm/opus to PCM via **ffmpeg** and sends it over the Gradium STT WebSocket. Leave `GRADIUM_STT_WS_URL` unset to use the browser SpeechRecognition fallback (no ffmpeg required).
    - If both TTS URLs are set, the app uses **WebSocket** for TTS.
    - **Concurrency:** Gradium allows only **2 concurrent TTS sessions** per API key. The app queues requests so you don’t see “Concurrency limit exceeded”; extra requests wait until a slot is free.
 
@@ -52,8 +52,7 @@ Use a **Gradium** API key from [gradium.ai](https://gradium.ai). Keys start with
 
 4. **Check which TTS is used** — Call `GET /api/health`; response includes `gradiumTtsMethod`: `"websocket"` or `"post"`. Config:  
    - **TTS** uses Gradium when `GRADIUM_API_KEY` is set and either `GRADIUM_TTS_WS_URL` (WebSocket) or `GRADIUM_TTS_URL` (POST) is set.  
-   - **STT**: Gradium STT is WebSocket-only in the API docs; the app uses browser fallback unless you point `GRADIUM_STT_URL` at a REST STT endpoint.  
-   You can set only TTS (and leave `GRADIUM_STT_URL` unset); the app will then use the browser’s SpeechRecognition for STT.
+   - **STT**: Set `GRADIUM_STT_WS_URL` (wss URL) plus `GRADIUM_API_KEY` to use Gradium STT; the app uses the getSTT WebSocket stream and requires **ffmpeg** on the server to convert uploaded webm to PCM. Leave `GRADIUM_STT_WS_URL` unset to use the browser’s SpeechRecognition for STT.
 
 ---
 

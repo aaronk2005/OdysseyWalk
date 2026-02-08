@@ -1,6 +1,6 @@
 "use client";
 
-import { STTRecorder } from "./STTRecorder";
+import { STTRecorder, type STTRecorderStartOptions } from "./STTRecorder";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
 import type { SessionState } from "@/lib/types";
 
@@ -14,6 +14,8 @@ export interface VoiceControllerCallbacks {
   onAnswerEnd?: () => void;
   onError?: (message: string) => void;
   onTypedQuestionFallback?: () => void;
+  /** When server STT fails (e.g. no ffmpeg), UI can prefer browser STT next time */
+  onServerSttFailed?: () => void;
 }
 
 export async function runVoiceQaLoop(
@@ -62,7 +64,6 @@ export async function runVoiceQaLoop(
     const data = await res.json();
     const answerText = data.answerText ?? "I don't have an answer for that.";
     onAnswerStart?.();
-    AudioSessionManager.pauseForMic();
     await AudioSessionManager.playAnswer(answerText);
   } catch (e) {
     onError?.(e instanceof Error ? e.message : "Request failed");
@@ -70,7 +71,12 @@ export async function runVoiceQaLoop(
   onAnswerEnd?.();
 }
 
-export function startRecording(callbacks: VoiceControllerCallbacks = {}): void {
+export interface StartRecordingOptions extends STTRecorderStartOptions {}
+
+export function startRecording(
+  callbacks: VoiceControllerCallbacks = {},
+  options: StartRecordingOptions = {}
+): void {
   const {
     onListeningStart,
     onListeningEnd,
@@ -79,6 +85,7 @@ export function startRecording(callbacks: VoiceControllerCallbacks = {}): void {
     onAnswerEnd,
     onError,
     onTypedQuestionFallback,
+    onServerSttFailed,
   } = callbacks;
 
   AudioSessionManager.pauseForMic();
@@ -88,11 +95,13 @@ export function startRecording(callbacks: VoiceControllerCallbacks = {}): void {
     onStart: () => onListeningStart?.(),
     onStop: () => onListeningEnd?.(),
     onTranscript: async (transcript) => {
-      onListeningEnd?.();
       if (!transcript?.trim()) {
+        onListeningEnd?.();
         onTypedQuestionFallback?.();
         return;
       }
+      onListeningEnd?.();
+      onThinking?.();
       const session = typeof window !== "undefined"
         ? (await import("@/lib/data/SessionStore")).loadTour()
         : null;
@@ -108,8 +117,9 @@ export function startRecording(callbacks: VoiceControllerCallbacks = {}): void {
       onError?.(err);
       onTypedQuestionFallback?.();
     },
+    onServerSttFailed,
   });
-  sttRecorder.start();
+  sttRecorder.start(options);
 }
 
 export function stopRecording(): void {

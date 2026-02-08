@@ -18,6 +18,7 @@ import { useActiveTour } from "@/hooks/useActiveTour";
 import { useVoiceNext } from "@/hooks/useVoiceNext";
 import { getClientConfig } from "@/lib/config";
 import { startRecording, stopRecording } from "@/lib/voice/VoiceController";
+import { checkMic } from "@/lib/voice/STTRecorder";
 import { loadTour, updateSession } from "@/lib/data/SessionStore";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
 import { AudioState } from "@/lib/types";
@@ -41,6 +42,8 @@ export default function TourActivePage() {
   const mapKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const [setupComplete, setSetupComplete] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [apiStatus, setApiStatus] = useState<{ gradiumSttConfigured?: boolean } | null>(null);
+  const [serverSttFailed, setServerSttFailed] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
   const [prevAudioState, setPrevAudioState] = useState<AudioState>(AudioState.IDLE);
@@ -92,6 +95,10 @@ export default function TourActivePage() {
   }, [audioState]);
 
   useEffect(() => {
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((d) => setApiStatus({ gradiumSttConfigured: d.gradiumSttConfigured }))
+      .catch(() => setApiStatus(null));
     return () => {
       AudioSessionManager.stop();
     };
@@ -105,20 +112,35 @@ export default function TourActivePage() {
     }
   }, [lastTriggeredPoi, clearLastTriggeredPoi, toast]);
 
-  const handleAskStart = useCallback(() => {
+  const handleAskStart = useCallback(async () => {
     setLastError(null);
+    const mic = await checkMic();
+    if (!mic.ok) {
+      setLastError(mic.error);
+      toast.showToast(mic.error, "error");
+      return;
+    }
     setAskState("listening");
-    startRecording({
-      onListeningEnd: () => setAskState("idle"),
-      onThinking: () => setAskState("thinking"),
-      onAnswerStart: () => setAskState("speaking"),
-      onAnswerEnd: () => setAskState("idle"),
-      onTypedQuestionFallback: () => toast.showToast("Voice input unavailable", "info"),
-      onError: (err) => {
-        setLastError(err);
-        toast.showToast(err, "error");
+    // Use browser SpeechRecognition only (not Gradium STT)
+    const useServerStt = false;
+    startRecording(
+      {
+        onListeningEnd: () => setAskState("idle"),
+        onThinking: () => setAskState("thinking"),
+        onAnswerStart: () => setAskState("speaking"),
+        onAnswerEnd: () => setAskState("idle"),
+        onTypedQuestionFallback: () => toast.showToast("Voice input unavailable", "info"),
+        onError: (err) => {
+          setLastError(err);
+          toast.showToast(err, "error");
+        },
+        onServerSttFailed: () => {
+          setServerSttFailed(true);
+          toast.showToast("Using browser voice instead. Speak, then tap again to send.", "info");
+        },
       },
-    });
+      { useServerStt }
+    );
   }, [setAskState, toast]);
 
   const handleAskStop = useCallback(() => {
@@ -509,7 +531,7 @@ export default function TourActivePage() {
           <div className="shrink-0 relative">
             <FirstTimeHint
               storageKey="odyssey-hint-mic"
-              message="Hold the mic to ask questions about this place"
+              message="Tap the mic to ask a question, then tap again to send"
               position="bottom"
             />
           </div>
