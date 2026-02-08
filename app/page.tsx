@@ -2,22 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { MapPin, Clock, Sparkles, Search } from "lucide-react";
+import { Sparkles, Search } from "lucide-react";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { ResumeWalkBanner } from "@/components/ResumeWalkBanner";
 import { TourCard } from "@/components/TourCard";
 import { loadTour } from "@/lib/data/SessionStore";
 import { cn } from "@/lib/utils/cn";
 import type { SessionState, TourSummary } from "@/lib/types";
-
-const sectionMotion = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.35 },
-};
-
-const cardStagger = 0.05;
 
 export default function LandingPage() {
   const [tours, setTours] = useState<TourSummary[]>([]);
@@ -78,22 +69,17 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section — static, no entrance animation */}
       <section className="px-4 py-12 sm:py-16 max-w-7xl mx-auto">
-        <motion.div
-          className="text-center max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink-primary mb-4" style={{ letterSpacing: "-0.03em", lineHeight: 1.1 }}>
             Discover Walking Tours
             <span className="text-brand-primary"> Worldwide</span>
           </h1>
           <p className="text-lg sm:text-xl text-ink-secondary mb-8 max-w-lg mx-auto font-medium" style={{ letterSpacing: "-0.01em" }}>
-            Explore pre-planned walking tours in major cities across the globe. Narrated stories, guided routes, and immersive experiences.
+            Generate and navigate pre-planned walking tours in major cities. Narrated stories, guided routes, and immersive experiences.
           </p>
-        </motion.div>
+        </div>
       </section>
 
       {/* Resume in-progress walk */}
@@ -103,9 +89,9 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* Search and Filters */}
+      {/* Search and Filters — static */}
       <section className="px-4 pb-8 max-w-7xl mx-auto">
-        <motion.div className="flex flex-col sm:flex-row gap-4 items-stretch" {...sectionMotion}>
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch">
           {/* Search Bar */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-tertiary" />
@@ -148,7 +134,7 @@ export default function LandingPage() {
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </section>
 
       {/* Tours Grid */}
@@ -170,11 +156,7 @@ export default function LandingPage() {
             ))}
           </div>
         ) : filteredTours.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-card border border-app-border bg-surface-muted/60 p-12 text-center"
-          >
+          <div className="rounded-card border border-app-border bg-surface-muted/60 p-12 text-center">
             <Sparkles className="w-12 h-12 mx-auto text-ink-tertiary mb-4" strokeWidth={1.25} />
             <p className="text-body text-ink-secondary max-w-sm mx-auto mb-6">
               {searchQuery || selectedCity
@@ -192,14 +174,14 @@ export default function LandingPage() {
                 Clear Filters
               </button>
             )}
-          </motion.div>
+          </div>
         ) : (
           <>
-            <motion.div className="mb-6" {...sectionMotion}>
+            <div className="mb-6">
               <p className="text-body text-ink-secondary">
                 {filteredTours.length} {filteredTours.length === 1 ? "tour" : "tours"} found
               </p>
-            </motion.div>
+            </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filteredTours.map((tour, i) => (
                 <TourCard key={tour.tourId} tour={tour} index={i} />

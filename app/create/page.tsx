@@ -10,8 +10,6 @@ import { TourGenerationPanel, type TourPreferences } from "@/components/TourGene
 import { MapView } from "@/components/MapView";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { ApiStatusBanner } from "@/components/ApiStatusBanner";
-import { OdysseyLogo } from "@/components/OdysseyLogo";
-import { GeneratingSteps } from "@/components/GeneratingSteps";
 import { useToast } from "@/components/ToastProvider";
 import { saveTour } from "@/lib/data/SessionStore";
 import type { GeneratedTourResponse, Theme } from "@/lib/types";
@@ -225,15 +223,13 @@ export default function CreateTourPage() {
 
   return (
     <div className="min-h-screen bg-app-bg flex flex-col">
-      <header className="sticky top-0 z-20 border-b border-app-border bg-surface shadow-sm px-4 py-4 safe-bottom">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Link href="/" className="p-2.5 rounded-button hover:bg-app-bg text-ink-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Back to home">
+      <header className="sticky top-0 z-20 border-b border-app-border/60 bg-app-bg px-4 py-3 safe-bottom">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <Link href="/" className="p-2 rounded-full hover:bg-surface text-ink-primary transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center -ml-1" aria-label="Back to home">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <Link href="/" className="min-h-[44px] flex items-center shrink-0" aria-label="Odyssey Walk home">
-            <OdysseyLogo size="sm" />
-          </Link>
-          <h1 className="text-heading-sm flex-1">Create Tour</h1>
+          <h1 className="text-lg font-semibold text-ink-primary flex-1 text-center">Create Tour</h1>
+          <span className="w-9 min-w-[36px]" aria-hidden />
         </div>
       </header>
 
@@ -315,23 +311,12 @@ export default function CreateTourPage() {
             preferences={preferences}
             onPreferencesChange={setPreferences}
             onGenerate={handleGenerate}
+            onStartWalk={handleStartWalk}
             generating={generating}
+            hasGeneratedTour={!!generated}
             disabled={generating}
           />
         </div>
-
-        <AnimatePresence>
-          {generating && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="rounded-card border border-app-border bg-surface p-6"
-            >
-              <GeneratingSteps />
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <AnimatePresence>
           {error && (
@@ -342,45 +327,16 @@ export default function CreateTourPage() {
               className="rounded-card border border-red-200 bg-red-50 p-4 text-red-800 text-body space-y-3"
             >
               <p>{error}</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => { setError(null); handleGenerate(); }}
-                  className="px-3 py-2 rounded-button bg-surface border border-app-border text-ink-primary text-sm font-medium hover:bg-surface-muted"
-                >
-                  Retry
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLoadSampleTour}
-                  className="px-3 py-2 rounded-button bg-brand-secondary text-white text-sm font-medium hover:bg-brand-secondaryHover"
-                >
-                  Use sample tour
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => { setError(null); handleGenerate(); }}
+                className="px-3 py-2 rounded-button bg-surface border border-app-border text-ink-primary text-sm font-medium hover:bg-surface-muted"
+              >
+                Retry
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {generated && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "tween", duration: 0.3 }}
-            className="space-y-4"
-          >
-            <p className="text-caption text-ink-secondary">
-              Route with {generated.pois.length} stops. Review the map and start when ready.
-            </p>
-            <button
-              type="button"
-              onClick={handleStartWalk}
-              className="w-full py-3.5 rounded-button bg-brand-primary text-white font-semibold shadow-md hover:bg-brand-primaryHover active:scale-[0.99] transition-transform min-h-[48px]"
-            >
-              Start Walk
-            </button>
-          </motion.div>
-        )}
 
       </main>
     </div>

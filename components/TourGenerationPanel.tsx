@@ -36,7 +36,9 @@ interface TourGenerationPanelProps {
   preferences: TourPreferences;
   onPreferencesChange: (p: TourPreferences) => void;
   onGenerate: () => void;
+  onStartWalk?: () => void;
   generating: boolean;
+  hasGeneratedTour?: boolean;
   disabled?: boolean;
 }
 
@@ -44,10 +46,13 @@ export function TourGenerationPanel({
   preferences,
   onPreferencesChange,
   onGenerate,
+  onStartWalk,
   generating,
+  hasGeneratedTour,
   disabled,
 }: TourGenerationPanelProps) {
   const { theme, durationMin, lang, voiceStyle } = preferences;
+  const showStartWalk = Boolean(hasGeneratedTour && onStartWalk);
 
   return (
     <div className="rounded-card border border-app-border bg-surface p-6 shadow-sm space-y-6">
@@ -143,8 +148,8 @@ export function TourGenerationPanel({
       </div>
       <button
         type="button"
-        onClick={onGenerate}
-        disabled={disabled || generating}
+        onClick={showStartWalk ? onStartWalk : onGenerate}
+        disabled={!showStartWalk && (disabled || generating)}
         className={cn(
           "w-full flex items-center justify-center gap-2 py-3.5 rounded-button font-semibold min-h-[48px]",
           "bg-brand-primary text-white shadow-md hover:bg-brand-primaryHover",
@@ -152,10 +157,12 @@ export function TourGenerationPanel({
           "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         )}
       >
-        {generating ? (
+        {showStartWalk ? (
+          "Start Walk"
+        ) : generating ? (
           <>
             <span className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-            Generating…
+            Building route…
           </>
         ) : (
           "Generate My Tour"

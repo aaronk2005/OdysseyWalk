@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { MapPin, Clock } from "lucide-react";
 import type { TourSummary } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
@@ -11,13 +10,9 @@ interface TourCardProps {
   index?: number;
 }
 
-export function TourCard({ tour, index = 0 }: TourCardProps) {
+export function TourCard({ tour }: TourCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.06 }}
-    >
+    <div>
       <Link href={`/tour/${tour.tourId}`}>
         <div
           className={cn(
@@ -54,6 +49,6 @@ export function TourCard({ tour, index = 0 }: TourCardProps) {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }
