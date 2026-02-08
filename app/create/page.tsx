@@ -12,7 +12,8 @@ import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { ApiStatusBanner } from "@/components/ApiStatusBanner";
 import { useToast } from "@/components/ToastProvider";
 import { saveTour } from "@/lib/data/SessionStore";
-import type { GeneratedTourResponse, Theme } from "@/lib/types";
+import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
+import type { GeneratedTourResponse, Theme, Lang, VoiceStyle } from "@/lib/types";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { cn } from "@/lib/utils/cn";
 
@@ -24,6 +25,26 @@ const DEFAULT_PREFERENCES: TourPreferences = {
 };
 
 const GENERATE_TIMEOUT_MS = 30000;
+
+/** Start TTS prewarm for intro + first POI + next 2–3 POIs so "Start Walk" → active has cache ready. */
+function startPrewarmForTour(
+  data: GeneratedTourResponse,
+  fallbackLang?: Lang,
+  fallbackVoiceStyle?: VoiceStyle
+): void {
+  const lang = (data.tourPlan.voiceLang ?? fallbackLang ?? "en") as Lang;
+  const voiceStyle = (data.tourPlan.voiceStyle ?? fallbackVoiceStyle ?? "friendly") as VoiceStyle;
+  AudioSessionManager.setOptions({ lang, voiceStyle });
+  const firstScript = data.pois[0]
+    ? (data.pois[0].script ?? data.pois[0].scripts?.friendly ?? data.pois[0].scripts?.historian ?? data.pois[0].scripts?.funny ?? "")
+    : undefined;
+  AudioSessionManager.prewarm(data.tourPlan.intro, firstScript).catch(() => {});
+  const scriptsToPrewarm = data.pois
+    .slice(1, 4)
+    .map((poi) => poi.script ?? poi.scripts?.friendly ?? poi.scripts?.historian ?? poi.scripts?.funny ?? "")
+    .filter((scr) => scr.length > 0);
+  if (scriptsToPrewarm.length > 0) AudioSessionManager.prewarmPois(scriptsToPrewarm).catch(() => {});
+}
 
 export default function CreateTourPage() {
   const router = useRouter();
@@ -156,6 +177,8 @@ export default function CreateTourPage() {
       setGenerated(typed);
       saveTour(typed.sessionId, typed);
       if (typed.tourPlan?.routePoints?.length >= 2) setFitBoundsTrigger((t) => t + 1);
+      // Prewarm TTS during create phase so "Start Walk" → active has cache ready (lower latency)
+      startPrewarmForTour(typed);
       showToast(`Tour generated! ${typed.pois.length} stops ready.`, "success");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Generation failed";
@@ -203,6 +226,8 @@ export default function CreateTourPage() {
       setGenerated(data);
       saveTour(data.sessionId, data);
       if (data.tourPlan?.routePoints?.length >= 2) setFitBoundsTrigger((t) => t + 1);
+      // Prewarm TTS (sample tourPlan has no voiceLang/voiceStyle; use preferences)
+      startPrewarmForTour(data, preferences.lang, preferences.voiceStyle);
       showToast("Sample tour loaded. You can start the walk.", "success");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Could not load sample tour";

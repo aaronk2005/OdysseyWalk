@@ -19,6 +19,8 @@ export function useActiveTour() {
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [audioState, setAudioState] = useState<AudioState>(AudioState.IDLE);
   const [introPlayed, setIntroPlayed] = useState(false);
+  /** True once intro (and optionally first POI) prewarm has completed so "Start" tap is instant. */
+  const [introAudioReady, setIntroAudioReady] = useState(false);
   const [askState, setAskState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
   const [lastTriggeredPoi, setLastTriggeredPoi] = useState<POI | null>(null);
   const providerRef = useRef<typeof geoReal | typeof geoSim>(geoSim);
@@ -45,14 +47,17 @@ export function useActiveTour() {
     const firstScript = s.pois[0]
       ? (s.pois[0].script ?? s.pois[0].scripts?.friendly ?? s.pois[0].scripts?.historian ?? s.pois[0].scripts?.funny ?? "")
       : undefined;
-    // Prewarm intro and first POI immediately
-    AudioSessionManager.prewarm(s.tourPlan.intro, firstScript).catch(() => {});
-    // Prewarm next 2-3 POIs in background for faster playback
-    const scriptsToPrewarm = s.pois.slice(1, 4).map(poi => 
+    setIntroAudioReady(false);
+    // Prewarm intro and first POI first; delay "Start" until ready so first tap is instant
+    AudioSessionManager.prewarm(s.tourPlan.intro, firstScript)
+      .then(() => setIntroAudioReady(true))
+      .catch(() => setIntroAudioReady(true)); // On error, allow Start (will use fetch or fallback)
+    // Prewarm next 2-3 POIs immediately (no delay) for lower "Next stop" latency
+    const scriptsToPrewarm = s.pois.slice(1, 4).map(poi =>
       poi.script ?? poi.scripts?.friendly ?? poi.scripts?.historian ?? poi.scripts?.funny ?? ""
-    ).filter(s => s.length > 0);
+    ).filter(scr => scr.length > 0);
     if (scriptsToPrewarm.length > 0) {
-      setTimeout(() => AudioSessionManager.prewarmPois(scriptsToPrewarm).catch(() => {}), 1000);
+      AudioSessionManager.prewarmPois(scriptsToPrewarm).catch(() => {});
     }
   }, [router]);
 
@@ -85,6 +90,8 @@ export function useActiveTour() {
     AudioSessionManager.stop();
     updateSession({ startedAt: Date.now(), mode: s.mode });
     setSession(loadTour());
+    // Switch to active walk view (stop 0) immediately so user sees map while intro plays
+    setIntroPlayed(true);
     // Use tour plan's voice settings for consistency
     const tourLang = s.tourPlan.voiceLang ?? "en";
     const tourVoiceStyle = s.tourPlan.voiceStyle ?? "friendly";
@@ -101,7 +108,6 @@ export function useActiveTour() {
       console.warn("[useActiveTour] Intro playback issue:", e);
       // Continue anyway — browser TTS fallback or silent mode
     }
-    setIntroPlayed(true);
     updateSession({});
     setSession(loadTour());
   }, []);
@@ -130,13 +136,13 @@ export function useActiveTour() {
           );
         } else {
           AudioSessionManager.playPoiScript(poi);
-          // Prewarm next 2 upcoming POIs for reduced latency
-          const upcomingPois = s.pois.filter(p => !nextVisited.includes(p.poiId)).slice(0, 2);
-          const upcomingScripts = upcomingPois.map(p => 
+          // Prewarm next 2-3 POIs immediately for reduced "Next stop" latency
+          const upcomingPois = s.pois.filter(p => !nextVisited.includes(p.poiId)).slice(0, 3);
+          const upcomingScripts = upcomingPois.map(p =>
             p.script ?? p.scripts?.friendly ?? p.scripts?.historian ?? p.scripts?.funny ?? ""
-          ).filter(s => s.length > 0);
+          ).filter(scr => scr.length > 0);
           if (upcomingScripts.length > 0) {
-            setTimeout(() => AudioSessionManager.prewarmPois(upcomingScripts).catch(() => {}), 500);
+            AudioSessionManager.prewarmPois(upcomingScripts).catch(() => {});
           }
         }
       }
@@ -226,6 +232,7 @@ export function useActiveTour() {
     askState,
     setAskState,
     introPlayed,
+    introAudioReady,
     startWalk,
     playPoi,
     jumpNext,

@@ -68,6 +68,12 @@ class AudioSessionManagerImpl {
   private cache = new Map<string, string>();
   private lang: Lang = "en";
   private voiceStyle: VoiceStyle = "friendly";
+  /** Incremented on each stop() or start of a new play; used to cancel in-flight TTS. */
+  private playId = 0;
+  /** Play id for the currently "active" play; in-flight playTts checks this before playing. */
+  private currentPlayId = 0;
+  /** AbortController for the current in-flight fetch; aborted when starting a new play or stop(). */
+  private fetchAbortController: AbortController | null = null;
 
   setOptions(opts: { lang?: Lang; voiceStyle?: VoiceStyle }): void {
     if (opts.lang) this.lang = opts.lang;
@@ -92,6 +98,11 @@ class AudioSessionManagerImpl {
     return simpleHash(text + this.lang + this.voiceStyle + purpose);
   }
 
+  /** Returns true if the given text for the purpose is already in the cache (for instant playback). */
+  isCached(text: string, purpose: string): boolean {
+    return this.cache.has(this.cacheKey(text, purpose));
+  }
+
   clearCache(): void {
     this.cache.forEach((url) => {
       try {
@@ -103,10 +114,21 @@ class AudioSessionManagerImpl {
     this.cache.clear();
   }
 
+  /** Abort in-flight TTS fetch so completed responses are not played. */
+  private abortInFlightFetch(): void {
+    if (this.fetchAbortController) {
+      this.fetchAbortController.abort();
+      this.fetchAbortController = null;
+    }
+  }
+
   async playIntro(text: string): Promise<{ played: boolean }> {
     this.stop();
+    this.abortInFlightFetch();
+    this.fetchAbortController = new AbortController();
+    this.currentPlayId = ++this.playId;
     this.setState(AudioState.PLAYING_INTRO);
-    return this.playTts(text, "intro").then((r) => {
+    return this.playTts(text, "intro", this.fetchAbortController.signal).then((r) => {
       if (this.state === AudioState.PLAYING_INTRO) this.setState(AudioState.NAVIGATING);
       return r;
     });
@@ -114,11 +136,14 @@ class AudioSessionManagerImpl {
 
   async playPoiScript(poi: POI): Promise<{ played: boolean }> {
     this.stop();
+    this.abortInFlightFetch();
+    this.fetchAbortController = new AbortController();
+    this.currentPlayId = ++this.playId;
     this.setState(AudioState.NAVIGATING);
     const text = poi.script ?? poi.scripts?.friendly ?? poi.scripts?.historian ?? poi.scripts?.funny ?? "";
     if (!text) return Promise.resolve({ played: false });
     this.setState(AudioState.NARRATING);
-    return this.playTts(text, "poi").then((r) => {
+    return this.playTts(text, "poi", this.fetchAbortController!.signal).then((r) => {
       if (this.state === AudioState.NARRATING) this.setState(AudioState.NAVIGATING);
       return r;
     });
@@ -126,8 +151,11 @@ class AudioSessionManagerImpl {
 
   async playAnswer(text: string): Promise<{ played: boolean }> {
     this.stop();
+    this.abortInFlightFetch();
+    this.fetchAbortController = new AbortController();
+    this.currentPlayId = ++this.playId;
     this.setState(AudioState.ANSWERING);
-    return this.playTts(text, "answer").then((r) => {
+    return this.playTts(text, "answer", this.fetchAbortController.signal).then((r) => {
       if (this.state === AudioState.ANSWERING) this.setState(AudioState.NAVIGATING);
       return r;
     });
@@ -135,8 +163,11 @@ class AudioSessionManagerImpl {
 
   async playOutro(text: string): Promise<{ played: boolean }> {
     this.stop();
+    this.abortInFlightFetch();
+    this.fetchAbortController = new AbortController();
+    this.currentPlayId = ++this.playId;
     this.setState(AudioState.PLAYING_OUTRO);
-    return this.playTts(text, "outro").then((r) => {
+    return this.playTts(text, "outro", this.fetchAbortController.signal).then((r) => {
       if (this.state === AudioState.PLAYING_OUTRO) this.setState(AudioState.IDLE);
       return r;
     });
@@ -159,7 +190,7 @@ class AudioSessionManagerImpl {
     await Promise.all(tasks).catch(() => {});
   }
 
-  private async fetchAndCacheTts(text: string, purpose: string): Promise<void> {
+  private async fetchAndCacheTts(text: string, purpose: string, signal?: AbortSignal): Promise<void> {
     const key = this.cacheKey(text, purpose);
     if (this.cache.has(key)) return;
     try {
@@ -173,6 +204,7 @@ class AudioSessionManagerImpl {
           purpose,
           returnBase64: false,
         }),
+        signal,
       });
       if (!res.ok) {
         const errBody = await res.text();
@@ -193,11 +225,13 @@ class AudioSessionManagerImpl {
 
   private usingBrowserTts = false;
 
-  private async playTts(text: string, purpose: string): Promise<{ played: boolean }> {
+  private async playTts(text: string, purpose: string, signal?: AbortSignal): Promise<{ played: boolean }> {
     this.usingBrowserTts = false;
+    const myPlayId = this.currentPlayId;
     const key = this.cacheKey(text, purpose);
     const cached = this.cache.get(key);
     if (cached) {
+      if (this.currentPlayId !== myPlayId) return { played: false };
       try {
         await this.playUrl(cached);
         return { played: true };
@@ -206,15 +240,18 @@ class AudioSessionManagerImpl {
       }
     }
     try {
-      await this.fetchAndCacheTts(text, purpose);
+      await this.fetchAndCacheTts(text, purpose, signal);
+      if (this.currentPlayId !== myPlayId) return { played: false };
       const url = this.cache.get(key);
       if (url) {
         await this.playUrl(url);
         return { played: true };
       }
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.name === "AbortError") return { played: false };
       // fall through to browser TTS
     }
+    if (this.currentPlayId !== myPlayId) return { played: false };
     // Fallback: use browser's built-in SpeechSynthesis API
     if (browserTtsAvailable()) {
       try {
@@ -227,6 +264,7 @@ class AudioSessionManagerImpl {
         // fall through to placeholder
       }
     }
+    if (this.currentPlayId !== myPlayId) return { played: false };
     try {
       await this.playUrl(PLACEHOLDER_AUDIO);
       return { played: true };
@@ -246,6 +284,11 @@ class AudioSessionManagerImpl {
 
   private playUrl(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (this.currentAudio) {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        this.currentAudio = null;
+      }
       const audio = new Audio(url);
       this.currentAudio = audio;
       audio.onended = () => {
@@ -299,6 +342,8 @@ class AudioSessionManagerImpl {
   }
 
   stop(): void {
+    this.currentPlayId = 0;
+    this.abortInFlightFetch();
     cancelBrowserTts();
     if (this.currentAudio) {
       this.currentAudio.pause();

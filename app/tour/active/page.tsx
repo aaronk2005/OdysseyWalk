@@ -45,6 +45,7 @@ export default function TourActivePage() {
     askState,
     setAskState,
     introPlayed,
+    introAudioReady,
     startWalk,
     playPoi,
     jumpNext,
@@ -285,6 +286,7 @@ export default function TourActivePage() {
             firstStopName={session.pois[0]?.name ?? null}
             introLine="You're about to start an audio-guided walk. Tap Start to hear the intro and begin."
             onStartWalk={startWalk}
+            startReady={introAudioReady}
           />
         </>
       )}

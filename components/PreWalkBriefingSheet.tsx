@@ -16,6 +16,8 @@ export interface PreWalkBriefingSheetProps {
   firstStopName?: string | null;
   introLine: string;
   onStartWalk: () => void;
+  /** When false, show "Preparing audio..." and disable Start until intro (and first POI) are cached for instant playback. */
+  startReady?: boolean;
 }
 
 export function PreWalkBriefingSheet({
@@ -26,6 +28,7 @@ export function PreWalkBriefingSheet({
   firstStopName,
   introLine,
   onStartWalk,
+  startReady = true,
 }: PreWalkBriefingSheetProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const meta = [
@@ -64,10 +67,11 @@ export function PreWalkBriefingSheet({
         <button
           type="button"
           onClick={onStartWalk}
-          className="w-full mt-6 py-4 rounded-2xl bg-brand-primary hover:bg-brand-primaryHover active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-brand-primary/25 transition-colors min-h-[52px]"
-          aria-label="Start Walk"
+          disabled={!startReady}
+          className="w-full mt-6 py-4 rounded-2xl bg-brand-primary hover:bg-brand-primaryHover active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-brand-primary/25 transition-colors min-h-[52px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-brand-primary"
+          aria-label={startReady ? "Start Walk" : "Preparing audio"}
         >
-          Start Walk
+          {startReady ? "Start Walk" : "Preparing audio…"}
         </button>
 
         <p className="text-center text-[12px] text-ink-tertiary mt-3">
