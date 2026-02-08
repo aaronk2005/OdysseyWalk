@@ -12,11 +12,8 @@ import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { ApiStatusBanner } from "@/components/ApiStatusBanner";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { GeneratingSteps } from "@/components/GeneratingSteps";
-import { ResumeWalkBanner } from "@/components/ResumeWalkBanner";
 import { useToast } from "@/components/ToastProvider";
-import { loadTour, saveTour } from "@/lib/data/SessionStore";
-import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
-import type { SessionState } from "@/lib/types";
+import { saveTour } from "@/lib/data/SessionStore";
 import type { GeneratedTourResponse, Theme } from "@/lib/types";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { cn } from "@/lib/utils/cn";
@@ -43,62 +40,75 @@ export default function CreateTourPage() {
   const [generated, setGenerated] = useState<GeneratedTourResponse | null>(null);
   const [locating, setLocating] = useState(false);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
-  const [resumableSession, setResumableSession] = useState<SessionState | null>(null);
-  const [introPreviewPlaying, setIntroPreviewPlaying] = useState(false);
   const generatingRef = useRef(false);
 
-  useEffect(() => {
-    const s = loadTour();
-    if (s && s.startedAt > 0 && !s.endedAt) setResumableSession(s);
-    else setResumableSession(null);
-  }, []);
-
   const handleUseMyLocation = useCallback(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      showToast("Location is not supported in this browser.", "error");
-      return;
-    }
-    // Geolocation only works on HTTPS or localhost
-    if (typeof window !== "undefined" && !window.isSecureContext) {
-      showToast("Location requires a secure page (use https or localhost).", "error");
+    if (typeof window === "undefined") {
+      showToast("Location is not available.", "error");
       return;
     }
     setLocating(true);
     setError(null);
 
-    const onSuccess = (pos: GeolocationPosition) => {
-      const place: PlaceResult = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        label: "My location",
-      };
+    const onSuccess = (lat: number, lng: number) => {
+      const place: PlaceResult = { lat, lng, label: "My location" };
       setStartPlace(place);
       setSearchLabel("My location");
       setLocating(false);
       showToast("Location set. You can generate a tour from here.", "success");
     };
 
-    const onError = (err: GeolocationPositionError) => {
+    const onFail = (msg: string) => {
       setLocating(false);
-      console.error("[Odyssey Walk] Geolocation error:", err.code, err.message);
-      const msg =
-        err.code === 1
-          ? "Location blocked. Click the lock/info icon in the address bar and set Location to Allow, then try again."
-          : err.code === 2
-            ? "Could not get position. Try opening the page at http://localhost:3000 (not 127.0.0.1) or use the map to pick a place."
-            : err.code === 3
-              ? "Location timed out. Use the map or search to pick a starting point."
-              : "Location failed. Use the map or search to pick a starting point.";
       showToast(msg, "error");
     };
 
-    // Try network-based first (works on laptops/desktops without GPS); fallback to high-accuracy
-    const options: PositionOptions = {
-      enableHighAccuracy: false,
-      timeout: 12000,
-      maximumAge: 300000, // 5 min cache
+    // Try Google Maps Geolocation API first (works over HTTP, no permissions needed)
+    const geoApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const tryGoogleGeolocate = () => {
+      if (!geoApiKey) return false;
+      fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${geoApiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ considerIp: true }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.location?.lat && data?.location?.lng) {
+            onSuccess(data.location.lat, data.location.lng);
+          } else {
+            onFail("Could not determine your location. Use the search bar or tap the map instead.");
+          }
+        })
+        .catch(() => {
+          onFail("Could not determine your location. Use the search bar or tap the map instead.");
+        });
+      return true;
     };
-    navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+
+    // Try browser geolocation (needs secure context + permission)
+    if (navigator.geolocation && window.isSecureContext) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => onSuccess(pos.coords.latitude, pos.coords.longitude),
+        (err) => {
+          console.warn("[Geolocation] Browser geolocation failed:", err.code, err.message);
+          // Fallback to Google Geolocation API
+          if (!tryGoogleGeolocate()) {
+            const msg =
+              err.code === 1
+                ? "Location blocked. Allow location in your browser, or use the search bar to find a place."
+                : "Could not get your location. Use the search bar or tap the map to set a starting point.";
+            onFail(msg);
+          }
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      );
+    } else {
+      // No secure context or no browser geolocation — use Google API
+      if (!tryGoogleGeolocate()) {
+        onFail("Location requires HTTPS. Use the search bar or tap the map to set a starting point.");
+      }
+    }
   }, [showToast]);
 
   const handlePlaceSelect = useCallback((place: PlaceResult) => {
@@ -207,22 +217,6 @@ export default function CreateTourPage() {
     if (generated) router.push("/tour/active");
   }, [generated, router]);
 
-  const handlePlayIntroPreview = useCallback(async () => {
-    if (!generated || introPreviewPlaying) return;
-    setIntroPreviewPlaying(true);
-    AudioSessionManager.setOptions({
-      lang: generated.tourPlan.voiceLang ?? "en",
-      voiceStyle: generated.tourPlan.voiceStyle ?? "friendly",
-    });
-    try {
-      await AudioSessionManager.playIntro(generated.tourPlan.intro);
-    } catch {
-      showToast("Could not play intro preview", "error");
-    } finally {
-      setIntroPreviewPlaying(false);
-    }
-  }, [generated, introPreviewPlaying, showToast]);
-
   const center = startPlace
     ? { lat: startPlace.lat, lng: startPlace.lng }
     : { lat: 37.7849, lng: -122.4094 };
@@ -244,9 +238,7 @@ export default function CreateTourPage() {
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-6">
-        {resumableSession && (
-          <ResumeWalkBanner session={resumableSession} className="mb-2" />
-        )}
+        {/* Resume banner removed */}
         {!mapKey && <MapsKeyBanner className="mb-2" />}
         <ApiStatusBanner className="mb-2" />
         <div className="space-y-2">
@@ -382,17 +374,6 @@ export default function CreateTourPage() {
             </p>
             <button
               type="button"
-              onClick={handlePlayIntroPreview}
-              disabled={introPreviewPlaying}
-              className={cn(
-                "w-full py-2.5 rounded-button border border-app-border text-ink-secondary font-medium hover:bg-surface-muted hover:text-ink-primary transition-colors min-h-[44px]",
-                introPreviewPlaying && "opacity-70 cursor-not-allowed"
-              )}
-            >
-              {introPreviewPlaying ? "Playing intro…" : "Listen to intro preview"}
-            </button>
-            <button
-              type="button"
               onClick={handleStartWalk}
               className="w-full py-3.5 rounded-button bg-brand-primary text-white font-semibold shadow-md hover:bg-brand-primaryHover active:scale-[0.99] transition-transform min-h-[48px]"
             >
@@ -401,9 +382,6 @@ export default function CreateTourPage() {
           </motion.div>
         )}
 
-        <p className="text-center text-caption text-ink-tertiary">
-          <Link href="/demo" className="text-brand-primary font-medium hover:underline">Try the demo</Link> without generating a tour.
-        </p>
       </main>
     </div>
   );

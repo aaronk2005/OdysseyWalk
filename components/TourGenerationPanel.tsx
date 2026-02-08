@@ -6,12 +6,6 @@ import { cn } from "@/lib/utils/cn";
 const THEMES: { value: Theme; label: string }[] = [
   { value: "history", label: "History" },
   { value: "food", label: "Food" },
-  { value: "campus", label: "Campus" },
-  { value: "spooky", label: "Spooky" },
-  { value: "art", label: "Art" },
-  { value: "nature", label: "Nature" },
-  { value: "architecture", label: "Architecture" },
-  { value: "culture", label: "Culture" },
 ];
 
 const LANGS: { value: Lang; label: string }[] = [
@@ -83,7 +77,7 @@ export function TourGenerationPanel({
       <div>
         <p className="text-caption font-medium text-ink-secondary mb-2">Duration: {durationMin} min</p>
         <div className="flex flex-wrap gap-2 mb-3">
-          {[15, 30, 45, 60, 90].map((mins) => (
+          {[30, 45, 60, 90].map((mins) => (
             <button
               key={mins}
               type="button"
@@ -101,7 +95,7 @@ export function TourGenerationPanel({
         </div>
         <input
           type="range"
-          min={15}
+          min={30}
           max={90}
           step={5}
           value={durationMin}

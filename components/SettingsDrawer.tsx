@@ -78,28 +78,6 @@ export function SettingsDrawer({
               </button>
             </div>
             <div className="p-4 space-y-6">
-              <div>
-                <p className="text-caption font-medium text-ink-secondary mb-2">Demo mode</p>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={demoMode}
-                  onClick={() => onDemoModeChange(!demoMode)}
-                  className={cn(
-                    "relative w-12 h-7 rounded-full transition-colors",
-                    demoMode ? "bg-brand-primary" : "bg-app-border"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200",
-                      demoMode ? "translate-x-5" : "translate-x-0.5"
-                    )}
-                  />
-                </button>
-                <span className="ml-2 text-caption text-ink-secondary">{demoMode ? "On" : "Off"}</span>
-                <p className="text-hint text-ink-tertiary mt-1">Simulate location along the route</p>
-              </div>
               {onFollowCameraChange != null && (
                 <div>
                   <p className="text-caption font-medium text-ink-secondary mb-2">Follow camera</p>

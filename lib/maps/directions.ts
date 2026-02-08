@@ -3,13 +3,122 @@ import type { LatLng } from "@/lib/types";
 export interface DirectionsRoute {
   distanceMeters: number;
   durationSeconds: number;
-  polyline: string; // Encoded polyline
-  routePoints: LatLng[];
+  polyline: string; // Encoded overview polyline
+  routePoints: LatLng[]; // Detailed step-level points (follows streets precisely)
 }
 
+export interface PlaceDirectionsResult extends DirectionsRoute {
+  /** Exact Google-verified location for each waypoint/POI (in optimized order) */
+  waypointLocations: LatLng[];
+  /** The optimized order of waypoints (e.g. [2,0,1] means original index 2 is first) */
+  waypointOrder: number[];
+}
+
+// ─── Primary: Address-based walking directions ─────────────────────────────
 /**
- * Get walking directions between waypoints using Google Maps Directions API.
- * Falls back to Haversine distance if API fails.
+ * Get walking directions using place names/addresses as waypoints.
+ * Google geocodes each address automatically, giving exact coordinates.
+ * Decodes ALL step-level polylines for a street-precise route (not the simplified overview).
+ */
+export async function getWalkingDirectionsByPlaces(
+  origin: LatLng,
+  placeQueries: string[], // e.g. ["Empire State Building, 350 5th Ave, New York, NY", ...]
+  apiKey: string
+): Promise<PlaceDirectionsResult | null> {
+  if (placeQueries.length < 1) return null;
+
+  try {
+    const originStr = `${origin.lat},${origin.lng}`;
+    // Use optimize:true| prefix so Google reorders waypoints for shortest walking path
+    const waypointsStr = "optimize:true|" + placeQueries.join("|");
+
+    const url = new URL("https://maps.googleapis.com/maps/api/directions/json");
+    url.searchParams.set("origin", originStr);
+    url.searchParams.set("destination", originStr); // Loop back to start
+    url.searchParams.set("waypoints", waypointsStr);
+    url.searchParams.set("mode", "walking");
+    url.searchParams.set("key", apiKey);
+
+    console.log(`[Directions] Place-based request: ${placeQueries.length} waypoints`);
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      console.warn(`[Directions] Place-based HTTP error: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.status !== "OK" || !data.routes?.[0]) {
+      console.warn(`[Directions] Place-based API status: ${data.status}`, data.error_message || "");
+      return null;
+    }
+
+    const route = data.routes[0];
+    let totalDistanceMeters = 0;
+    let totalDurationSeconds = 0;
+    const allPoints: LatLng[] = [];
+    const waypointLocations: LatLng[] = [];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    route.legs.forEach((leg: any, legIdx: number) => {
+      totalDistanceMeters += leg.distance.value;
+      totalDurationSeconds += leg.duration.value;
+
+      // Each leg's end_location is a waypoint (except the last leg which returns to start)
+      if (legIdx < route.legs.length - 1) {
+        waypointLocations.push({
+          lat: leg.end_location.lat,
+          lng: leg.end_location.lng,
+        });
+      }
+
+      // Decode ALL step polylines for full street-level detail
+      if (leg.steps) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const step of leg.steps as any[]) {
+          if (step.polyline?.points) {
+            const stepPoints = decodePolyline(step.polyline.points);
+            // Skip duplicate first point (end of prev step == start of next step)
+            const startIdx =
+              allPoints.length > 0 &&
+              stepPoints.length > 0 &&
+              Math.abs(allPoints[allPoints.length - 1].lat - stepPoints[0].lat) < 0.00001 &&
+              Math.abs(allPoints[allPoints.length - 1].lng - stepPoints[0].lng) < 0.00001
+                ? 1
+                : 0;
+            allPoints.push(...stepPoints.slice(startIdx));
+          }
+        }
+      }
+    });
+
+    // Google returns the optimized order when optimize:true is used
+    // e.g. waypoint_order: [2, 0, 1] means original waypoint 2 comes first
+    const waypointOrder: number[] = route.waypoint_order ?? placeQueries.map((_: string, i: number) => i);
+
+    console.log(
+      `[Directions] Place-based success: ${allPoints.length} detailed points, ` +
+        `${waypointLocations.length} waypoint locations, ${Math.round(totalDistanceMeters)}m, ` +
+        `optimized order: [${waypointOrder.join(",")}]`
+    );
+
+    return {
+      distanceMeters: totalDistanceMeters,
+      durationSeconds: totalDurationSeconds,
+      polyline: route.overview_polyline?.points || "",
+      routePoints: allPoints,
+      waypointLocations,
+      waypointOrder,
+    };
+  } catch (error) {
+    console.warn("[Directions] Place-based API error:", error);
+    return null;
+  }
+}
+
+// ─── Fallback: Coordinate-based walking directions ─────────────────────────
+/**
+ * Get walking directions between LatLng waypoints (fallback if place-based fails).
+ * Now also decodes step-level polylines for better detail.
  */
 export async function getWalkingDirections(
   waypoints: LatLng[],
@@ -18,12 +127,14 @@ export async function getWalkingDirections(
   if (waypoints.length < 2) return null;
 
   try {
-    // Build waypoints string (exclude start/end from waypoints parameter)
     const origin = `${waypoints[0].lat},${waypoints[0].lng}`;
     const destination = `${waypoints[waypoints.length - 1].lat},${waypoints[waypoints.length - 1].lng}`;
     const intermediateWaypoints =
       waypoints.length > 2
-        ? waypoints.slice(1, -1).map((w) => `${w.lat},${w.lng}`).join("|")
+        ? waypoints
+            .slice(1, -1)
+            .map((w) => `${w.lat},${w.lng}`)
+            .join("|")
         : undefined;
 
     const url = new URL("https://maps.googleapis.com/maps/api/directions/json");
@@ -46,16 +157,38 @@ export async function getWalkingDirections(
     let totalDurationSeconds = 0;
     const allPoints: LatLng[] = [];
 
-    // Aggregate distance and duration from all legs
-    route.legs.forEach((leg: { distance: { value: number }; duration: { value: number }; steps: unknown[] }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    route.legs.forEach((leg: any) => {
       totalDistanceMeters += leg.distance.value;
       totalDurationSeconds += leg.duration.value;
+
+      // Decode step-level polylines for detail (instead of overview_polyline)
+      if (leg.steps) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const step of leg.steps as any[]) {
+          if (step.polyline?.points) {
+            const stepPoints = decodePolyline(step.polyline.points);
+            const startIdx =
+              allPoints.length > 0 &&
+              stepPoints.length > 0 &&
+              Math.abs(allPoints[allPoints.length - 1].lat - stepPoints[0].lat) < 0.00001 &&
+              Math.abs(allPoints[allPoints.length - 1].lng - stepPoints[0].lng) < 0.00001
+                ? 1
+                : 0;
+            allPoints.push(...stepPoints.slice(startIdx));
+          }
+        }
+      }
     });
 
-    // Decode polyline to get route points
-    const polyline = route.overview_polyline.points;
-    const decoded = decodePolyline(polyline);
-    allPoints.push(...decoded);
+    // If step-level decoding gave us nothing, fall back to overview
+    if (allPoints.length === 0) {
+      const polyline = route.overview_polyline?.points;
+      if (polyline) allPoints.push(...decodePolyline(polyline));
+    }
+
+    const polyline = route.overview_polyline?.points || "";
+    console.log(`[Directions] Coord-based: ${allPoints.length} detailed points`);
 
     return {
       distanceMeters: totalDistanceMeters,
@@ -64,7 +197,7 @@ export async function getWalkingDirections(
       routePoints: allPoints,
     };
   } catch (error) {
-    console.warn("[Directions] API error, falling back to Haversine:", error);
+    console.warn("[Directions] Coord-based API error:", error);
     return null;
   }
 }

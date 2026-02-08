@@ -10,7 +10,7 @@
 
 import WebSocket from "ws";
 
-const DEFAULT_TIMEOUT_MS = 15000;
+const DEFAULT_TIMEOUT_MS = 20000;
 const MAX_CONCURRENT_SESSIONS = 2;
 
 let activeSessions = 0;
@@ -100,13 +100,34 @@ function runOneSession(
 
     ws.on("error", (err) => {
       if (settled) return;
-      finish(err instanceof Error ? err : new Error(String(err)));
+      const message =
+        err instanceof Error
+          ? err.message
+          : String(err);
+      const hint =
+        message.includes("ECONNREFUSED") || message.includes("ENOTFOUND")
+          ? " Check GRADIUM_TTS_WS_URL (e.g. wss://eu.api.gradium.ai/api/speech/tts or wss://us.api.gradium.ai/api/speech/tts) and network."
+          : message.includes("certificate") || message.includes("TLS")
+            ? " TLS/SSL error — check GRADIUM_TTS_WS_URL uses wss:// (not ws://)."
+            : "";
+      finish(new Error(message + hint));
     });
 
     ws.on("close", (code, reason) => {
       if (settled) return;
+      const reasonStr = reason.toString();
       if (chunks.length === 0 && code !== 1000) {
-        finish(new Error(`Gradium TTS WebSocket closed: ${code} ${reason.toString()}`));
+        let hint = "";
+        if (code === 1002) {
+          hint = " Protocol error - check voice_id is valid for your API key.";
+        } else if (code === 1008) {
+          hint = " Policy violation - check API key is valid and has TTS permissions.";
+        } else if (code === 1011) {
+          hint = " Server error - Gradium service might be unavailable.";
+        } else if (code === 4401) {
+          hint = " Unauthorized - check GRADIUM_API_KEY is correct (should start with gd_ or gsk_).";
+        }
+        finish(new Error(`Gradium TTS WebSocket closed (${code}): ${reasonStr}${hint}`));
         return;
       }
       finish();
@@ -118,42 +139,64 @@ function runOneSession(
       try {
         const raw = typeof data === "string" ? data : data.toString("utf8");
         msg = JSON.parse(raw) as GradiumWsMessage;
-      } catch {
+      } catch (e) {
+        console.warn("[GradiumWS] Failed to parse message:", e);
         return;
       }
 
       switch (msg.type) {
         case "ready":
+          // Server is ready, send text and signal end
           ws.send(JSON.stringify({ type: "text", text: textToSend }));
           ws.send(JSON.stringify({ type: "end_of_stream" }));
           break;
         case "audio":
           if (msg.audio) {
-            chunks.push(Buffer.from(msg.audio, "base64"));
+            try {
+              chunks.push(Buffer.from(msg.audio, "base64"));
+            } catch (e) {
+              console.warn("[GradiumWS] Failed to decode audio chunk:", e);
+            }
           }
           break;
         case "end_of_stream":
-          ws.close();
+          // All audio received, close connection
+          ws.close(1000);
           finish();
           break;
         case "error":
+          // Server reported an error
+          const errorMsg = msg.message || "Gradium TTS error";
+          const errorCode = msg.code ? ` (code: ${msg.code})` : "";
+          let hint = "";
+          if (errorMsg.includes("voice_id")) {
+            hint = " Check that the voice_id is valid for your region/language.";
+          } else if (errorMsg.includes("api_key") || errorMsg.includes("authentication")) {
+            hint = " Verify GRADIUM_API_KEY is correct.";
+          } else if (errorMsg.includes("rate limit")) {
+            hint = " Too many requests - wait a moment and try again.";
+          }
           ws.terminate();
-          finish(new Error(msg.message || "Gradium TTS error"));
+          finish(new Error(errorMsg + errorCode + hint));
           break;
         default:
+          // Ignore unknown message types (might be status updates, etc.)
           break;
       }
     });
 
     ws.on("open", () => {
+      if (settled) return;
       const setup: Record<string, unknown> = {
         type: "setup",
         model_name: "default",
         voice_id: voiceId,
         output_format: "wav",
+        sample_rate: 24000,
       };
+      // Include json_config if provided (for language-specific settings)
       if (options?.jsonConfig && Object.keys(options.jsonConfig).length > 0) {
-        setup.json_config = JSON.stringify(options.jsonConfig);
+        setup.json_config = options.jsonConfig;
       }
       ws.send(JSON.stringify(setup));
     });

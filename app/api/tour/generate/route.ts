@@ -7,7 +7,7 @@ import { rateLimit } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/api/getClientIp";
 import { fetchWithTimeout } from "@/lib/net/fetchWithTimeout";
 import { distanceMeters } from "@/lib/maps/haversine";
-import { getWalkingDirections } from "@/lib/maps/directions";
+import { getWalkingDirections, getWalkingDirectionsByPlaces } from "@/lib/maps/directions";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -112,18 +112,33 @@ export async function POST(req: Request) {
 
 You receive the start (lat, lng, label) in the request—do NOT create or invent the start location; use it as the center for the tour. Use the start and theme to pick popular tourist-appropriate POIs (real landmarks, attractions, notable spots) within a reasonable walking radius (1–2 km). Generate exactly ${numStops} POIs. Walking loop from start, back to start. Safe, plausible content only. Scripts in ${langName} (${lang}) and ${voiceStyle} voice style.
 
+WALKING ORDER — CRITICAL:
+- Order the POIs so the walk forms an efficient loop with minimal backtracking.
+- The first POI should be the one closest to the start, and each subsequent POI should be the nearest unvisited one from the previous stop (nearest-neighbor ordering).
+- The route should form a roughly circular loop so the last POI is naturally close to the start.
+- Do NOT randomly scatter stops — the order must make geographic sense for someone walking.
+
+CRITICAL QUALITY REQUIREMENTS:
+- Each POI MUST be a real, specific, existing landmark or attraction
+- The "address" field is THE MOST IMPORTANT FIELD — it must be a real, full street address or well-known place name that Google Maps can find. Example: "Empire State Building, 350 5th Ave, New York, NY 10118" or "The Louvre Museum, Rue de Rivoli, 75001 Paris, France"
+- Each script MUST be 90-140 words with specific details about the location
+- Each POI MUST have 3-5 distinct, interesting facts
+- DO NOT generate generic or placeholder content
+- If the area lacks sufficient tourist attractions, focus on local history, architecture, or cultural significance
+
 Structure:
 {
-  "intro": "30-60 word welcome script in ${langName}, ${voiceStyle} tone",
-  "outro": "20-40 word closing script",
+  "intro": "50-80 word welcome script in ${langName}, ${voiceStyle} tone that introduces the tour theme and what visitors will experience",
+  "outro": "30-50 word closing script that thanks visitors and summarizes the experience",
   "pois": [
     {
-      "name": "Place name (location label)",
+      "name": "Place name",
+      "address": "Full street address or well-known place name that Google Maps can find and route to (REQUIRED)",
       "description": "Short 1-2 sentence description of this place.",
-      "lat": number (offset from start ~0.001-0.003, or absolute),
-      "lng": number,
-      "script": "90-140 word narration",
-      "facts": ["fact1", "fact2", "fact3", "fact4", "fact5"],
+      "lat": approximate latitude number,
+      "lng": approximate longitude number,
+      "script": "90-140 word narration with specific details and interesting context",
+      "facts": ["specific fact 1", "specific fact 2", "specific fact 3", "specific fact 4", "specific fact 5"],
       "timeSpentMin": number (minutes at this stop),
       "price": "Free" | "$5" | null
     }
@@ -171,6 +186,7 @@ Structure:
 
     type RawPOI = {
       name?: string;
+      address?: string;
       description?: string;
       lat?: number;
       lng?: number;
@@ -192,87 +208,167 @@ Structure:
     const isOffset = (v: number) => Math.abs(v) < 0.1 && Math.abs(v) > 0;
     const cappedItems = items.slice(0, numStops + 2);
 
-    const pois: POI[] = cappedItems.map((p, i) => {
-      const rawLat = Number(p.lat);
-      const rawLng = Number(p.lng);
-      const poiLat = Number.isFinite(rawLat)
-        ? isOffset(rawLat)
-          ? validatedStart.lat + rawLat
-          : rawLat
-        : validatedStart.lat + (i + 1) * 0.002;
-      const poiLng = Number.isFinite(rawLng)
-        ? isOffset(rawLng)
-          ? validatedStart.lng + rawLng
-          : rawLng
-        : validatedStart.lng + (i + 1) * 0.002;
-      return {
-        poiId: `poi-${i + 1}`,
-        name: String(p.name || `Stop ${i + 1}`),
-        lat: poiLat,
-        lng: poiLng,
-        radiusM: 35,
-        script: String(p.script || ""),
-        facts: Array.isArray(p.facts) ? p.facts.map(String) : [],
-        orderIndex: i,
-        description: p.description ? String(p.description) : undefined,
-        timeSpentMin: typeof p.timeSpentMin === "number" ? p.timeSpentMin : 3,
-        price: p.price != null ? String(p.price) : null,
-        theme: String(theme),
-      };
-    });
+    const pois: POI[] = cappedItems
+      .map((p, i) => {
+        const rawLat = Number(p.lat);
+        const rawLng = Number(p.lng);
+        const poiLat = Number.isFinite(rawLat)
+          ? isOffset(rawLat)
+            ? validatedStart.lat + rawLat
+            : rawLat
+          : validatedStart.lat + (i + 1) * 0.002;
+        const poiLng = Number.isFinite(rawLng)
+          ? isOffset(rawLng)
+            ? validatedStart.lng + rawLng
+            : rawLng
+          : validatedStart.lng + (i + 1) * 0.002;
+        
+        const script = String(p.script || "");
+        const facts = Array.isArray(p.facts) ? p.facts.map(String).filter(f => f.trim().length > 0) : [];
+        
+        return {
+          poiId: `poi-${i + 1}`,
+          name: String(p.name || `Stop ${i + 1}`),
+          lat: poiLat,
+          lng: poiLng,
+          radiusM: 35,
+          script,
+          facts,
+          orderIndex: i,
+          description: p.description ? String(p.description) : undefined,
+          timeSpentMin: typeof p.timeSpentMin === "number" ? p.timeSpentMin : 3,
+          price: p.price != null ? String(p.price) : null,
+          theme: String(theme),
+          _wordCount: script.split(/\s+/).filter(w => w.length > 0).length,
+        };
+      })
+      .filter((poi) => {
+        // Validate POI has sufficient content
+        const wordCount = poi._wordCount || 0;
+        const hasName = poi.name && poi.name !== `Stop ${poi.orderIndex + 1}`;
+        const hasMinScript = wordCount >= 50; // Minimum 50 words for meaningful content
+        const hasMinFacts = poi.facts.length >= 2; // At least 2 facts
+        
+        if (!hasName || !hasMinScript || !hasMinFacts) {
+          console.warn(
+            `Excluding POI ${poi.poiId} (${poi.name}): ` +
+            `hasName=${hasName}, wordCount=${wordCount}, facts=${poi.facts.length}`
+          );
+          return false;
+        }
+        
+        // Remove temporary validation field
+        delete (poi as any)._wordCount;
+        return true;
+      });
 
-    // Build waypoints for walking directions (start -> POIs -> back to start)
-    const waypoints: LatLng[] = [
-      { lat: validatedStart.lat, lng: validatedStart.lng },
-      ...pois.map((p) => ({ lat: p.lat, lng: p.lng })),
-      { lat: validatedStart.lat, lng: validatedStart.lng },
-    ];
+    // Validate we have enough quality POIs after filtering
+    if (pois.length < Math.max(2, Math.floor(numStops * 0.6))) {
+      return NextResponse.json(
+        {
+          error: `Unable to generate sufficient quality content for this area. Only ${pois.length} of ${numStops} requested stops met quality requirements. Please try a different location with more landmarks or tourist attractions.`,
+        },
+        { status: 400 }
+      );
+    }
 
-    // Get actual walking route from Google Maps Directions API
+    // ── Get walking directions from Google Maps ──────────────────────────────
+    // Strategy:
+    //  1. Try address-based Directions (most accurate — Google geocodes place names)
+    //  2. Fall back to coordinate-based Directions (uses LLM's approximate lat/lng)
+    //  3. Fall back to Haversine straight-line estimates
     const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    let routePoints: LatLng[] = waypoints;
+    const startLatLng: LatLng = { lat: validatedStart.lat, lng: validatedStart.lng };
+    let routePoints: LatLng[] = [startLatLng, ...pois.map(p => ({ lat: p.lat, lng: p.lng })), startLatLng];
     let totalDistanceMeters = 0;
     let totalDurationSeconds = 0;
+    let directionsSucceeded = false;
 
     if (mapsApiKey) {
-      const directions = await getWalkingDirections(waypoints, mapsApiKey);
-      if (directions) {
-        routePoints = directions.routePoints;
-        totalDistanceMeters = directions.distanceMeters;
-        totalDurationSeconds = directions.durationSeconds;
+      // ── 1. Try address-based directions (best quality) ──
+      // Build place queries: prefer address, fall back to "name near startLabel"
+      const placeQueries = pois.map(p => {
+        const raw = items[p.orderIndex ?? 0];
+        const addr = raw?.address ? String(raw.address).trim() : "";
+        if (addr.length > 5) return addr;
+        // Fall back to name + location context for Google geocoding
+        return `${p.name} near ${startLabel}`;
+      });
 
-        // Update POI time-to-get-there using actual route segments
-        // For simplicity, distribute time proportionally
-        const totalWalkingTimeMin = Math.round(totalDurationSeconds / 60);
-        const avgTimePerSegment = pois.length > 0 ? totalWalkingTimeMin / (pois.length + 1) : 0;
-        pois.forEach((poi, i) => {
-          poi.timeToGetThereMin = Math.max(1, Math.round(avgTimePerSegment));
+      console.log("[Tour] Trying address-based directions with queries:", placeQueries);
+      const placeResult = await getWalkingDirectionsByPlaces(startLatLng, placeQueries, mapsApiKey);
+
+      if (placeResult && placeResult.routePoints.length > 10) {
+        routePoints = placeResult.routePoints;
+        totalDistanceMeters = placeResult.distanceMeters;
+        totalDurationSeconds = placeResult.durationSeconds;
+        directionsSucceeded = true;
+
+        // Reorder POIs according to Google's optimized walking order
+        const order = placeResult.waypointOrder;
+        const reorderedPois: POI[] = order.map((origIdx, newIdx) => {
+          const poi = pois[origIdx];
+          // Update coordinates with Google's exact location
+          const loc = placeResult.waypointLocations[newIdx];
+          if (loc) {
+            console.log(`[Tour] POI ${poi.name}: LLM (${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}) -> Google (${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)})`);
+            poi.lat = loc.lat;
+            poi.lng = loc.lng;
+          }
+          // Update order index to reflect new position
+          poi.orderIndex = newIdx;
+          poi.poiId = `poi-${newIdx + 1}`;
+          return poi;
         });
+
+        // Replace pois array with the reordered one
+        pois.length = 0;
+        pois.push(...reorderedPois);
+
+        console.log(`[Tour] Address-based directions: ${routePoints.length} detailed route points, ${Math.round(totalDistanceMeters)}m`);
+        console.log(`[Tour] Optimized stop order: ${pois.map(p => p.name).join(" -> ")}`);
       } else {
-        // Fallback to Haversine if Directions API fails
-        const prevPoints: LatLng[] = [{ lat: validatedStart.lat, lng: validatedStart.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
-        pois.forEach((poi, i) => {
-          const from = prevPoints[i];
-          const to = { lat: poi.lat, lng: poi.lng };
-          const distM = distanceMeters(from, to);
-          poi.timeToGetThereMin = Math.max(1, Math.round(distM / WALKING_M_PER_MIN));
-        });
-        for (let i = 1; i < waypoints.length; i++) {
-          totalDistanceMeters += distanceMeters(waypoints[i - 1], waypoints[i]);
+        console.warn("[Tour] Address-based directions failed, trying coordinate-based...");
+      }
+
+      // ── 2. Fall back to coordinate-based directions ──
+      if (!directionsSucceeded) {
+        const waypoints: LatLng[] = [startLatLng, ...pois.map(p => ({ lat: p.lat, lng: p.lng })), startLatLng];
+        const directions = await getWalkingDirections(waypoints, mapsApiKey);
+        if (directions && directions.routePoints.length > 5) {
+          routePoints = directions.routePoints;
+          totalDistanceMeters = directions.distanceMeters;
+          totalDurationSeconds = directions.durationSeconds;
+          directionsSucceeded = true;
+          console.log(`[Tour] Coord-based directions: ${routePoints.length} detailed route points`);
         }
       }
+    }
+
+    // ── 3. Final fallback: Haversine estimates ──
+    if (!directionsSucceeded) {
+      console.warn("[Tour] All Directions API attempts failed, using Haversine fallback");
+      const fallbackWaypoints: LatLng[] = [startLatLng, ...pois.map(p => ({ lat: p.lat, lng: p.lng })), startLatLng];
+      for (let i = 1; i < fallbackWaypoints.length; i++) {
+        totalDistanceMeters += distanceMeters(fallbackWaypoints[i - 1], fallbackWaypoints[i]);
+      }
+    }
+
+    // Distribute walking time across POIs
+    if (directionsSucceeded) {
+      const totalWalkingTimeMin = Math.round(totalDurationSeconds / 60);
+      const avgTimePerSegment = pois.length > 0 ? totalWalkingTimeMin / (pois.length + 1) : 0;
+      pois.forEach((poi) => {
+        poi.timeToGetThereMin = Math.max(1, Math.round(avgTimePerSegment));
+      });
     } else {
-      // No API key, use Haversine fallback
-      const prevPoints: LatLng[] = [{ lat: validatedStart.lat, lng: validatedStart.lng }, ...pois.map((poi) => ({ lat: poi.lat, lng: poi.lng }))];
+      const prevPoints: LatLng[] = [startLatLng, ...pois.map(p => ({ lat: p.lat, lng: p.lng }))];
       pois.forEach((poi, i) => {
         const from = prevPoints[i];
         const to = { lat: poi.lat, lng: poi.lng };
         const distM = distanceMeters(from, to);
         poi.timeToGetThereMin = Math.max(1, Math.round(distM / WALKING_M_PER_MIN));
       });
-      for (let i = 1; i < waypoints.length; i++) {
-        totalDistanceMeters += distanceMeters(waypoints[i - 1], waypoints[i]);
-      }
     }
 
     const tourPlan: TourPlan = {

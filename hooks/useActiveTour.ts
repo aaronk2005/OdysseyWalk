@@ -45,7 +45,15 @@ export function useActiveTour() {
     const firstScript = s.pois[0]
       ? (s.pois[0].script ?? s.pois[0].scripts?.friendly ?? s.pois[0].scripts?.historian ?? s.pois[0].scripts?.funny ?? "")
       : undefined;
+    // Prewarm intro and first POI immediately
     AudioSessionManager.prewarm(s.tourPlan.intro, firstScript).catch(() => {});
+    // Prewarm next 2-3 POIs in background for faster playback
+    const scriptsToPrewarm = s.pois.slice(1, 4).map(poi => 
+      poi.script ?? poi.scripts?.friendly ?? poi.scripts?.historian ?? poi.scripts?.funny ?? ""
+    ).filter(s => s.length > 0);
+    if (scriptsToPrewarm.length > 0) {
+      setTimeout(() => AudioSessionManager.prewarmPois(scriptsToPrewarm).catch(() => {}), 1000);
+    }
   }, [router]);
 
   useEffect(() => {
@@ -73,6 +81,8 @@ export function useActiveTour() {
   const startWalk = useCallback(async () => {
     const s = loadTour();
     if (!s) return;
+    // Stop any preview audio that might be playing
+    AudioSessionManager.stop();
     updateSession({ startedAt: Date.now(), mode: s.mode });
     setSession(loadTour());
     // Use tour plan's voice settings for consistency
@@ -81,6 +91,12 @@ export function useActiveTour() {
     AudioSessionManager.setOptions({ lang: tourLang, voiceStyle: tourVoiceStyle });
     try {
       await AudioSessionManager.playIntro(s.tourPlan.intro);
+      // After intro, announce the first checkpoint destination
+      if (s.pois.length > 0) {
+        const firstPoi = s.pois[0];
+        const firstCheckpointMsg = `Let's head to our first stop: ${firstPoi.name}. Follow the route on your map.`;
+        await AudioSessionManager.playAnswer(firstCheckpointMsg);
+      }
     } catch (e) {
       console.warn("[useActiveTour] Intro playback issue:", e);
       // Continue anyway — browser TTS fallback or silent mode
@@ -114,6 +130,14 @@ export function useActiveTour() {
           );
         } else {
           AudioSessionManager.playPoiScript(poi);
+          // Prewarm next 2 upcoming POIs for reduced latency
+          const upcomingPois = s.pois.filter(p => !nextVisited.includes(p.poiId)).slice(0, 2);
+          const upcomingScripts = upcomingPois.map(p => 
+            p.script ?? p.scripts?.friendly ?? p.scripts?.historian ?? p.scripts?.funny ?? ""
+          ).filter(s => s.length > 0);
+          if (upcomingScripts.length > 0) {
+            setTimeout(() => AudioSessionManager.prewarmPois(upcomingScripts).catch(() => {}), 500);
+          }
         }
       }
     });
@@ -162,6 +186,13 @@ export function useActiveTour() {
     const poi = s.pois.find((p) => p.poiId === s.activePoiId);
     if (poi) AudioSessionManager.playPoiScript(poi);
   }, []);
+  const endTour = useCallback(() => {
+    const s = loadTour();
+    if (!s) return;
+    AudioSessionManager.stop();
+    updateSession({ endedAt: Date.now() });
+    AudioSessionManager.playOutro(s.tourPlan.outro).then(() => router.push("/tour/complete"));
+  }, [router]);
   const clearAudioCache = useCallback(() => AudioSessionManager.clearCache(), []);
   const refreshSession = useCallback(() => {
     const s = loadTour();
@@ -201,6 +232,7 @@ export function useActiveTour() {
     pause,
     resume,
     replay,
+    endTour,
     clearAudioCache,
     refreshSession,
     currentPoi,

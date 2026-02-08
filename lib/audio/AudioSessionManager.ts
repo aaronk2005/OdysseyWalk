@@ -151,6 +151,14 @@ class AudioSessionManagerImpl {
     await Promise.all(tasks).catch(() => {});
   }
 
+  /** Prewarm cache for multiple POI scripts in the background. */
+  async prewarmPois(scripts: string[]): Promise<void> {
+    const tasks = scripts
+      .filter(s => s && s.trim().length > 0)
+      .map(script => this.fetchAndCacheTts(script, "poi"));
+    await Promise.all(tasks).catch(() => {});
+  }
+
   private async fetchAndCacheTts(text: string, purpose: string): Promise<void> {
     const key = this.cacheKey(text, purpose);
     if (this.cache.has(key)) return;
@@ -263,7 +271,9 @@ class AudioSessionManagerImpl {
 
   pause(): void {
     cancelBrowserTts();
-    if (this.currentAudio) this.currentAudio.pause();
+    if (this.currentAudio && !this.currentAudio.paused) {
+      this.currentAudio.pause();
+    }
     // Remember what we were doing so resume() can restore the correct state
     if (this.state !== AudioState.PAUSED && this.state !== AudioState.IDLE) {
       this.stateBeforePause = this.state;
@@ -272,15 +282,18 @@ class AudioSessionManagerImpl {
   }
 
   resume(): void {
-    if (this.currentAudio) {
-      this.currentAudio.play().catch(() => {});
+    if (this.currentAudio && this.currentAudio.paused) {
+      this.currentAudio.play().catch((e) => {
+        console.warn("[AudioSessionManager] Resume failed:", e);
+        this.setState(AudioState.NAVIGATING);
+      });
       // Restore the state we were in before pause (NARRATING, ANSWERING, etc.)
       const restoreTo = this.stateBeforePause !== AudioState.IDLE && this.stateBeforePause !== AudioState.PAUSED
         ? this.stateBeforePause
         : AudioState.NAVIGATING;
       this.setState(restoreTo);
     } else {
-      // No audio to resume — just go to NAVIGATING
+      // No audio to resume or already playing — just go to NAVIGATING
       this.setState(AudioState.NAVIGATING);
     }
   }

@@ -51,6 +51,7 @@ export default function TourActivePage() {
     pause,
     resume,
     replay,
+    endTour,
     clearAudioCache,
     refreshSession,
     currentPoi,
@@ -84,6 +85,11 @@ export default function TourActivePage() {
       .then((r) => r.json())
       .then((d) => setApiStatus({ mapsKeyPresent: d.mapsKeyPresent, openRouterConfigured: d.openRouterConfigured, gradiumConfigured: d.gradiumConfigured, gradiumTtsMethod: d.gradiumTtsMethod, warnings: d.warnings, fallbacks: d.fallbacks }))
       .catch(() => setApiStatus(null));
+    
+    // Cleanup: Stop any playing audio when leaving this page
+    return () => {
+      AudioSessionManager.stop();
+    };
   }, []);
 
   // Entering-stop feedback: brief toast when geo triggers a new stop
@@ -186,28 +192,43 @@ export default function TourActivePage() {
       <header
         className={
           introPlayed
-            ? "grid grid-cols-3 items-center px-3 py-2.5 border-b border-app-border bg-surface/95 backdrop-blur-sm z-20 safe-top shrink-0"
-            : "absolute top-0 left-0 right-0 grid grid-cols-3 items-center px-3 py-2.5 z-20 safe-top"
+            ? "flex items-center justify-between px-4 py-3 border-b border-app-border bg-surface/95 backdrop-blur-sm z-20 safe-top shrink-0"
+            : "absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-20 safe-top"
         }
       >
         <Link
           href="/create"
-          className="p-2.5 min-w-[44px] min-h-[44px] w-12 flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary transition-colors justify-self-start"
+          className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary transition-colors"
           aria-label="Back to create"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <Link href="/" className="min-h-[44px] flex items-center justify-center justify-self-center" aria-label="Odyssey Walk home">
+        <Link href="/" className="min-h-[40px] flex items-center justify-center" aria-label="Odyssey Walk home">
           <OdysseyLogo size="sm" />
         </Link>
-        <button
-          type="button"
-          onClick={() => setSettingsOpen(true)}
-          className="p-2.5 min-w-[44px] min-h-[44px] w-12 flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary transition-colors justify-self-end"
-          aria-label="Settings"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+        {introPlayed ? (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("End this tour? You'll see your summary and can start a new walk.")) {
+                endTour();
+              }
+            }}
+            className="px-3 py-1.5 mt-2 min-h-[40px] flex items-center gap-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors font-medium text-sm"
+            aria-label="End tour"
+          >
+            <span>End Tour</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full hover:bg-app-bg text-ink-primary transition-colors"
+            aria-label="Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        )}
       </header>
 
       {!clientConfig.mapsKeyPresent && (

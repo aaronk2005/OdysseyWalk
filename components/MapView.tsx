@@ -50,6 +50,7 @@ export function MapView({
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
+  const startMarkerRef = useRef<google.maps.Marker | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<{ lat: number; lng: number }[]>([]);
   const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
@@ -150,6 +151,8 @@ export function MapView({
       markersRef.current.clear();
       userMarkerRef.current?.setMap(null);
       userMarkerRef.current = null;
+      startMarkerRef.current?.setMap(null);
+      startMarkerRef.current = null;
       polylineRef.current?.setMap(null);
       polylineRef.current = null;
       mapRef.current = null;
@@ -157,43 +160,68 @@ export function MapView({
     };
   }, [mounted, retryCount, initMapOnce]);
 
-  // Sync route polyline and POI markers when map is ready and route/pois change (e.g. after generate on /create)
+  // Stable key for routePoints so we don't re-run on every render
+  const routeKey = useRef("");
+  const currentRouteKey = (routePointsProp ?? []).length + ":" + pois.map(p => p.poiId).join(",");
+
+  // Draw route polyline and POI markers
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !window.google?.maps) return;
-
     const g = window.google;
-    const points = routePointsProp?.length
-      ? routePointsProp
-      : polylineEncoded
-        ? decodePolyline(polylineEncoded)
-        : [];
-    const path = points.length >= 2 ? points.map((p) => ({ lat: p.lat, lng: p.lng })) : [];
 
-    if (polylineRef.current) {
-      polylineRef.current.setMap(null);
-      polylineRef.current = null;
-    }
+    // ── Clean up ──
+    polylineRef.current?.setMap(null);
+    polylineRef.current = null;
+    startMarkerRef.current?.setMap(null);
+    startMarkerRef.current = null;
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current.clear();
+
+    // ── Build path from routePoints (server already provides walking directions) ──
+    let path: { lat: number; lng: number }[] = [];
+    if (routePointsProp && routePointsProp.length >= 2) {
+      path = routePointsProp.map(p => ({ lat: p.lat, lng: p.lng }));
+    } else if (polylineEncoded) {
+      path = decodePolyline(polylineEncoded).map(p => ({ lat: p.lat, lng: p.lng }));
+    } else if (pois.length >= 1) {
+      // Last resort: straight lines through POIs
+      const c = propsRef.current.center;
+      path = [{ lat: c.lat, lng: c.lng }, ...pois.map(p => ({ lat: p.lat, lng: p.lng })), { lat: c.lat, lng: c.lng }];
+    }
     pathRef.current = path;
 
+    // ── Draw the route polyline ──
     if (path.length >= 2) {
       const line = new g.maps.Polyline({
         path,
         geodesic: true,
         strokeColor: navigationMode ? "#0d9488" : "#3b82f6",
-        strokeOpacity: navigationMode ? 0.95 : 0.8,
-        strokeWeight: navigationMode ? 6 : 4,
+        strokeOpacity: 0.85,
+        strokeWeight: navigationMode ? 5 : 4,
       });
       line.setMap(map);
       polylineRef.current = line;
+
+      // Fit map to the route
       const bounds = new g.maps.LatLngBounds();
-      path.forEach((p) => bounds.extend(p));
+      path.forEach(p => bounds.extend(p));
       map.fitBounds(bounds, 48);
     }
 
-    pois.forEach((poi) => {
+    // ── Start marker (green dot) ──
+    if (path.length >= 1) {
+      startMarkerRef.current = new g.maps.Marker({
+        position: path[0],
+        map,
+        title: "Start",
+        icon: { path: g.maps.SymbolPath.CIRCLE, scale: 10, fillColor: "#10b981", fillOpacity: 1, strokeColor: "#fff", strokeWeight: 2 },
+        zIndex: 999,
+      });
+    }
+
+    // ── POI markers ──
+    pois.forEach((poi, idx) => {
       const isVisited = visitedPoiIds.includes(poi.poiId);
       const isActive = activePoiId === poi.poiId;
       const marker = new g.maps.Marker({
@@ -202,39 +230,29 @@ export function MapView({
         title: poi.name,
         icon: {
           path: g.maps.SymbolPath.CIRCLE,
-          scale: navigationMode ? (isActive ? 16 : isVisited ? 8 : 12) : isActive ? 14 : 10,
-          fillColor: navigationMode
-            ? isActive
-              ? "#0d9488"
-              : isVisited
-                ? "#94a3b8"
-                : "#0d9488"
-            : isActive
-              ? "#8b5cf6"
-              : isVisited
-                ? "#64748b"
-                : "#3b82f6",
-          fillOpacity: navigationMode && isVisited && !isActive ? 0.6 : 1,
+          scale: isActive ? 14 : isVisited ? 8 : 11,
+          fillColor: isActive ? "#8b5cf6" : isVisited ? "#94a3b8" : "#3b82f6",
+          fillOpacity: isVisited && !isActive ? 0.6 : 1,
           strokeColor: "#fff",
-          strokeWeight: navigationMode && isActive ? 3 : 2,
+          strokeWeight: isActive ? 3 : 2,
         },
+        label: { text: String(idx + 1), color: "#fff", fontSize: "11px", fontWeight: "bold" },
         animation: isActive ? g.maps.Animation.BOUNCE : undefined,
-        optimized: false, // Better rendering for custom icons
+        optimized: false,
       });
       marker.addListener("click", () => {
-        // Show info window on click
-        if (!infoWindowRef.current) {
-          infoWindowRef.current = new g.maps.InfoWindow();
-        }
-        const statusText = isVisited ? "✓ Visited" : isActive ? "📍 Current stop" : "Upcoming";
-        const content = `<div style="padding:8px;font-family:system-ui;"><strong style="display:block;margin-bottom:4px;">${poi.name}</strong><span style="font-size:12px;color:#64748b;">${statusText}</span></div>`;
-        infoWindowRef.current.setContent(content);
+        if (!infoWindowRef.current) infoWindowRef.current = new g.maps.InfoWindow();
+        infoWindowRef.current.setContent(
+          `<div style="padding:6px 10px;font-family:system-ui"><strong>${poi.name}</strong><br><span style="font-size:12px;color:#64748b">${isVisited ? "Visited" : isActive ? "Current" : "Upcoming"} · Stop ${idx + 1}</span></div>`
+        );
         infoWindowRef.current.open(map, marker);
         onPoiClick?.(poi.poiId);
       });
       markersRef.current.set(poi.poiId, marker);
     });
-  }, [mapReady, routePointsProp, polylineEncoded, pois, onPoiClick, navigationMode]);
+
+    routeKey.current = currentRouteKey;
+  }, [mapReady, currentRouteKey, navigationMode]);
 
   useEffect(() => {
     const map = mapRef.current;

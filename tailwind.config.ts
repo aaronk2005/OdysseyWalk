@@ -9,7 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-plus-jakarta)", "system-ui", "sans-serif"],
+        sans: ["var(--font-plus-jakarta)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "system-ui", "sans-serif"],
+      },
+      fontSize: {
+        'xs': ['0.6875rem', { lineHeight: '1.4' }],
+        'sm': ['0.8125rem', { lineHeight: '1.5' }],
+        'base': ['0.9375rem', { lineHeight: '1.6' }],
+        'lg': ['1.0625rem', { lineHeight: '1.6' }],
+        'xl': ['1.25rem', { lineHeight: '1.4' }],
+        '2xl': ['1.5rem', { lineHeight: '1.3' }],
+        '3xl': ['1.875rem', { lineHeight: '1.2' }],
+        '4xl': ['2.25rem', { lineHeight: '1.1' }],
+      },
+      letterSpacing: {
+        tighter: '-0.04em',
+        tight: '-0.02em',
+        normal: '0',
+        wide: '0.01em',
       },
       colors: {
         // Legacy (keep for map etc.)
