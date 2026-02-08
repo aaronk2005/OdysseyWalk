@@ -25,6 +25,7 @@ export function TourCard({ tour }: TourCardProps) {
             <img
               src={tour.thumbnailUrl}
               alt=""
+              loading="eager"
               className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
