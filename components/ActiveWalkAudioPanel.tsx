@@ -1,15 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play, Pause, SkipForward, RotateCcw } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Mic, ExternalLink, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AudioState } from "@/lib/types";
 import { PlayingIndicator } from "./PlayingIndicator";
 
-/**
- * Zone 2: Spotify-like audio control + context.
- * Soft elevated card, progress (Stop 2 of 6), large Play/Pause, small Skip.
- */
+export type VoiceBarAskState = "idle" | "listening" | "thinking" | "speaking";
+
 export interface ActiveWalkAudioPanelProps {
   currentStopName: string;
   stopIndex: number;
@@ -20,8 +18,18 @@ export interface ActiveWalkAudioPanelProps {
   onSkip: () => void;
   onReplay: () => void;
   isDemoMode?: boolean;
-  /** If true, show "Resume" instead of "Play" after answer finishes */
   showResumeHint?: boolean;
+  /** Optional: link to place website for current stop */
+  currentStopWebsite?: string | null;
+  /** Mic (ask): hold to ask about this place */
+  askState?: VoiceBarAskState;
+  onAskStart?: () => void;
+  onAskStop?: () => void;
+  /** Voice next: hold to say "next" */
+  onVoiceNextStart?: () => void;
+  onVoiceNextStop?: () => void;
+  isVoiceNextRecording?: boolean;
+  voiceNextError?: string | null;
 }
 
 export function ActiveWalkAudioPanel({
@@ -35,32 +43,65 @@ export function ActiveWalkAudioPanel({
   onReplay,
   isDemoMode,
   showResumeHint = false,
+  currentStopWebsite,
+  askState = "idle",
+  onAskStart,
+  onAskStop,
+  onVoiceNextStart,
+  onVoiceNextStop,
+  isVoiceNextRecording = false,
+  voiceNextError,
 }: ActiveWalkAudioPanelProps) {
   const isPlaying =
     audioState === AudioState.NARRATING ||
     audioState === AudioState.PLAYING_INTRO ||
     audioState === AudioState.PLAYING_OUTRO ||
     audioState === AudioState.ANSWERING;
-  const isPaused = audioState === AudioState.PAUSED;
   const progressPct = totalStops ? (stopIndex / totalStops) * 100 : 0;
-  
   const playButtonLabel = showResumeHint ? "Resume" : isPlaying ? "Pause" : "Play";
+  const hasMic = Boolean(onAskStart && onAskStop);
 
   return (
     <motion.div
       layout
       className={cn(
-        "mx-4 rounded-2xl shadow-lg overflow-hidden",
-        "bg-gradient-to-b from-surface to-surface-muted/80",
-        "border border-app-border/80",
+        "mx-3 rounded-xl overflow-hidden border border-app-border/80 bg-surface/95 backdrop-blur-sm",
         (isPlaying || isAnswerPlaying) && "ring-2 ring-brand-primary/30"
       )}
     >
-      <div className="px-4 py-4">
-        <div className="flex items-center gap-2 mb-1">
-          <p className="text-sm font-semibold text-ink-primary truncate flex-1">
-            {currentStopName || "Select a stop"}
-          </p>
+      {/* Thin progress bar at top */}
+      <div className="h-1 rounded-full bg-app-border overflow-hidden">
+        <motion.div
+          className="h-full rounded-full bg-brand-primary"
+          initial={false}
+          animate={{ width: `${progressPct}%` }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+        />
+      </div>
+
+      <div className="px-3 py-2 flex items-center gap-2 min-h-[52px]">
+        {/* Left: stop name + optional website */}
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-ink-primary truncate">
+              {currentStopName || "Select a stop"}
+            </p>
+            <p className="text-[11px] text-ink-tertiary">
+              Stop {Math.min(stopIndex, totalStops)} of {totalStops}
+              {isAnswerPlaying && " · Answering…"}
+            </p>
+          </div>
+          {currentStopWebsite && typeof currentStopWebsite === "string" && currentStopWebsite.trim() !== "" && (
+            <a
+              href={currentStopWebsite.startsWith("http") ? currentStopWebsite : `https://${currentStopWebsite}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 p-1.5 rounded-full text-ink-tertiary hover:text-brand-primary hover:bg-app-bg transition-colors"
+              aria-label="Open place website"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
           {isPlaying && <PlayingIndicator />}
           {isDemoMode && (
             <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-ink-tertiary/15 text-ink-tertiary font-medium shrink-0">
@@ -68,27 +109,13 @@ export function ActiveWalkAudioPanel({
             </span>
           )}
         </div>
-        <p className="text-xs text-ink-tertiary">
-          Stop {Math.min(stopIndex, totalStops)} of {totalStops}
-          {isAnswerPlaying && " · Answering…"}
-        </p>
 
-        {/* Progress bar */}
-        <div className="h-1.5 rounded-full bg-app-border mt-3 overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-brand-primary"
-            initial={false}
-            animate={{ width: `${progressPct}%` }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-          />
-        </div>
-
-        {/* Controls: one primary Play/Pause (56px), Replay + Skip secondary */}
-        <div className="flex items-center justify-center gap-4 mt-4">
+        {/* Right: Replay | Play/Pause | Skip | Mic */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={onReplay}
-            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink-tertiary hover:text-ink-primary hover:bg-app-bg transition-colors shrink-0"
+            className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full text-ink-tertiary hover:text-ink-primary hover:bg-app-bg transition-colors"
             aria-label="Replay current stop"
           >
             <RotateCcw className="w-5 h-5" />
@@ -98,29 +125,103 @@ export function ActiveWalkAudioPanel({
             type="button"
             onClick={onPlayPause}
             className={cn(
-              "flex items-center justify-center gap-2 min-w-[56px] min-h-[56px] w-14 h-14 rounded-full font-semibold transition-all shrink-0",
-              "bg-brand-primary hover:bg-brand-primaryHover text-white shadow-lg shadow-brand-primary/25",
+              "flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-full font-semibold transition-all shrink-0",
+              "bg-brand-primary hover:bg-brand-primaryHover text-white shadow-md",
               "active:scale-[0.97]"
             )}
             aria-label={playButtonLabel}
           >
             {isPlaying ? (
-              <Pause className="w-7 h-7" />
+              <Pause className="w-5 h-5" />
             ) : (
-              <Play className="w-7 h-7 ml-0.5" />
+              <Play className="w-5 h-5 ml-0.5" />
             )}
           </button>
 
           <button
             type="button"
             onClick={onSkip}
-            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink-tertiary hover:text-ink-primary hover:bg-app-bg transition-colors shrink-0"
+            className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full text-ink-tertiary hover:text-ink-primary hover:bg-app-bg transition-colors"
             aria-label="Skip to next stop"
           >
             <SkipForward className="w-5 h-5" />
           </button>
+
+          {hasMic && (
+            <button
+              type="button"
+              onMouseDown={onAskStart}
+              onMouseLeave={onAskStop}
+              onMouseUp={onAskStop}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                onAskStart?.();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                onAskStop?.();
+              }}
+              onTouchCancel={onAskStop}
+              className={cn(
+                "p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-full transition-colors shrink-0",
+                askState === "idle" &&
+                  "text-ink-tertiary hover:text-brand-primary hover:bg-app-bg",
+                askState === "listening" && "bg-brand-primary/20 text-brand-primary",
+                askState === "thinking" && "bg-amber-500/20 text-amber-600",
+                askState === "speaking" && "bg-emerald-500/20 text-emerald-600"
+              )}
+              aria-label="Hold to ask about this place"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Voice next + status hint (single line, centered) */}
+      {(onVoiceNextStart || hasMic) && (
+        <div className="px-4 pb-3 flex items-center justify-center gap-2 flex-wrap text-center">
+          {onVoiceNextStart && onVoiceNextStop && (
+            <button
+              type="button"
+              onMouseDown={onVoiceNextStart}
+              onMouseLeave={onVoiceNextStop}
+              onMouseUp={onVoiceNextStop}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                onVoiceNextStart();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                onVoiceNextStop();
+              }}
+              onTouchCancel={onVoiceNextStop}
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors",
+                isVoiceNextRecording
+                  ? "bg-brand-primary/20 text-brand-primary"
+                  : "text-ink-secondary hover:text-ink-primary"
+              )}
+              aria-label='Hold and say "next"'
+            >
+              <ArrowRight className="w-3 h-3" />
+              Say &quot;next&quot;
+            </button>
+          )}
+          <span className="text-[11px] text-ink-tertiary">
+            {askState === "listening"
+              ? "Listening…"
+              : askState === "thinking"
+                ? "Thinking…"
+                : askState === "speaking"
+                  ? "Speaking…"
+                  : "Hold mic to ask"}
+          </span>
+          {voiceNextError && (
+            <span className="text-[11px] text-red-500">{voiceNextError}</span>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -199,34 +199,36 @@ class AudioSessionManagerImpl {
   private async fetchAndCacheTts(text: string, purpose: string, signal?: AbortSignal): Promise<void> {
     const key = this.cacheKey(text, purpose);
     if (this.cache.has(key)) return;
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text,
-          lang: this.lang,
-          voiceStyle: this.voiceStyle,
-          purpose,
-          returnBase64: false,
-        }),
-        signal,
-      });
-      if (!res.ok) {
-        const errBody = await res.text();
-        try {
-          const err = JSON.parse(errBody) as { error?: string };
-          console.warn("[TTS] Server returned", res.status, err?.error ?? errBody.slice(0, 200));
-        } catch {
-          console.warn("[TTS] Server returned", res.status, errBody.slice(0, 200));
-        }
-        return;
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text,
+        lang: this.lang,
+        voiceStyle: this.voiceStyle,
+        purpose,
+        returnBase64: false,
+      }),
+      signal,
+    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      let errorMessage: string;
+      try {
+        const err = JSON.parse(errBody) as { error?: string };
+        errorMessage = err?.error ?? errBody.slice(0, 200);
+      } catch {
+        errorMessage = errBody.slice(0, 200) || `TTS failed (${res.status})`;
       }
-      const blob = await res.blob();
-      this.cache.set(key, URL.createObjectURL(blob));
-    } catch {
-      // ignore
+      console.warn("[TTS] Server returned", res.status, errorMessage);
+      throw new Error(errorMessage);
     }
+    const blob = await res.blob();
+    if (blob.size === 0) {
+      console.warn("[TTS] Server returned empty audio");
+      throw new Error("TTS returned no audio");
+    }
+    this.cache.set(key, URL.createObjectURL(blob));
   }
 
   private usingBrowserTts = false;

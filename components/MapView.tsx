@@ -27,6 +27,9 @@ export interface MapViewProps {
   navigationMode?: boolean;
   /** Show skeleton loader before map is ready */
   showSkeleton?: boolean;
+  /** When set, show turn-by-turn directions from origin to destination (walking) in a bottom panel */
+  directionsOrigin?: LatLng | null;
+  directionsDestination?: LatLng | null;
 }
 
 export function MapView({
@@ -45,8 +48,11 @@ export function MapView({
   fitBoundsTrigger,
   navigationMode = false,
   showSkeleton = false,
+  directionsOrigin = null,
+  directionsDestination = null,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
@@ -55,13 +61,20 @@ export function MapView({
   const pathRef = useRef<{ lat: number; lng: number }[]>([]);
   const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+  const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [directionsPanelReady, setDirectionsPanelReady] = useState(false);
+  const directionsRequestKeyRef = useRef<string>("");
 
   const propsRef = useRef({ center, mapApiKey, onMapClick, userLocation, navigationMode });
   propsRef.current = { center, mapApiKey, onMapClick, userLocation, navigationMode };
+  const showDirections =
+    Boolean(directionsOrigin && directionsDestination && mapApiKey) &&
+    directionsOrigin !== directionsDestination;
 
   const initMapOnce = useCallback(async () => {
     if (typeof window === "undefined") return;
@@ -147,6 +160,9 @@ export function MapView({
       clearTimeout(t);
       mapClickListenerRef.current?.remove();
       mapClickListenerRef.current = null;
+      directionsRendererRef.current?.setMap(null);
+      directionsRendererRef.current?.setPanel(null);
+      directionsRendererRef.current = null;
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current.clear();
       userMarkerRef.current?.setMap(null);
@@ -164,7 +180,7 @@ export function MapView({
   const routeKey = useRef("");
   const currentRouteKey = (routePointsProp ?? []).length + ":" + pois.map(p => p.poiId).join(",");
 
-  // Draw route polyline and POI markers
+  // Draw route polyline and POI markers (skip polyline when directions panel is active)
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !window.google?.maps) return;
@@ -191,8 +207,8 @@ export function MapView({
     }
     pathRef.current = path;
 
-    // ── Draw the route polyline ──
-    if (path.length >= 2) {
+    // ── Draw the route polyline only when not showing directions panel ──
+    if (path.length >= 2 && !showDirections) {
       const line = new g.maps.Polyline({
         path,
         geodesic: true,
@@ -210,7 +226,7 @@ export function MapView({
     }
 
     // ── Start marker (green dot) ──
-    if (path.length >= 1) {
+    if (path.length >= 1 && !showDirections) {
       startMarkerRef.current = new g.maps.Marker({
         position: path[0],
         map,
@@ -252,7 +268,78 @@ export function MapView({
     });
 
     routeKey.current = currentRouteKey;
-  }, [mapReady, currentRouteKey, navigationMode]);
+  }, [mapReady, currentRouteKey, navigationMode, showDirections]);
+
+  // Reset panel-ready when leaving directions mode so next time we wait for panel mount
+  useEffect(() => {
+    if (!showDirections) setDirectionsPanelReady(false);
+  }, [showDirections]);
+
+  // Directions: request walking route and show turn-by-turn in panel
+  useEffect(() => {
+    if (!showDirections || !directionsOrigin || !directionsDestination) {
+      directionsRendererRef.current?.setMap(null);
+      directionsRendererRef.current?.setPanel(null);
+      directionsRendererRef.current = null;
+      directionsRequestKeyRef.current = "";
+      return;
+    }
+
+    const map = mapRef.current;
+    const panel = panelRef.current;
+    if (!map || !mapReady || !window.google?.maps) return;
+    if (!panel) return; // wait for ref callback to set directionsPanelReady and re-run
+
+    const g = window.google;
+    const requestKey = `${directionsOrigin.lat},${directionsOrigin.lng}-${directionsDestination.lat},${directionsDestination.lng}`;
+    if (directionsRequestKeyRef.current === requestKey) return;
+    directionsRequestKeyRef.current = requestKey;
+
+    try {
+      if (!directionsServiceRef.current) directionsServiceRef.current = new g.maps.DirectionsService();
+      const service = directionsServiceRef.current;
+
+      service.route(
+        {
+          origin: { lat: directionsOrigin.lat, lng: directionsOrigin.lng },
+          destination: { lat: directionsDestination.lat, lng: directionsDestination.lng },
+          travelMode: g.maps.TravelMode.WALKING,
+        },
+        (result, status) => {
+          try {
+            if (status !== g.maps.DirectionsStatus.OK || !result) {
+              directionsRequestKeyRef.current = "";
+              return;
+            }
+            if (!mapRef.current) return;
+            if (!directionsRendererRef.current) {
+              directionsRendererRef.current = new g.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                preserveViewport: false,
+              });
+            }
+            directionsRendererRef.current.setMap(mapRef.current);
+            const p = panelRef.current;
+            if (p) directionsRendererRef.current.setPanel(p);
+            directionsRendererRef.current.setDirections(result);
+          } catch {
+            directionsRequestKeyRef.current = "";
+          }
+        }
+      );
+    } catch {
+      directionsRequestKeyRef.current = "";
+    }
+  }, [mapReady, showDirections, directionsOrigin, directionsDestination, directionsPanelReady]);
+
+  // Clear directions on unmount or when turning off
+  useEffect(() => {
+    return () => {
+      directionsRendererRef.current?.setMap(null);
+      directionsRendererRef.current?.setPanel(null);
+      directionsRendererRef.current = null;
+    };
+  }, [showDirections]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -353,11 +440,23 @@ export function MapView({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={cn("w-full h-full min-h-[200px] bg-surface-muted rounded-card", className)}
-      aria-label="Map"
-      aria-busy={!mapReady}
-    />
+    <div className={cn("relative w-full h-full min-h-[200px]", className)}>
+      <div
+        ref={containerRef}
+        className="absolute inset-0 min-h-[200px] bg-surface-muted rounded-card"
+        aria-label="Map"
+        aria-busy={!mapReady}
+      />
+      {showDirections && (
+        <div
+          ref={(el) => {
+            panelRef.current = el;
+            if (el) setDirectionsPanelReady(true);
+          }}
+          className="absolute bottom-0 left-0 right-0 z-10 max-h-[35%] min-h-[80px] overflow-auto rounded-t-xl bg-surface/98 backdrop-blur-sm border border-app-border border-b-0 shadow-lg text-center text-sm font-medium text-ink-primary [&_.adp]:!text-ink-primary [&_.adp]:!font-medium [&_.adp-step]:!text-ink-secondary [&_.adp-placemark]:!text-ink-secondary [&_.adp-text]:!text-ink-primary [&_.adp-text]:!text-sm [&_.adp-text]:!font-normal [&_.adp-warnbox]:!hidden [&_.warnbox-content]:!hidden"
+          aria-label="Turn-by-turn directions"
+        />
+      )}
+    </div>
   );
 }

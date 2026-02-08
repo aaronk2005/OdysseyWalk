@@ -92,6 +92,8 @@ export interface POI {
   price?: string | null;
   /** Theme of this stop (from tour) */
   theme?: string;
+  /** Place website URL when available */
+  website?: string | null;
 }
 
 export interface GeneratedTourResponse {

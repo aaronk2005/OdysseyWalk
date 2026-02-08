@@ -187,14 +187,14 @@ function runOneSession(
 
     ws.on("open", () => {
       if (settled) return;
+      // Gradium docs: model_name, voice_id, output_format. WAV is 48kHz by default; do not set sample_rate.
       const setup: Record<string, unknown> = {
         type: "setup",
         model_name: "default",
         voice_id: voiceId,
         output_format: "wav",
-        sample_rate: 24000,
       };
-      // Include json_config if provided (for language-specific settings)
+      // json_config: rewrite_rules (en, fr, de, es, pt), padding_bonus (speed). Send as object; server receives full JSON.
       if (options?.jsonConfig && Object.keys(options.jsonConfig).length > 0) {
         setup.json_config = options.jsonConfig;
       }

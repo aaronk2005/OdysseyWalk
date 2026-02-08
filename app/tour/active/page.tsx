@@ -3,40 +3,38 @@
 import { useCallback, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft, Settings, Map as MapIcon, ListOrdered } from "lucide-react";
 import { MapView } from "@/components/MapView";
 import { OdysseyLogo } from "@/components/OdysseyLogo";
 import { PreWalkBriefingSheet } from "@/components/PreWalkBriefingSheet";
 import { ActiveWalkAudioPanel } from "@/components/ActiveWalkAudioPanel";
-import { VoiceBar } from "@/components/VoiceBar";
 import { FirstTimeHint } from "@/components/FirstTimeHint";
-import { AskTextModal } from "@/components/AskTextModal";
 import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { MapsKeyBanner } from "@/components/MapsKeyBanner";
 import { VoiceFallbackBanner } from "@/components/VoiceFallbackBanner";
 import { DebugPanel, type ApiStatus } from "@/components/DebugPanel";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { useToast } from "@/components/ToastProvider";
-import { WalkStatusLine } from "@/components/WalkStatusLine";
 import { useActiveTour } from "@/hooks/useActiveTour";
 import { useVoiceNext } from "@/hooks/useVoiceNext";
 import { getClientConfig } from "@/lib/config";
-import { startRecording, stopRecording, runVoiceQaLoop } from "@/lib/voice/VoiceController";
+import { startRecording, stopRecording } from "@/lib/voice/VoiceController";
 import { loadTour, updateSession } from "@/lib/data/SessionStore";
 import { AudioSessionManager } from "@/lib/audio/AudioSessionManager";
 import { AudioState } from "@/lib/types";
 import { distanceMeters } from "@/lib/maps/haversine";
+import { cn } from "@/lib/utils/cn";
 
 export default function TourActivePage() {
   const clientConfig = getClientConfig();
   const mapKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [showAskModal, setShowAskModal] = useState(false);
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [fitBoundsTrigger, setFitBoundsTrigger] = useState(0);
   const [prevAudioState, setPrevAudioState] = useState<AudioState>(AudioState.IDLE);
   const [ending, setEnding] = useState(false);
+  const [mapViewMode, setMapViewMode] = useState<"map" | "directions">("map");
   const toast = useToast();
 
   const {
@@ -110,7 +108,7 @@ export default function TourActivePage() {
       onThinking: () => setAskState("thinking"),
       onAnswerStart: () => setAskState("speaking"),
       onAnswerEnd: () => setAskState("idle"),
-      onTypedQuestionFallback: () => setShowAskModal(true),
+      onTypedQuestionFallback: () => toast.showToast("Voice input unavailable", "info"),
       onError: (err) => {
         setLastError(err);
         toast.showToast(err, "error");
@@ -121,30 +119,6 @@ export default function TourActivePage() {
   const handleAskStop = useCallback(() => {
     stopRecording();
   }, []);
-
-  const handleTypedQuestion = useCallback(
-    async (question: string) => {
-      setShowAskModal(false);
-      setLastError(null);
-      setAskState("thinking");
-      const s = loadTour();
-      try {
-        await runVoiceQaLoop(s, () => Promise.resolve(question), {
-          onAnswerStart: () => setAskState("speaking"),
-          onAnswerEnd: () => setAskState("idle"),
-          onError: (err) => {
-            setLastError(err);
-            toast.showToast(err, "error");
-          },
-        });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "Q&A failed";
-        setLastError(msg);
-        toast.showToast(msg, "error");
-      }
-    },
-    [setAskState, toast]
-  );
 
   const handleDemoModeChange = useCallback((demo: boolean) => {
     updateSession({ mode: demo ? "demo" : "real" });
@@ -304,16 +278,16 @@ export default function TourActivePage() {
         </>
       )}
 
-      {/* ─── ACTIVE WALK: 3 zones (Map ~45% | Audio Panel | Voice Bar) ─── */}
+      {/* ─── ACTIVE WALK: Full-height map + overlay control block at bottom ─── */}
       {introPlayed && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="flex flex-col flex-1"
+          className="flex flex-col flex-1 min-h-0"
         >
-          {/* Zone 1: Navigation map (~45%) */}
-          <div className="relative shrink-0 h-[45vh] min-h-[200px] overflow-hidden">
+          {/* Map fills space (flex-1); control block overlays at bottom */}
+          <div className="relative flex-1 min-h-0 overflow-hidden">
             {mapKey ? (
               <MapView
                 mapApiKey={mapKey}
@@ -330,12 +304,52 @@ export default function TourActivePage() {
                 followUser={session.mode === "demo" || Boolean(userLocation)}
                 navigationMode
                 className="absolute inset-0 rounded-none"
+                directionsOrigin={mapViewMode === "directions" ? userLocation : null}
+                directionsDestination={
+                  mapViewMode === "directions" && nextPoi
+                    ? { lat: nextPoi.lat, lng: nextPoi.lng }
+                    : null
+                }
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center p-4 bg-surface-muted">
                 <p className="text-caption text-ink-secondary text-center">Map unavailable</p>
               </div>
             )}
+
+            {/* Map / Directions view toggle */}
+            <div className="absolute top-2 right-2 z-10 flex rounded-lg overflow-hidden border border-app-border/80 bg-surface/95 backdrop-blur-sm shadow">
+              <button
+                type="button"
+                onClick={() => setMapViewMode("map")}
+                className={cn(
+                  "px-3 py-2 flex items-center gap-1.5 text-xs font-medium transition-colors",
+                  mapViewMode === "map"
+                    ? "bg-brand-primary text-white"
+                    : "text-ink-secondary hover:text-ink-primary hover:bg-app-bg"
+                )}
+                aria-pressed={mapViewMode === "map"}
+                aria-label="Map view"
+              >
+                <MapIcon className="w-3.5 h-3.5" />
+                Map
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapViewMode("directions")}
+                className={cn(
+                  "px-3 py-2 flex items-center gap-1.5 text-xs font-medium transition-colors",
+                  mapViewMode === "directions"
+                    ? "bg-brand-primary text-white"
+                    : "text-ink-secondary hover:text-ink-primary hover:bg-app-bg"
+                )}
+                aria-pressed={mapViewMode === "directions"}
+                aria-label="Directions view"
+              >
+                <ListOrdered className="w-3.5 h-3.5" />
+                Directions
+              </button>
+            </div>
 
             {/* State overlay: dim when asking or answer playing */}
             <AnimatePresence>
@@ -359,55 +373,46 @@ export default function TourActivePage() {
               )}
             </AnimatePresence>
 
-            {/* Floating badge: Next stop · distance (with backdrop blur + shadow polish) */}
-            {nextStopBadgeText && (
-              <div className="absolute bottom-3 left-4 right-4 z-10">
+            {/* Next stop badge (map view only) */}
+            {mapViewMode === "map" && nextStopBadgeText && (
+              <div className="absolute bottom-[180px] left-4 right-4 z-10">
                 <div className="inline-flex px-3 py-2 rounded-xl bg-surface/95 shadow-lg border border-app-border/60 backdrop-blur-md">
                   <span className="text-xs font-semibold text-ink-primary truncate">Next: {nextStopBadgeText}</span>
                 </div>
               </div>
             )}
+
+            {/* Control block: overlay at bottom of map (big card) */}
+            <div className="absolute bottom-0 left-0 right-0 z-20 px-3 pb-4 safe-bottom">
+              <ActiveWalkAudioPanel
+                currentStopName={currentPoi?.name ?? "Intro"}
+                stopIndex={session.visitedPoiIds.length}
+                totalStops={session.pois.length}
+                audioState={audioState}
+                isAnswerPlaying={isAnswering}
+                onPlayPause={() => {
+                  const playing = audioState === AudioState.NARRATING || audioState === AudioState.PLAYING_INTRO || audioState === AudioState.PLAYING_OUTRO || audioState === AudioState.ANSWERING;
+                  if (playing) pause();
+                  else if (audioState === AudioState.PAUSED) resume();
+                  else replay();
+                }}
+                onSkip={jumpNext}
+                onReplay={replay}
+                isDemoMode={session.mode === "demo"}
+                showResumeHint={showResumeHint}
+                currentStopWebsite={currentPoi?.website ?? null}
+                askState={askState}
+                onAskStart={handleAskStart}
+                onAskStop={handleAskStop}
+                onVoiceNextStart={startVoiceNext}
+                onVoiceNextStop={stopVoiceNext}
+                isVoiceNextRecording={isVoiceNextRecording}
+                voiceNextError={voiceNextError}
+              />
+            </div>
           </div>
 
-          {/* Zone 2: Audio panel — now playing, primary Play/Pause */}
-          <div className="shrink-0 pt-3">
-            <ActiveWalkAudioPanel
-              currentStopName={currentPoi?.name ?? "Intro"}
-              stopIndex={session.visitedPoiIds.length}
-              totalStops={session.pois.length}
-              audioState={audioState}
-              isAnswerPlaying={isAnswering}
-              onPlayPause={() => (audioState === AudioState.NARRATING || audioState === AudioState.PLAYING_INTRO || audioState === AudioState.PLAYING_OUTRO || audioState === AudioState.ANSWERING ? pause() : resume())}
-              onSkip={jumpNext}
-              onReplay={replay}
-              isDemoMode={session.mode === "demo"}
-              showResumeHint={showResumeHint}
-            />
-          </div>
-
-          {/* Status line: what's happening now / what's next (no dead space) */}
-          <div className="shrink-0">
-            <WalkStatusLine
-              nextStopName={nextPoi?.name ?? null}
-              nextStopDistanceM={nextStopDistanceM}
-              stopIndex={session.visitedPoiIds.length}
-              totalStops={session.pois.length}
-              audioState={audioState}
-            />
-          </div>
-
-          {/* Zone 3: Voice bar — mic is the hero */}
-          <div className="flex-1 min-h-0 flex flex-col justify-end relative">
-            <VoiceBar
-              askState={askState}
-              onAskStart={handleAskStart}
-              onAskStop={handleAskStop}
-              onVoiceNextStart={startVoiceNext}
-              onVoiceNextStop={stopVoiceNext}
-              isVoiceNextRecording={isVoiceNextRecording}
-              voiceNextError={voiceNextError}
-            />
-            {/* First-time hint: shows once */}
+          <div className="shrink-0 relative">
             <FirstTimeHint
               storageKey="odyssey-hint-mic"
               message="Hold the mic to ask questions about this place"
@@ -416,8 +421,6 @@ export default function TourActivePage() {
           </div>
         </motion.div>
       )}
-
-      <AskTextModal open={showAskModal} onClose={() => setShowAskModal(false)} onSubmit={handleTypedQuestion} />
 
       <SettingsDrawer
         open={settingsOpen}

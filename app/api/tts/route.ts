@@ -108,13 +108,13 @@ export async function POST(req: Request) {
     const ttsWsUrl = process.env.GRADIUM_TTS_WS_URL?.trim();
     if (ttsWsUrl) {
       try {
-        const jsonConfig: Record<string, unknown> = {};
+        // Gradium json_config: rewrite_rules (en|fr|de|es|pt), padding_bonus (positive = slower, negative = faster)
+        const jsonConfig: Record<string, unknown> = {
+          padding_bonus: 0.3, // Slightly slower for clarity
+        };
         if (langKey !== "en") {
-          jsonConfig.language = langKey;
+          jsonConfig.rewrite_rules = langKey;
         }
-        // Speed adjustment: 1.0 is normal, 0.9 is slightly slower (more clear), 1.1 is faster
-        jsonConfig.speed = 0.95;
-        
         const bytes = await gradiumTtsOverWebSocket(ttsWsUrl, apiKey, voiceId, text.slice(0, 5000), {
           timeoutMs: 20000,
           jsonConfig: Object.keys(jsonConfig).length > 0 ? jsonConfig : undefined,
